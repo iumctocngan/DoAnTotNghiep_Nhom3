@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/CmsEdu.Api/CmsEdu.Api.csproj" />
+    <Project Path="src/CmsEdu.Application/CmsEdu.Application.csproj" />
+    <Project Path="src/CmsEdu.Domain/CmsEdu.Domain.csproj" />
+    <Project Path="src/CmsEdu.Infrastructure/CmsEdu.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/CmsEdu.IntegrationTests/CmsEdu.IntegrationTests.csproj" />
+    <Project Path="tests/CmsEdu.UnitTests/CmsEdu.UnitTests.csproj" />
+  </Folder>
+</Solution>

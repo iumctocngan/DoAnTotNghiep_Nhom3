@@ -1,0 +1,196 @@
+# Thiết kế API Core Platform — CMS EDU
+
+API MVP dựa trên [overview.md](overview.md) và [core-database-design.md](core-database-design.md).
+
+## 1. Quy ước
+
+- Base URL: `/api`.
+- JWT Bearer cho mọi endpoint trừ login; không refresh token.
+- `GET`: đọc, `POST`: tạo/action, `PUT`: cập nhật, `DELETE`: chỉ gỡ liên kết hoặc xóa enrollment nhập nhầm khi chưa có lịch sử.
+- API danh sách hỗ trợ `page`, `pageSize`, `search` và filter cần thiết; `pageSize <= 100`.
+- Danh sách trả `{ items, page, pageSize, totalItems }`.
+- Lỗi dùng `ProblemDetails` của ASP.NET Core.
+- Status chính: `200`, `201`, `204`, `400`, `401`, `403`, `404`, `409`.
+- Dùng DTO, không trả trực tiếp EF entity.
+
+Trong bảng quyền, **Authenticated** nghĩa là bất kỳ nhân viên đã đăng nhập. **Theo phạm vi role** nghĩa là: Admin xem toàn bộ; Teacher chỉ xem dữ liệu của lớp phụ trách; Accountant chỉ xem dữ liệu học viên cần cho nghiệp vụ học phí; CustomerCare xem dữ liệu học viên, lớp và ghi danh để chăm sóc học viên.
+
+## 2. Phạm vi MVP
+
+Các luồng phải chạy hoàn chỉnh trước:
+
+```text
+1. Login và phân quyền
+2. Học sinh và phụ huynh
+3. Curriculum, lớp và lịch học
+4. Ghi danh và bảo lưu
+5. Session, điểm danh và nhận xét
+6. Invoice, payment và công nợ
+7. Dashboard cơ bản
+```
+
+Reset password, archive, deactivate danh mục và màn hình tra cứu audit làm sau nếu còn thời gian. Backend vẫn ghi audit ngay từ MVP.
+
+## 3. Authentication và nhân viên
+
+| Method | Endpoint | Mục đích | Quyền |
+|---|---|---|---|
+| POST | `/api/auth/login` | Nhận JWT | Public |
+| GET | `/api/auth/me` | Thông tin bản thân | Authenticated |
+| GET | `/api/staff` | Danh sách nhân viên | Admin |
+| GET | `/api/staff/{id}` | Chi tiết nhân viên | Admin |
+| POST | `/api/staff` | Tạo tài khoản | Admin |
+| PUT | `/api/staff/{id}` | Sửa hồ sơ và role | Admin |
+| POST | `/api/staff/{id}/reset-password` | Đặt lại mật khẩu | Admin |
+| POST | `/api/staff/{id}/deactivate` | Ngừng tài khoản | Admin |
+| POST | `/api/staff/{id}/activate` | Kích hoạt tài khoản | Admin |
+
+Bốn role cố định; mỗi user có một role chính. Không deactivate hoặc đổi role Teacher khi user còn phụ trách lớp Active. Tài khoản Inactive không đăng nhập lại được; JWT đã cấp còn hiệu lực đến khi hết hạn.
+
+## 4. Học sinh và phụ huynh
+
+| Method | Endpoint | Mục đích | Quyền |
+|---|---|---|---|
+| GET | `/api/students` | Danh sách/tìm kiếm | Theo phạm vi role |
+| GET | `/api/students/{id}` | Chi tiết | Theo phạm vi role |
+| POST | `/api/students` | Tạo học sinh | Admin, CustomerCare |
+| PUT | `/api/students/{id}` | Sửa hồ sơ | Admin, CustomerCare |
+| POST | `/api/students/{id}/archive` | Archive hồ sơ | Admin |
+| GET | `/api/students/{id}/guardians` | Người giám hộ | Theo quyền xem học sinh |
+| POST | `/api/students/{id}/guardians` | Tạo/gắn người giám hộ | Admin, CustomerCare |
+| PUT | `/api/students/{id}/guardians/{guardianId}` | Sửa quan hệ, người liên hệ/người thanh toán chính | Admin, CustomerCare |
+| DELETE | `/api/students/{id}/guardians/{guardianId}` | Gỡ liên kết | Admin, CustomerCare |
+
+Giáo viên chỉ xem học sinh thuộc lớp phụ trách. Không archive học sinh có enrollment Active hoặc Paused. Đổi người liên hệ/người thanh toán chính thực hiện trong transaction. Không gỡ guardian đang giữ cờ chính khi chưa chọn người thay thế.
+
+## 5. Curriculum
+
+| Method | Endpoint | Mục đích | Quyền |
+|---|---|---|---|
+| GET | `/api/courses` | Danh sách course | Authenticated |
+| GET | `/api/courses/{id}` | Chi tiết course | Authenticated |
+| POST | `/api/courses` | Tạo course | Admin |
+| PUT | `/api/courses/{id}` | Sửa course | Admin |
+| POST | `/api/courses/{id}/deactivate` | Ngừng áp dụng | Admin |
+| GET | `/api/levels?courseId=` | Danh sách level | Authenticated |
+| GET | `/api/levels/{id}` | Chi tiết level | Authenticated |
+| POST | `/api/levels` | Tạo level | Admin |
+| PUT | `/api/levels/{id}` | Sửa level | Admin |
+| POST | `/api/levels/{id}/deactivate` | Ngừng áp dụng | Admin |
+| GET | `/api/lessons?levelId=` | Danh sách lesson thuộc level | Authenticated |
+| GET | `/api/lessons/{id}` | Chi tiết lesson | Authenticated |
+| POST | `/api/lessons` | Tạo lesson | Admin |
+| PUT | `/api/lessons/{id}` | Sửa lesson | Admin |
+| POST | `/api/lessons/{id}/deactivate` | Ngừng áp dụng | Admin |
+
+Danh mục đã được sử dụng không có API DELETE.
+
+Lesson trực tiếp thuộc Level; request tạo hoặc cập nhật lesson dùng `LevelId`.
+
+## 6. Lớp và lịch học
+
+| Method | Endpoint | Mục đích | Quyền |
+|---|---|---|---|
+| GET | `/api/classes` | Danh sách lớp | Theo phạm vi role |
+| GET | `/api/classes/{id}` | Chi tiết lớp | Theo phạm vi role |
+| POST | `/api/classes` | Tạo lớp | Admin |
+| PUT | `/api/classes/{id}` | Sửa lớp | Admin |
+| POST | `/api/classes/{id}/activate` | Mở lớp | Admin |
+| POST | `/api/classes/{id}/complete` | Kết thúc lớp | Admin |
+| POST | `/api/classes/{id}/cancel` | Hủy lớp chưa hoạt động | Admin |
+
+Request tạo hoặc sửa lớp chứa `DayOfWeek`, `StartTime` và `EndTime` cho một lịch học cố định mỗi tuần. Không giảm Capacity thấp hơn tổng enrollment `Active/Paused`. Không complete lớp khi còn một trong hai trạng thái này; complete lớp không tự động complete enrollment. Khi sửa lịch lớp phải kiểm tra giờ và trùng lịch; session cũ không bị thay đổi.
+
+## 7. Ghi danh
+
+| Method | Endpoint | Mục đích | Quyền |
+|---|---|---|---|
+| GET | `/api/enrollments` | Danh sách | Admin, Accountant, CustomerCare |
+| GET | `/api/enrollments/{id}` | Chi tiết | Theo phạm vi role |
+| POST | `/api/enrollments` | Ghi danh/xếp lớp | Admin, CustomerCare |
+| DELETE | `/api/enrollments/{id}` | Xóa enrollment nhập nhầm chưa phát sinh dữ liệu | Admin, CustomerCare |
+| POST | `/api/enrollments/{id}/pause` | Bảo lưu | Admin, CustomerCare |
+| POST | `/api/enrollments/{id}/resume` | Học lại | Admin, CustomerCare |
+| POST | `/api/enrollments/{id}/complete` | Hoàn thành | Admin |
+| POST | `/api/enrollments/{id}/withdraw` | Nghỉ học | Admin, CustomerCare |
+
+Mỗi học sinh chỉ có tối đa một enrollment mang trạng thái `Active` hoặc `Paused`; cả hai đều tính vào Capacity. Ghi danh yêu cầu học sinh có người liên hệ chính và người thanh toán chính. Pause chỉ áp dụng cho enrollment `Active`, bắt buộc có lý do và không tự động thay đổi invoice; resume chỉ áp dụng cho enrollment `Paused`. Complete chỉ yêu cầu ngày kết thúc; withdraw yêu cầu ngày kết thúc và lý do, đồng thời giữ nguyên invoice, payment và công nợ đã phát sinh. Chỉ xóa enrollment chưa có attendance, remark hoặc invoice. Học sinh tiếp tục học sau `Completed/Withdrawn` phải được tạo enrollment mới.
+
+## 8. Session, điểm danh và nhận xét
+
+| Method | Endpoint | Mục đích | Quyền |
+|---|---|---|---|
+| GET | `/api/sessions` | Danh sách session | Theo phạm vi role |
+| GET | `/api/sessions/{id}` | Chi tiết session | Theo phạm vi role |
+| POST | `/api/sessions` | Tạo thủ công theo lịch lớp | Admin |
+| PUT | `/api/sessions/{id}` | Sửa session Scheduled | Admin |
+| POST | `/api/sessions/{id}/cancel` | Hủy session | Admin |
+| POST | `/api/sessions/{id}/complete` | Xác nhận đã diễn ra | Admin, Teacher phụ trách |
+| GET | `/api/sessions/{id}/attendance` | Danh sách điểm danh | Admin, Teacher phụ trách |
+| PUT | `/api/sessions/{id}/attendance` | Lưu điểm danh cả lớp | Admin, Teacher phụ trách |
+| GET | `/api/enrollments/{id}/remarks` | Danh sách nhận xét | Theo phạm vi role |
+| POST | `/api/enrollments/{id}/remarks` | Tạo nhận xét | Admin, Teacher phụ trách |
+| PUT | `/api/remarks/{id}` | Sửa nhận xét | Người tạo, Admin |
+
+Attendance PUT gửi toàn bộ danh sách enrollment hợp lệ của session và lưu đồng thời trong một transaction. Enrollment hợp lệ phải thuộc cùng lớp, có trạng thái `Active`, `StartDate <= SessionDate` và chưa có `EndDate` hoặc `EndDate >= SessionDate`; enrollment `Paused/Completed/Withdrawn` không nằm trong danh sách điểm danh. Trước lần lưu đầu tiên, không có bản ghi attendance nghĩa là chưa điểm danh. Endpoint complete chỉ thành công khi mọi enrollment hợp lệ tại ngày học đã có attendance; nếu còn thiếu, API trả lỗi kèm danh sách enrollment chưa được điểm danh. Admin hoặc Teacher phụ trách được sửa attendance khi session chưa `Completed`; sau khi hoàn tất, không cho sửa, hủy hoặc mở lại session và attendance trong MVP. Lesson của session, nếu có, phải thuộc cùng level với lớp. Không tạo remark mới cho enrollment `Completed/Withdrawn`.
+
+## 9. Học phí
+
+| Method | Endpoint | Mục đích | Quyền |
+|---|---|---|---|
+| GET | `/api/invoices` | Danh sách khoản phải thu | Admin, Accountant, CustomerCare |
+| GET | `/api/invoices/{id}` | Chi tiết invoice/payment | Admin, Accountant, CustomerCare |
+| POST | `/api/invoices` | Lập kỳ học phí | Admin, Accountant |
+| PUT | `/api/invoices/{id}` | Sửa invoice chưa có payment | Admin, Accountant |
+| POST | `/api/invoices/{id}/cancel` | Hủy invoice | Admin, Accountant |
+| GET | `/api/payments` | Danh sách khoản thu | Admin, Accountant |
+| GET | `/api/payments/{id}` | Chi tiết/phiếu thu | Admin, Accountant |
+| POST | `/api/invoices/{id}/payments` | Ghi nhận payment | Admin, Accountant |
+| POST | `/api/payments/{id}/cancel` | Hủy payment | Admin, Accountant |
+
+Backend sinh `InvoiceNumber`, `PaymentNumber`, `ReceiptNumber`. Chỉ enrollment `Active` được lập invoice mới; `AmountDue > 0`, kỳ phải đúng 6 tháng, `DueDate` không sau `PeriodEnd` và các kỳ không chồng lấn theo học sinh. Request hủy invoice hoặc payment đều bắt buộc `reason`; backend lưu trạng thái `Cancelled`, người hủy, thời gian hủy và AuditLog trong cùng transaction. Không hủy invoice khi còn payment `Confirmed`; phải hủy các payment này trước.
+
+## 10. Dashboard cơ bản
+
+| Method | Endpoint | Mục đích | Quyền |
+|---|---|---|---|
+| GET | `/api/dashboard/admin` | Dashboard Admin | Admin |
+| GET | `/api/dashboard/teacher` | Dashboard Teacher | Teacher |
+| GET | `/api/dashboard/accounting` | Dashboard kế toán | Accountant |
+| GET | `/api/dashboard/customer-care` | Dashboard CSKH | CustomerCare |
+
+Dashboard trả số liệu và danh sách ngắn được tính trực tiếp từ dữ liệu nghiệp vụ. Các màn hình đầy đủ tiếp tục dùng API danh sách hiện có với filter phù hợp, không tạo resource hoặc bảng thống kê riêng.
+
+Backend vẫn tự ghi audit cho thao tác quan trọng, nhưng màn hình và API tra cứu audit được hoãn sau MVP.
+
+## 11. Chuyển trạng thái
+
+```text
+Class:      Preparing → Active → Completed
+            Preparing → Cancelled
+
+Enrollment: Active → Paused → Active
+            Active/Paused → Withdrawn
+            Active → Completed
+
+Session:    Scheduled → Completed hoặc Cancelled
+Invoice:    Issued → Cancelled
+Payment:    Confirmed → Cancelled
+```
+
+Trạng thái kết thúc không chuyển ngược. Dời lịch chỉ sửa session Scheduled.
+
+## 12. Transaction bắt buộc
+
+1. Đổi người liên hệ/người thanh toán chính.
+2. Lưu attendance theo lô.
+3. Hủy invoice/payment và tạo audit tương ứng.
+4. Pause/resume enrollment và audit.
+
+## 13. Ngoài phạm vi
+
+- Refresh token và tài khoản phụ huynh/học sinh.
+- Nhiều cơ sở, học thử, học bù, quyền học theo buổi.
+- Thanh toán online và thông báo đa kênh.
+- Upload file, CLO/Rubric và API nội bộ AI.
+- Lịch sử liên hệ phụ huynh, import/export và báo cáo nâng cao.
