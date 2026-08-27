@@ -55,16 +55,15 @@ Email? (email), IsActive (còn sử dụng để liên hệ)
 
 ```text
 StudentId (học sinh), GuardianId (người giám hộ),
-Relationship (mối quan hệ), IsPrimaryContact (liên hệ chính),
-IsPayer (người thanh toán chính)
+Relationship (mối quan hệ), IsPrimary (người giám hộ chính)
 ```
 
 Ràng buộc:
 
 - Unique `(StudentId, GuardianId)`.
-- Mỗi học sinh có tối đa một liên hệ chính và một người thanh toán chính.
-- Trước khi ghi danh, học sinh phải có một liên hệ chính và một người thanh toán chính.
-- Không gỡ liên kết đang giữ cờ chính khi chưa chọn người thay thế.
+- Mỗi học sinh có tối đa một guardian chính, được bảo vệ bằng unique filtered index theo `StudentId` khi `IsPrimary = 1`; guardian này là đầu mối liên hệ và đóng học phí.
+- Trước khi ghi danh, học sinh phải có một guardian chính.
+- Không gỡ liên kết đang giữ cờ chính khi chưa chọn người thay thế; thao tác đổi guardian chính dùng transaction.
 
 ## 4. Chương trình học
 
@@ -132,8 +131,8 @@ Quy tắc:
 - Tổng enrollment `Active` và `Paused` không vượt Capacity.
 - Pause bắt buộc có `PauseReason`; `ExpectedReturnDate` không bắt buộc và nếu có phải sau ngày thực hiện bảo lưu.
 - Pause/resume không tự động thay đổi invoice.
-- Enrollment chỉ lưu thông tin lần bảo lưu hiện tại; pause/resume được ghi audit.
-- Không xóa enrollment đã có attendance, remark hoặc invoice.
+- Enrollment chỉ lưu thông tin lần bảo lưu hiện tại; chưa audit pause/resume trong MVP.
+- Không xóa enrollment. Trường hợp nhập nhầm chuyển `Withdrawn` và ghi lý do.
 - Sau khi `Completed` hoặc `Withdrawn`, nếu học sinh tiếp tục học thì tạo enrollment mới.
 - Complete chỉ bắt buộc `EndDate`; withdraw bắt buộc `EndDate` và `EndReason`.
 
@@ -143,7 +142,7 @@ Quy tắc:
 
 ```text
 Id (khóa chính), ClassId (lớp học), LessonId? (bài đã dạy),
-TeacherUserId (giáo viên thực tế), SessionDate (ngày học),
+SessionDate (ngày học),
 StartTime (giờ bắt đầu), EndTime (giờ kết thúc),
 Status (trạng thái), Note? (ghi chú)
 ```
@@ -151,6 +150,8 @@ Status (trạng thái), Note? (ghi chú)
 `Status`: Scheduled, Completed, Cancelled. Session Scheduled có thể đổi ngày giờ; chỉ chuyển sang Completed khi mọi enrollment hợp lệ tại SessionDate đã có attendance. Session đã hoàn thành không được sửa, hủy hoặc mở lại trong MVP.
 
 `LessonId` nếu có phải trỏ tới lesson thuộc cùng level với lớp của session.
+
+Giáo viên của session được suy ra từ `Classes.MainTeacherUserId`; chưa hỗ trợ giáo viên dạy thay trong MVP.
 
 ### Attendances (Điểm danh)
 
@@ -161,7 +162,7 @@ MarkedBy (người điểm danh), MarkedAt (thời điểm điểm danh),
 UpdatedBy? (người sửa), UpdatedAt? (thời điểm sửa)
 ```
 
-`Status`: Present, ExcusedAbsent, UnexcusedAbsent.
+`Status`: Present, Absent. Lý do vắng nếu cần được lưu trong `Note`.
 
 Ràng buộc:
 
@@ -241,13 +242,12 @@ PaidAmount (đã thu) = SUM(Payment Confirmed)
 DebtAmount (công nợ) = AmountDue - PaidAmount
 PaymentStatus (tình trạng thanh toán) = Unpaid / PartiallyPaid / Paid / Overdue
 Revenue (doanh thu) = SUM(Payment Confirmed theo PaidAt)
-NeedsRenewal (cần tái phí) = học sinh có enrollment Active, kỳ gần nhất còn <= 30 ngày và chưa có kỳ tiếp theo
 MissingInvoice (chưa lập học phí) = học sinh có enrollment Active nhưng chưa từng có invoice
 ```
 
 ## 8. Dữ liệu theo dõi tính động
 
-Không tạo bảng riêng cho tái phí, chưa lập học phí, công nợ quá hạn, vắng nhiều, dashboard hoặc notification. Các danh sách này được truy vấn trực tiếp từ dữ liệu nghiệp vụ. “Vắng nhiều” là ít nhất 3 attendance vắng trong 10 session Completed gần nhất.
+Không tạo bảng riêng cho chưa lập học phí, công nợ quá hạn, dashboard hoặc notification. Các danh sách MVP được truy vấn trực tiếp từ dữ liệu nghiệp vụ. Cảnh báo tái phí 30 ngày và thống kê vắng nhiều được hoãn sau MVP.
 
 ## 9. Audit
 
@@ -259,7 +259,7 @@ EntityType (loại dữ liệu), EntityId (ID dữ liệu),
 Description (mô tả), OccurredAt (thời điểm xảy ra)
 ```
 
-Service chủ động tạo mô tả ngắn cho thao tác cần audit. Audit các thao tác: đổi quyền, pause/resume, hủy invoice và hủy payment. Không audit mọi truy vấn đọc.
+Service chủ động tạo mô tả ngắn cho thao tác cần audit. MVP audit các thao tác: đổi quyền, hủy invoice và hủy payment. Không audit mọi truy vấn đọc; audit pause/resume được hoãn.
 
 ## 10. Danh sách 14 bảng nghiệp vụ
 
@@ -273,14 +273,14 @@ Payments               AuditLogs
 
 ## 11. Quy tắc xử lý ở application layer
 
-1. Kiểm tra role giáo viên và trùng lịch.
+1. Kiểm tra role giáo viên chính và trùng lịch lớp/session; session sử dụng giáo viên chính của lớp.
 2. Kiểm tra tổng enrollment `Active/Paused` không vượt sức chứa và mỗi học sinh có tối đa một enrollment ở hai trạng thái này.
 3. Kiểm tra enrollment hợp lệ khi điểm danh; chỉ complete session khi tất cả enrollment hợp lệ đã có attendance; không sửa session hoặc attendance sau khi Completed; lesson được ghi nhận trong session phải thuộc cùng level với lớp; session của nhận xét phải phù hợp với lớp.
 4. Kiểm tra kỳ invoice 6 tháng không chồng lấn theo học sinh.
 5. Kiểm tra tổng payment không vượt AmountDue.
-6. Cập nhật người liên hệ/người thanh toán chính phải dùng transaction.
+6. Cập nhật guardian chính phải dùng transaction.
 7. Kiểm tra `Capacity > 0`, khoảng ngày hợp lệ, `StartTime < EndTime` và `MinAge <= MaxAge`.
-8. Kiểm tra học sinh có người liên hệ/người thanh toán chính trước khi ghi danh.
+8. Kiểm tra học sinh có guardian chính trước khi ghi danh.
 9. Kiểm tra trạng thái enrollment khi pause/resume, tạo invoice, complete, withdraw và tạo remark.
 
 ## 12. Ranh giới và artifact báo cáo
