@@ -1,6 +1,6 @@
 # Thiết kế database Core Platform — CMS EDU
 
-Thiết kế MVP dựa trên [overview.md](overview.md), gồm 14 bảng nghiệp vụ ngoài các bảng ASP.NET Core Identity.
+Thiết kế MVP dựa trên [overview.md](overview.md), gồm 14 bảng nghiệp vụ, một bảng refresh token phục vụ xác thực và các bảng ASP.NET Core Identity.
 
 ## 1. Quy ước
 
@@ -23,12 +23,32 @@ Mở rộng `ApplicationUser`:
 |---|---|
 | EmployeeCode | Mã nhân viên, unique |
 | FullName | Họ tên |
-| Phone | Số điện thoại |
+| PhoneNumber? | Số điện thoại |
 | EmploymentStatus | Active, Inactive |
 
 Role cố định: `Admin`, `Teacher`, `Accountant`, `CustomerCare`. Application layer chỉ cho mỗi user một role chính và không cho deactivate/đổi role Teacher khi user còn phụ trách lớp Active.
 
-Không sử dụng refresh token. Tài khoản Inactive không được đăng nhập lại.
+Tài khoản Inactive không được đăng nhập hoặc sử dụng refresh token để cấp access token mới.
+
+### RefreshTokens (Phiên đăng nhập)
+
+```text
+Id, UserId, TokenHash (SHA-256, unique), FamilyId,
+CreatedAt, ExpiresAt, CreatedByIp?, RevokedAt?, RevokedByIp?,
+ReplacedByTokenHash?, RevokeReason?
+```
+
+Quy tắc:
+
+- Chỉ lưu hash của refresh token; token thô chỉ được trả cho client khi phát hành.
+- Mỗi lần refresh sẽ thu hồi token cũ và tạo token mới trong cùng `FamilyId`.
+- Dùng lại token đã bị thay thế sẽ thu hồi toàn bộ token trong cùng family.
+- Logout thu hồi token của phiên hiện tại; logout-all, deactivate, đổi role và reset password thu hồi toàn bộ refresh token của user.
+- Refresh token hết hạn hoặc đã thu hồi không được sử dụng.
+- Access token mặc định hết hạn sau 15 phút; refresh token mặc định hết hạn sau 7 ngày.
+- Refresh token là dữ liệu xác thực, không được tính vào 14 bảng nghiệp vụ của core.
+
+Tài khoản Admin khởi tạo chỉ được seed khi `SeedAdmin:Enabled = true`. Email, mật khẩu, mã nhân viên và họ tên phải được cung cấp qua cấu hình bảo mật hoặc các biến môi trường `SeedAdmin__Email`, `SeedAdmin__Password`, `SeedAdmin__EmployeeCode`, `SeedAdmin__FullName`; không lưu mật khẩu mặc định trong source code.
 
 ## 3. Học sinh và phụ huynh
 
@@ -271,6 +291,8 @@ Attendances            StudentRemarks        Invoices
 Payments               AuditLogs
 ```
 
+Bảng `RefreshTokens` thuộc hạ tầng xác thực và nằm ngoài danh sách 14 bảng nghiệp vụ trên.
+
 ## 11. Quy tắc xử lý ở application layer
 
 1. Kiểm tra role giáo viên chính và trùng lịch lớp/session; session sử dụng giáo viên chính của lớp.
@@ -282,6 +304,7 @@ Payments               AuditLogs
 7. Kiểm tra `Capacity > 0`, khoảng ngày hợp lệ, `StartTime < EndTime` và `MinAge <= MaxAge`.
 8. Kiểm tra học sinh có guardian chính trước khi ghi danh.
 9. Kiểm tra trạng thái enrollment khi pause/resume, tạo invoice, complete, withdraw và tạo remark.
+10. Xoay refresh token trong transaction, chỉ lưu token hash và thu hồi token family khi phát hiện token cũ bị tái sử dụng.
 
 ## 12. Ranh giới và artifact báo cáo
 

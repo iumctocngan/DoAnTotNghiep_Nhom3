@@ -8,7 +8,10 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
 {
     public void Configure(EntityTypeBuilder<Payment> builder)
     {
-        builder.ToTable("Payments");
+        builder.ToTable("Payments", table =>
+        {
+            table.HasCheckConstraint("CK_Payments_Amount", "[Amount] > 0");
+        });
 
         builder.HasKey(p => p.Id);
 

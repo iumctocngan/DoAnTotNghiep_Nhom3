@@ -8,7 +8,10 @@ public class SessionConfiguration : IEntityTypeConfiguration<Session>
 {
     public void Configure(EntityTypeBuilder<Session> builder)
     {
-        builder.ToTable("Sessions");
+        builder.ToTable("Sessions", table =>
+        {
+            table.HasCheckConstraint("CK_Sessions_TimeRange", "[StartTime] < [EndTime]");
+        });
 
         builder.HasKey(s => s.Id);
 

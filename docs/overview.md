@@ -158,7 +158,7 @@ Dashboard chỉ hiển thị số liệu tổng hợp và danh sách cơ bản t
 - ReactJS.
 - ASP.NET Core Web API / C#.
 - SQL Server + Entity Framework Core.
-- ASP.NET Core Identity + JWT, không refresh token.
+- ASP.NET Core Identity + JWT access token và refresh token có rotation.
 - Docker.
 
 ## 12. Sổ quyết định nghiệp vụ
@@ -185,6 +185,7 @@ Mục này tổng hợp các quyết định MVP để nhóm đối chiếu khi 
 | B14 | Học phí theo kỳ đúng 6 tháng; chỉ Enrollment `Active` được lập Invoice; kỳ không chồng lấn, `AmountDue > 0` và `DueDate <= PeriodEnd`. |
 | B15 | Một Invoice có nhiều Payment; chỉ Payment `Confirmed` tính công nợ/doanh thu. Không xóa chứng từ; hủy bắt buộc lý do và audit. Attendance, pause hoặc withdraw không tự thay đổi học phí. |
 | B16 | Dashboard MVP chỉ gồm số liệu cơ bản, danh sách chưa lập học phí và công nợ quá hạn; cảnh báo tái phí 30 ngày và vắng nhiều được hoãn. AI không tự thay đổi dữ liệu chính thức nếu chưa được xác nhận. |
+| B17 | Access token có thời hạn ngắn; refresh token được lưu dạng hash, xoay vòng sau mỗi lần sử dụng và có thể thu hồi theo từng phiên hoặc toàn bộ tài khoản. |
 
 ### 12.2. Hoãn sau MVP
 

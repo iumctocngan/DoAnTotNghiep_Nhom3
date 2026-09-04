@@ -164,7 +164,14 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("MainTeacherUserId");
 
-                    b.ToTable("Classes", (string)null);
+                    b.ToTable("Classes", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Classes_Capacity", "[Capacity] > 0");
+
+                            t.HasCheckConstraint("CK_Classes_DateRange", "[EndDate] IS NULL OR [StartDate] <= [EndDate]");
+
+                            t.HasCheckConstraint("CK_Classes_TimeRange", "[StartTime] < [EndTime]");
+                        });
                 });
 
             modelBuilder.Entity("CmsEdu.Domain.Entities.Course", b =>
@@ -205,7 +212,10 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.ToTable("Courses", (string)null);
+                    b.ToTable("Courses", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Courses_AgeRange", "[MinAge] IS NULL OR [MaxAge] IS NULL OR [MinAge] <= [MaxAge]");
+                        });
                 });
 
             modelBuilder.Entity("CmsEdu.Domain.Entities.Enrollment", b =>
@@ -246,9 +256,15 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ClassId");
 
-                    b.HasIndex("StudentId");
+                    b.HasIndex("StudentId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Enrollments_Student_ActiveOrPaused")
+                        .HasFilter("[Status] IN (1, 2)");
 
-                    b.ToTable("Enrollments", (string)null);
+                    b.ToTable("Enrollments", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Enrollments_DateRange", "[EndDate] IS NULL OR [StartDate] <= [EndDate]");
+                        });
                 });
 
             modelBuilder.Entity("CmsEdu.Domain.Entities.Guardian", b =>
@@ -345,7 +361,16 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                     b.HasIndex("InvoiceNumber")
                         .IsUnique();
 
-                    b.ToTable("Invoices", (string)null);
+                    b.ToTable("Invoices", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Invoices_AmountDue", "[AmountDue] > 0");
+
+                            t.HasCheckConstraint("CK_Invoices_DueDate", "[DueDate] <= [PeriodEnd]");
+
+                            t.HasCheckConstraint("CK_Invoices_Period", "[PeriodStart] <= [PeriodEnd]");
+
+                            t.HasCheckConstraint("CK_Invoices_SixMonthPeriod", "[PeriodEnd] = DATEADD(day, -1, DATEADD(month, 6, [PeriodStart]))");
+                        });
                 });
 
             modelBuilder.Entity("CmsEdu.Domain.Entities.Lesson", b =>
@@ -496,7 +521,10 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                     b.HasIndex("ReceiptNumber")
                         .IsUnique();
 
-                    b.ToTable("Payments", (string)null);
+                    b.ToTable("Payments", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Payments_Amount", "[Amount] > 0");
+                        });
                 });
 
             modelBuilder.Entity("CmsEdu.Domain.Entities.Session", b =>
@@ -535,7 +563,10 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("LessonId");
 
-                    b.ToTable("Sessions", (string)null);
+                    b.ToTable("Sessions", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Sessions_TimeRange", "[StartTime] < [EndTime]");
+                        });
                 });
 
             modelBuilder.Entity("CmsEdu.Domain.Entities.Student", b =>
@@ -700,12 +731,9 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Phone")
+                    b.Property<string>("PhoneNumber")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
@@ -734,6 +762,69 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("CmsEdu.Infrastructure.Identity.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedByIp")
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("FamilyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ReplacedByTokenHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("nchar(64)")
+                        .IsFixedLength();
+
+                    b.Property<string>("RevokeReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RevokedByIp")
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nchar(64)")
+                        .IsFixedLength();
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpiresAt");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserId", "FamilyId");
+
+                    b.ToTable("RefreshTokens", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_RefreshTokens_Expiration", "[CreatedAt] < [ExpiresAt]");
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -1023,6 +1114,17 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                     b.Navigation("Session");
                 });
 
+            modelBuilder.Entity("CmsEdu.Infrastructure.Identity.RefreshToken", b =>
+                {
+                    b.HasOne("CmsEdu.Infrastructure.Identity.ApplicationUser", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -1129,6 +1231,11 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                     b.Navigation("Enrollments");
 
                     b.Navigation("StudentGuardians");
+                });
+
+            modelBuilder.Entity("CmsEdu.Infrastructure.Identity.ApplicationUser", b =>
+                {
+                    b.Navigation("RefreshTokens");
                 });
 #pragma warning restore 612, 618
         }

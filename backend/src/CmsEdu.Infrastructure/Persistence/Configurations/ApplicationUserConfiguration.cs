@@ -19,7 +19,7 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
             .HasMaxLength(100)
             .IsRequired();
 
-        builder.Property(u => u.Phone)
+        builder.Property(u => u.PhoneNumber)
             .HasMaxLength(20);
 
         builder.Property(u => u.EmploymentStatus)

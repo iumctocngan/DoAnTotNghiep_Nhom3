@@ -32,7 +32,6 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     EmployeeCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     FullName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Phone = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     EmploymentStatus = table.Column<int>(type: "int", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -42,7 +41,7 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                     PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
                     TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
                     LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
@@ -88,6 +87,7 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Courses", x => x.Id);
+                    table.CheckConstraint("CK_Courses_AgeRange", "[MinAge] IS NULL OR [MaxAge] IS NULL OR [MinAge] <= [MaxAge]");
                 });
 
             migrationBuilder.CreateTable(
@@ -231,6 +231,35 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "RefreshTokens",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
+                    TokenHash = table.Column<string>(type: "nchar(64)", fixedLength: true, maxLength: 64, nullable: false),
+                    FamilyId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedByIp = table.Column<string>(type: "nvarchar(45)", maxLength: 45, nullable: true),
+                    RevokedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    RevokedByIp = table.Column<string>(type: "nvarchar(45)", maxLength: 45, nullable: true),
+                    ReplacedByTokenHash = table.Column<string>(type: "nchar(64)", fixedLength: true, maxLength: 64, nullable: true),
+                    RevokeReason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefreshTokens", x => x.Id);
+                    table.CheckConstraint("CK_RefreshTokens_Expiration", "[CreatedAt] < [ExpiresAt]");
+                    table.ForeignKey(
+                        name: "FK_RefreshTokens_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Levels",
                 columns: table => new
                 {
@@ -300,6 +329,9 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Classes", x => x.Id);
+                    table.CheckConstraint("CK_Classes_Capacity", "[Capacity] > 0");
+                    table.CheckConstraint("CK_Classes_DateRange", "[EndDate] IS NULL OR [StartDate] <= [EndDate]");
+                    table.CheckConstraint("CK_Classes_TimeRange", "[StartTime] < [EndTime]");
                     table.ForeignKey(
                         name: "FK_Classes_AspNetUsers_MainTeacherUserId",
                         column: x => x.MainTeacherUserId,
@@ -356,6 +388,7 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Enrollments", x => x.Id);
+                    table.CheckConstraint("CK_Enrollments_DateRange", "[EndDate] IS NULL OR [StartDate] <= [EndDate]");
                     table.ForeignKey(
                         name: "FK_Enrollments_Classes_ClassId",
                         column: x => x.ClassId,
@@ -387,6 +420,7 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Sessions", x => x.Id);
+                    table.CheckConstraint("CK_Sessions_TimeRange", "[StartTime] < [EndTime]");
                     table.ForeignKey(
                         name: "FK_Sessions_Classes_ClassId",
                         column: x => x.ClassId,
@@ -424,6 +458,10 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Invoices", x => x.Id);
+                    table.CheckConstraint("CK_Invoices_AmountDue", "[AmountDue] > 0");
+                    table.CheckConstraint("CK_Invoices_DueDate", "[DueDate] <= [PeriodEnd]");
+                    table.CheckConstraint("CK_Invoices_Period", "[PeriodStart] <= [PeriodEnd]");
+                    table.CheckConstraint("CK_Invoices_SixMonthPeriod", "[PeriodEnd] = DATEADD(day, -1, DATEADD(month, 6, [PeriodStart]))");
                     table.ForeignKey(
                         name: "FK_Invoices_Enrollments_EnrollmentId",
                         column: x => x.EnrollmentId,
@@ -517,6 +555,7 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Payments", x => x.Id);
+                    table.CheckConstraint("CK_Payments_Amount", "[Amount] > 0");
                     table.ForeignKey(
                         name: "FK_Payments_Invoices_InvoiceId",
                         column: x => x.InvoiceId,
@@ -609,9 +648,11 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                 column: "ClassId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Enrollments_StudentId",
+                name: "UX_Enrollments_Student_ActiveOrPaused",
                 table: "Enrollments",
-                column: "StudentId");
+                column: "StudentId",
+                unique: true,
+                filter: "[Status] IN (1, 2)");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Invoices_EnrollmentId",
@@ -664,6 +705,22 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                 table: "Payments",
                 column: "ReceiptNumber",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_ExpiresAt",
+                table: "RefreshTokens",
+                column: "ExpiresAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_TokenHash",
+                table: "RefreshTokens",
+                column: "TokenHash",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_UserId_FamilyId",
+                table: "RefreshTokens",
+                columns: new[] { "UserId", "FamilyId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Sessions_ClassId",
@@ -730,6 +787,9 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "Payments");
+
+            migrationBuilder.DropTable(
+                name: "RefreshTokens");
 
             migrationBuilder.DropTable(
                 name: "StudentGuardians");

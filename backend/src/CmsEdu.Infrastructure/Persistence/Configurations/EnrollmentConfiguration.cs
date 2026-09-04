@@ -8,7 +8,12 @@ public class EnrollmentConfiguration : IEntityTypeConfiguration<Enrollment>
 {
     public void Configure(EntityTypeBuilder<Enrollment> builder)
     {
-        builder.ToTable("Enrollments");
+        builder.ToTable("Enrollments", table =>
+        {
+            table.HasCheckConstraint(
+                "CK_Enrollments_DateRange",
+                "[EndDate] IS NULL OR [StartDate] <= [EndDate]");
+        });
 
         builder.HasKey(e => e.Id);
 
@@ -21,6 +26,11 @@ public class EnrollmentConfiguration : IEntityTypeConfiguration<Enrollment>
 
         builder.Property(e => e.PauseReason)
             .HasMaxLength(500);
+
+        builder.HasIndex(e => e.StudentId)
+            .HasDatabaseName("UX_Enrollments_Student_ActiveOrPaused")
+            .HasFilter("[Status] IN (1, 2)")
+            .IsUnique();
 
         builder.HasOne(e => e.Student)
             .WithMany(s => s.Enrollments)

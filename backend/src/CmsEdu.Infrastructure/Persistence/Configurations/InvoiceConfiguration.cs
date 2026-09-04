@@ -8,7 +8,15 @@ public class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
 {
     public void Configure(EntityTypeBuilder<Invoice> builder)
     {
-        builder.ToTable("Invoices");
+        builder.ToTable("Invoices", table =>
+        {
+            table.HasCheckConstraint("CK_Invoices_AmountDue", "[AmountDue] > 0");
+            table.HasCheckConstraint("CK_Invoices_Period", "[PeriodStart] <= [PeriodEnd]");
+            table.HasCheckConstraint("CK_Invoices_DueDate", "[DueDate] <= [PeriodEnd]");
+            table.HasCheckConstraint(
+                "CK_Invoices_SixMonthPeriod",
+                "[PeriodEnd] = DATEADD(day, -1, DATEADD(month, 6, [PeriodStart]))");
+        });
 
         builder.HasKey(i => i.Id);
 

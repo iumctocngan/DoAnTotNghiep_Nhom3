@@ -5,7 +5,7 @@ API MVP dựa trên [overview.md](overview.md) và [core-database-design.md](cor
 ## 1. Quy ước
 
 - Base URL: `/api`.
-- JWT Bearer cho mọi endpoint trừ login; không refresh token.
+- JWT Bearer cho các endpoint nghiệp vụ; access token có thời hạn ngắn và được cấp lại bằng refresh token có rotation.
 - `GET`: đọc, `POST`: tạo/action, `PUT`: cập nhật, `DELETE`: chỉ gỡ liên kết guardian không giữ cờ chính.
 - API danh sách hỗ trợ `page`, `pageSize`, `search` và filter cần thiết; `pageSize <= 100`.
 - Danh sách trả `{ items, page, pageSize, totalItems }`.
@@ -36,6 +36,9 @@ Reset password, archive, deactivate danh mục và màn hình tra cứu audit l�
 | Method | Endpoint | Mục đích | Quyền |
 |---|---|---|---|
 | POST | `/api/auth/login` | Nhận JWT | Public |
+| POST | `/api/auth/refresh` | Xoay refresh token và cấp access token mới | Public, yêu cầu refresh token hợp lệ |
+| POST | `/api/auth/logout` | Thu hồi phiên refresh token hiện tại | Public, yêu cầu refresh token hợp lệ |
+| POST | `/api/auth/logout-all` | Thu hồi toàn bộ refresh token của tài khoản | Authenticated |
 | GET | `/api/auth/me` | Thông tin bản thân | Authenticated |
 | GET | `/api/staff` | Danh sách nhân viên | Admin |
 | GET | `/api/staff/{id}` | Chi tiết nhân viên | Admin |
@@ -45,7 +48,9 @@ Reset password, archive, deactivate danh mục và màn hình tra cứu audit l�
 | POST | `/api/staff/{id}/deactivate` | Ngừng tài khoản | Admin |
 | POST | `/api/staff/{id}/activate` | Kích hoạt tài khoản | Admin |
 
-Bốn role cố định; mỗi user có một role chính. Không deactivate hoặc đổi role Teacher khi user còn phụ trách lớp Active. Tài khoản Inactive không đăng nhập lại được; JWT đã cấp còn hiệu lực đến khi hết hạn.
+Bốn role cố định; mỗi user có một role chính. Không deactivate hoặc đổi role Teacher khi user còn phụ trách lớp Active. Tài khoản Inactive không đăng nhập hoặc refresh được. Khi deactivate, đổi role hoặc reset password, backend thu hồi toàn bộ refresh token của tài khoản; access token đã cấp còn hiệu lực đến khi hết hạn ngắn.
+
+Login trả access token trong response; refresh token được đặt trong cookie `HttpOnly`, `Secure` và `SameSite`. Database chỉ lưu SHA-256 hash của refresh token, không lưu token thô. Mỗi lần refresh phải thu hồi token cũ, phát token mới trong cùng family và ghi liên kết thay thế. Nếu một token đã xoay vòng bị dùng lại, backend coi đó là dấu hiệu rò rỉ và thu hồi toàn bộ token trong family. Thời hạn access token và refresh token lấy từ cấu hình; mặc định thiết kế là 15 phút và 7 ngày.
 
 ## 4. Học sinh và phụ huynh
 
@@ -184,10 +189,11 @@ Trạng thái kết thúc không chuyển ngược. Dời lịch chỉ sửa ses
 1. Đổi guardian chính.
 2. Lưu attendance theo lô.
 3. Hủy invoice/payment và tạo audit tương ứng.
+4. Xoay refresh token và phát hiện tái sử dụng token.
 
 ## 13. Ngoài phạm vi
 
-- Refresh token và tài khoản phụ huynh/học sinh.
+- Tài khoản phụ huynh/học sinh và đăng nhập qua nhà cung cấp bên ngoài.
 - Nhiều cơ sở, học thử, học bù, quyền học theo buổi.
 - Thanh toán online và thông báo đa kênh.
 - Upload file, CLO/Rubric và API nội bộ AI.

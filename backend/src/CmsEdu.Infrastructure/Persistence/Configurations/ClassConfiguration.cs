@@ -9,7 +9,14 @@ public class ClassConfiguration : IEntityTypeConfiguration<Class>
 {
     public void Configure(EntityTypeBuilder<Class> builder)
     {
-        builder.ToTable("Classes");
+        builder.ToTable("Classes", table =>
+        {
+            table.HasCheckConstraint("CK_Classes_Capacity", "[Capacity] > 0");
+            table.HasCheckConstraint("CK_Classes_TimeRange", "[StartTime] < [EndTime]");
+            table.HasCheckConstraint(
+                "CK_Classes_DateRange",
+                "[EndDate] IS NULL OR [StartDate] <= [EndDate]");
+        });
 
         builder.HasKey(c => c.Id);
 
