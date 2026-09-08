@@ -48,7 +48,7 @@ Quy tắc:
 - Access token mặc định hết hạn sau 15 phút; refresh token mặc định hết hạn sau 7 ngày.
 - Refresh token là dữ liệu xác thực, không được tính vào 14 bảng nghiệp vụ của core.
 
-Tài khoản Admin khởi tạo chỉ được seed khi `SeedAdmin:Enabled = true`. Email, mật khẩu, mã nhân viên và họ tên phải được cung cấp qua cấu hình bảo mật hoặc các biến môi trường `SeedAdmin__Email`, `SeedAdmin__Password`, `SeedAdmin__EmployeeCode`, `SeedAdmin__FullName`; không lưu mật khẩu mặc định trong source code.
+Tài khoản Admin khởi tạo được seed trong môi trường Development khi có `SeedAdmin:Email` và tài khoản đó chưa tồn tại. Mật khẩu và họ tên được cung cấp qua cấu hình bảo mật hoặc các biến môi trường `SeedAdmin__Password`, `SeedAdmin__FullName`; mã nhân viên được backend tự sinh và không lưu mật khẩu mặc định trong source code.
 
 ## 3. Học sinh và phụ huynh
 
