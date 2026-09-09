@@ -1,3 +1,4 @@
+using CmsEdu.Application.Common.Interfaces;
 using CmsEdu.Infrastructure.Identity;
 using CmsEdu.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
@@ -36,6 +37,17 @@ public static class DependencyInjection
         })
         .AddEntityFrameworkStores<AppDbContext>()
         .AddDefaultTokenProviders();
+
+        services.AddOptions<JwtOptions>()
+            .Bind(configuration.GetSection(JwtOptions.SectionName))
+            .Validate(options => !string.IsNullOrWhiteSpace(options.Issuer), "Jwt:Issuer is required.")
+            .Validate(options => !string.IsNullOrWhiteSpace(options.Audience), "Jwt:Audience is required.")
+            .Validate(options => options.SigningKey.Length >= 32, "Jwt:SigningKey must contain at least 32 characters.")
+            .Validate(options => options.AccessTokenMinutes > 0, "Jwt:AccessTokenMinutes must be greater than zero.")
+            .Validate(options => options.RefreshTokenDays > 0, "Jwt:RefreshTokenDays must be greater than zero.");
+
+        services.AddScoped<IAccessTokenGenerator, JwtAccessTokenGenerator>();
+        services.AddScoped<IAuthenticationService, AuthenticationService>();
 
         return services;
     }

@@ -1,6 +1,6 @@
 namespace CmsEdu.Application.Authentication;
 
-public sealed record LoginResponse(
+public record LoginResponse(
     string AccessToken,
     DateTime ExpiresAtUtc,
     string UserId,

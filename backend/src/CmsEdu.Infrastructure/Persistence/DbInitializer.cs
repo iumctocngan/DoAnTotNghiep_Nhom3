@@ -36,47 +36,38 @@ public static class DbInitializer
                 }
             }
 
-            if (!configuration.GetValue<bool>("SeedAdmin:Enabled"))
+            var adminEmail = configuration["SeedAdmin:Email"];
+            if (string.IsNullOrWhiteSpace(adminEmail))
             {
-                logger.LogInformation("Default Admin seeding is disabled.");
+                logger.LogInformation("Default Admin seeding skipped because SeedAdmin:Email is not configured.");
                 return;
             }
 
-            var adminEmail = GetRequiredSeedValue(configuration, "SeedAdmin:Email");
-            var adminPassword = GetRequiredSeedValue(configuration, "SeedAdmin:Password");
-            var adminEmployeeCode = GetRequiredSeedValue(configuration, "SeedAdmin:EmployeeCode");
-            var adminFullName = GetRequiredSeedValue(configuration, "SeedAdmin:FullName");
-
             var adminUser = await userManager.FindByEmailAsync(adminEmail);
-            if (adminUser == null)
+            if (adminUser is not null)
             {
-                adminUser = new ApplicationUser
-                {
-                    UserName = adminEmail,
-                    Email = adminEmail,
-                    EmailConfirmed = true,
-                    EmployeeCode = adminEmployeeCode,
-                    FullName = adminFullName,
-                    EmploymentStatus = EmploymentStatus.Active
-                };
-
-                var createResult = await userManager.CreateAsync(adminUser, adminPassword);
-                EnsureSucceeded(createResult, "create the default Admin user");
-                logger.LogInformation("Created default Admin user with email: {Email}", adminEmail);
+                logger.LogInformation("Default Admin user already exists: {Email}", adminEmail);
+                return;
             }
 
-            if (adminUser.EmploymentStatus != EmploymentStatus.Active)
+            var adminUserToCreate = new ApplicationUser
             {
-                adminUser.EmploymentStatus = EmploymentStatus.Active;
-                var updateResult = await userManager.UpdateAsync(adminUser);
-                EnsureSucceeded(updateResult, "activate the default Admin user");
-            }
+                UserName = adminEmail,
+                Email = adminEmail,
+                EmailConfirmed = true,
+                EmployeeCode = await GenerateEmployeeCodeAsync(userManager),
+                FullName = GetRequiredSeedValue(configuration, "SeedAdmin:FullName"),
+                EmploymentStatus = EmploymentStatus.Active
+            };
 
-            if (!await userManager.IsInRoleAsync(adminUser, UserRole.Admin))
-            {
-                var addRoleResult = await userManager.AddToRoleAsync(adminUser, UserRole.Admin);
-                EnsureSucceeded(addRoleResult, "assign the Admin role to the default Admin user");
-            }
+            var createResult = await userManager.CreateAsync(
+                adminUserToCreate,
+                GetRequiredSeedValue(configuration, "SeedAdmin:Password"));
+            EnsureSucceeded(createResult, "create the default Admin user");
+
+            var addRoleResult = await userManager.AddToRoleAsync(adminUserToCreate, UserRole.Admin);
+            EnsureSucceeded(addRoleResult, "assign the Admin role to the default Admin user");
+            logger.LogInformation("Created default Admin user with email: {Email}", adminEmail);
         }
         catch (Exception ex)
         {
@@ -85,13 +76,26 @@ public static class DbInitializer
         }
     }
 
+    private static async Task<string> GenerateEmployeeCodeAsync(
+        UserManager<ApplicationUser> userManager)
+    {
+        string employeeCode;
+        do
+        {
+            employeeCode = $"NV-{Guid.NewGuid():N}"[..11].ToUpperInvariant();
+        }
+        while (await userManager.Users.AnyAsync(user => user.EmployeeCode == employeeCode));
+
+        return employeeCode;
+    }
+
     private static string GetRequiredSeedValue(IConfiguration configuration, string key)
     {
         var value = configuration[key];
         if (string.IsNullOrWhiteSpace(value))
         {
             throw new InvalidOperationException(
-                $"Configuration value '{key}' is required when default Admin seeding is enabled.");
+                $"Configuration value '{key}' is required to create the default Admin user.");
         }
 
         return value;
