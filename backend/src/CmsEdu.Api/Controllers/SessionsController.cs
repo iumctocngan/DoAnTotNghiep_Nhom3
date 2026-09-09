@@ -7,11 +7,17 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CmsEdu.Api.Controllers;
 
+/// <summary>
+/// Cung cấp API quản lý buổi học: xem, tạo, cập nhật, hủy và hoàn tất Session.
+/// </summary>
 [ApiController]
 [Route("api/sessions")]
 [Authorize]
 public class SessionsController(ISessionService sessionService) : ControllerBase
 {
+    /// <summary>
+    /// Lấy danh sách Session theo phạm vi quyền, có thể lọc theo lớp và khoảng ngày.
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<PagedResult<SessionResponse>>> GetSessions(
         [FromQuery] int? classId,
@@ -25,6 +31,9 @@ public class SessionsController(ISessionService sessionService) : ControllerBase
             classId, fromDate, toDate, page, pageSize, cancellationToken));
     }
 
+    /// <summary>
+    /// Lấy thông tin chi tiết của một Session theo phạm vi quyền của người dùng hiện tại.
+    /// </summary>
     [HttpGet("{id:int}")]
     public async Task<ActionResult<SessionResponse>> GetSession(
         int id,
@@ -33,6 +42,9 @@ public class SessionsController(ISessionService sessionService) : ControllerBase
         return Ok(await sessionService.GetSessionByIdAsync(id, cancellationToken));
     }
 
+    /// <summary>
+    /// Tạo một Session mới cho lớp đang hoạt động. Chỉ Admin được thực hiện.
+    /// </summary>
     [HttpPost]
     [Authorize(Roles = UserRole.Admin)]
     public async Task<ActionResult<SessionResponse>> CreateSession(
@@ -43,6 +55,9 @@ public class SessionsController(ISessionService sessionService) : ControllerBase
         return CreatedAtAction(nameof(GetSession), new { id = session.Id }, session);
     }
 
+    /// <summary>
+    /// Cập nhật Session đang ở trạng thái Scheduled. Chỉ Admin được thực hiện.
+    /// </summary>
     [HttpPut("{id:int}")]
     [Authorize(Roles = UserRole.Admin)]
     public async Task<ActionResult<SessionResponse>> UpdateSession(
@@ -53,6 +68,9 @@ public class SessionsController(ISessionService sessionService) : ControllerBase
         return Ok(await sessionService.UpdateSessionAsync(id, request, cancellationToken));
     }
 
+    /// <summary>
+    /// Hủy Session đang ở trạng thái Scheduled. Chỉ Admin được thực hiện.
+    /// </summary>
     [HttpPost("{id:int}/cancel")]
     [Authorize(Roles = UserRole.Admin)]
     public async Task<ActionResult<SessionResponse>> CancelSession(
@@ -62,6 +80,9 @@ public class SessionsController(ISessionService sessionService) : ControllerBase
         return Ok(await sessionService.CancelSessionAsync(id, cancellationToken));
     }
 
+    /// <summary>
+    /// Hoàn tất Session đang ở trạng thái Scheduled khi đã điểm danh đủ học viên hợp lệ.
+    /// </summary>
     [HttpPost("{id:int}/complete")]
     [Authorize(Roles = $"{UserRole.Admin},{UserRole.Teacher}")]
     public async Task<ActionResult<SessionResponse>> CompleteSession(
