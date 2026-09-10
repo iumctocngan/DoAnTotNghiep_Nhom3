@@ -40,15 +40,19 @@ Reset password, archive, deactivate danh mục và màn hình tra cứu audit l�
 | POST | `/api/auth/logout` | Thu hồi phiên refresh token hiện tại | Public, yêu cầu refresh token hợp lệ |
 | POST | `/api/auth/logout-all` | Thu hồi toàn bộ refresh token của tài khoản | Authenticated |
 | GET | `/api/auth/me` | Thông tin bản thân | Authenticated |
+| POST | `/api/auth/change-password` | Nhân viên đổi mật khẩu bằng mật khẩu hiện tại | Authenticated |
 | GET | `/api/staff` | Danh sách nhân viên | Admin |
 | GET | `/api/staff/{id}` | Chi tiết nhân viên | Admin |
 | POST | `/api/staff` | Tạo tài khoản | Admin |
-| PUT | `/api/staff/{id}` | Sửa hồ sơ và role | Admin |
+| PUT | `/api/staff/{id}` | Sửa họ tên, email và số điện thoại | Admin |
+| PUT | `/api/staff/{id}/role` | Đổi role | Admin |
 | POST | `/api/staff/{id}/reset-password` | Đặt lại mật khẩu | Admin |
 | POST | `/api/staff/{id}/deactivate` | Ngừng tài khoản | Admin |
 | POST | `/api/staff/{id}/activate` | Kích hoạt tài khoản | Admin |
 
-Bốn role cố định; mỗi user có một role chính. Không deactivate hoặc đổi role Teacher khi user còn phụ trách lớp Active. Tài khoản Inactive không đăng nhập hoặc refresh được. Khi deactivate, đổi role hoặc reset password, backend thu hồi toàn bộ refresh token của tài khoản; access token đã cấp còn hiệu lực đến khi hết hạn ngắn.
+Bốn role cố định; mỗi user có một role chính. Admin không được tự đổi role hoặc tự deactivate; hệ thống luôn phải còn ít nhất một Admin Active. Không deactivate hoặc đổi role Teacher khi user còn phụ trách lớp Active. Admin được đổi role của tài khoản Inactive và role mới có hiệu lực khi tài khoản được activate lại. Tài khoản mới luôn là Active; request tạo không nhận trạng thái và email được đánh dấu đã xác nhận. Tài khoản Inactive không đăng nhập hoặc refresh được nhưng Admin vẫn có thể reset mật khẩu trước khi activate. Khi đổi email, deactivate, đổi role hoặc reset password, backend thu hồi toàn bộ refresh token của tài khoản; access token đã cấp còn hiệu lực tối đa 15 phút. Nhân viên tự đổi mật khẩu sẽ bị đăng xuất khỏi tất cả thiết bị và phải đăng nhập lại. Admin nhập EmployeeCode khi tạo tài khoản; mã phải unique và không được sửa hoặc tái sử dụng. Email đăng nhập được phép thay đổi nếu không trùng và phải đồng bộ với UserName. Admin nhập mật khẩu tạm khi tạo tài khoản.
+
+Danh sách Staff mặc định gồm cả tài khoản Active và Inactive, hỗ trợ lọc theo trạng thái, role và tìm theo mã nhân viên, họ tên hoặc email. Admin được sửa họ tên, email và số điện thoại của chính mình nhưng không được tự đổi role hoặc tự deactivate. Số điện thoại không bắt buộc và không unique. Activate giữ nguyên role; reset mật khẩu giữ nguyên trạng thái tài khoản. Activate tài khoản đang Active hoặc deactivate tài khoản đang Inactive vẫn trả `204` và không ghi AuditLog mới. Tạo tài khoản, đổi role, activate, deactivate và reset mật khẩu đều ghi AuditLog khi dữ liệu thực sự thay đổi; log không chứa mật khẩu.
 
 Login trả access token trong response; refresh token được đặt trong cookie `HttpOnly`, `Secure` và `SameSite`. Database chỉ lưu SHA-256 hash của refresh token, không lưu token thô. Mỗi lần refresh phải thu hồi token cũ, phát token mới trong cùng family và ghi liên kết thay thế. Nếu một token đã xoay vòng bị dùng lại, backend coi đó là dấu hiệu rò rỉ và thu hồi toàn bộ token trong family. Thời hạn access token và refresh token lấy từ cấu hình; mặc định thiết kế là 15 phút và 7 ngày.
 
