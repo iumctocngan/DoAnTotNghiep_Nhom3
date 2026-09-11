@@ -21,14 +21,14 @@ Mở rộng `ApplicationUser`:
 
 | Cột | Ý nghĩa |
 |---|---|
-| EmployeeCode | Mã nhân viên, unique |
+| EmployeeCode | Mã nhân viên do Admin nhập, unique và không được sửa hoặc tái sử dụng |
 | FullName | Họ tên |
-| PhoneNumber? | Số điện thoại |
+| PhoneNumber? | Số điện thoại không bắt buộc, không unique |
 | EmploymentStatus | Active, Inactive |
 
-Role cố định: `Admin`, `Teacher`, `Accountant`, `CustomerCare`. Application layer chỉ cho mỗi user một role chính và không cho deactivate/đổi role Teacher khi user còn phụ trách lớp Active.
+Role cố định: `Admin`, `Teacher`, `Accountant`, `CustomerCare`. Application layer chỉ cho mỗi user một role chính; Admin không được tự đổi role hoặc tự deactivate; hệ thống luôn phải còn ít nhất một Admin Active; không cho deactivate/đổi role Teacher khi user còn phụ trách lớp Active. Admin được đổi role của tài khoản Inactive. Tài khoản mới luôn là Active, có EmailConfirmed bằng true và giữ nguyên role khi deactivate.
 
-Tài khoản Inactive không được đăng nhập hoặc sử dụng refresh token để cấp access token mới.
+Tài khoản Inactive không được đăng nhập hoặc sử dụng refresh token để cấp access token mới. Admin có thể reset mật khẩu khi tài khoản đang Inactive; thao tác này không tự activate tài khoản. Khi activate, tài khoản giữ nguyên role. Activate/deactivate lặp lại không thay đổi dữ liệu và không tạo AuditLog mới. Email là tên đăng nhập, được phép thay đổi nếu không trùng và phải đồng bộ với UserName. Admin được sửa hồ sơ của chính mình nhưng không được tự đổi role hoặc tự deactivate. Nhân viên Active được tự đổi mật khẩu bằng mật khẩu hiện tại; đổi thành công thu hồi toàn bộ refresh token và yêu cầu đăng nhập lại.
 
 ### RefreshTokens (Phiên đăng nhập)
 
@@ -48,7 +48,7 @@ Quy tắc:
 - Access token mặc định hết hạn sau 15 phút; refresh token mặc định hết hạn sau 7 ngày.
 - Refresh token là dữ liệu xác thực, không được tính vào 14 bảng nghiệp vụ của core.
 
-Tài khoản Admin khởi tạo được seed trong môi trường Development khi có `SeedAdmin:Email` và tài khoản đó chưa tồn tại. Mật khẩu và họ tên được cung cấp qua cấu hình bảo mật hoặc các biến môi trường `SeedAdmin__Password`, `SeedAdmin__FullName`; mã nhân viên được backend tự sinh và không lưu mật khẩu mặc định trong source code.
+Tài khoản Admin khởi tạo được seed trong môi trường Development khi có `SeedAdmin:Email` và tài khoản đó chưa tồn tại. Mật khẩu, họ tên và mã nhân viên được cung cấp qua cấu hình bảo mật hoặc các biến môi trường `SeedAdmin__Password`, `SeedAdmin__FullName`, `SeedAdmin__EmployeeCode`; không lưu mật khẩu mặc định trong source code. Khi Admin tạo nhân viên, Admin nhập EmployeeCode và mật khẩu tạm. Danh sách quản trị mặc định gồm cả Active và Inactive. Tạo tài khoản, đổi role, activate, deactivate và reset mật khẩu đều ghi AuditLog nhưng không ghi nội dung mật khẩu.
 
 ## 3. Học sinh và phụ huynh
 

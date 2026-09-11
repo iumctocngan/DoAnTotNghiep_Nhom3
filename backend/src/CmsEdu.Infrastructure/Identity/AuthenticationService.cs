@@ -15,9 +15,7 @@ public class AuthenticationService(
     SignInManager<ApplicationUser> signInManager,
     IAccessTokenGenerator accessTokenGenerator,
     AppDbContext dbContext,
-    IOptions<JwtOptions> options)
-    : IAuthenticationService
-{
+    IOptions<JwtOptions> options) : IAuthenticationService {
     private const string InvalidCredentialsMessage = "Email or password is invalid.";
     private const string InvalidRefreshTokenMessage = "Refresh token is invalid or expired.";
     private readonly JwtOptions _options = options.Value;
@@ -25,18 +23,15 @@ public class AuthenticationService(
     public async Task<AuthenticationResult> LoginAsync(
         LoginRequest request,
         string? ipAddress,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default) {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrEmpty(request.Password))
-        {
+        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrEmpty(request.Password)) {
             throw new UnauthorizedAccessException(InvalidCredentialsMessage);
         }
 
         var user = await userManager.FindByEmailAsync(request.Email.Trim());
-        if (user is null || user.EmploymentStatus != EmploymentStatus.Active)
-        {
+        if (user is null || user.EmploymentStatus != EmploymentStatus.Active) {
             throw new UnauthorizedAccessException(InvalidCredentialsMessage);
         }
 
@@ -45,8 +40,7 @@ public class AuthenticationService(
             request.Password,
             lockoutOnFailure: true);
 
-        if (!signInResult.Succeeded)
-        {
+        if (!signInResult.Succeeded) {
             throw new UnauthorizedAccessException(InvalidCredentialsMessage);
         }
 
@@ -62,10 +56,8 @@ public class AuthenticationService(
     public async Task<AuthenticationResult> RefreshAsync(
         string refreshToken,
         string? ipAddress,
-        CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrWhiteSpace(refreshToken))
-        {
+        CancellationToken cancellationToken = default) {
+        if (string.IsNullOrWhiteSpace(refreshToken)) {
             throw new UnauthorizedAccessException(InvalidRefreshTokenMessage);
         }
 
@@ -76,13 +68,11 @@ public class AuthenticationService(
             .AsNoTracking()
             .SingleOrDefaultAsync(token => token.TokenHash == tokenHash, cancellationToken);
 
-        if (storedToken is null)
-        {
+        if (storedToken is null) {
             throw new UnauthorizedAccessException(InvalidRefreshTokenMessage);
         }
 
-        if (storedToken.RevokedAt is not null || storedToken.ExpiresAt <= now)
-        {
+        if (storedToken.RevokedAt is not null || storedToken.ExpiresAt <= now) {
             await RevokeFamilyAsync(
                 storedToken.UserId,
                 storedToken.FamilyId,
@@ -95,8 +85,7 @@ public class AuthenticationService(
         }
 
         var user = await userManager.FindByIdAsync(storedToken.UserId);
-        if (user is null || user.EmploymentStatus != EmploymentStatus.Active)
-        {
+        if (user is null || user.EmploymentStatus != EmploymentStatus.Active) {
             await RevokeFamilyAsync(
                 storedToken.UserId,
                 storedToken.FamilyId,
@@ -118,8 +107,7 @@ public class AuthenticationService(
                 .SetProperty(token => token.ReplacedByTokenHash, replacement.TokenHash)
                 .SetProperty(token => token.RevokeReason, "Rotated."), cancellationToken);
 
-        if (updated != 1)
-        {
+        if (updated != 1) {
             await RevokeFamilyAsync(
                 storedToken.UserId,
                 storedToken.FamilyId,
@@ -141,10 +129,8 @@ public class AuthenticationService(
     public async Task LogoutAsync(
         string? refreshToken,
         string? ipAddress,
-        CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrWhiteSpace(refreshToken))
-        {
+        CancellationToken cancellationToken = default) {
+        if (string.IsNullOrWhiteSpace(refreshToken)) {
             return;
         }
 
@@ -153,8 +139,7 @@ public class AuthenticationService(
             .AsNoTracking()
             .SingleOrDefaultAsync(token => token.TokenHash == tokenHash, cancellationToken);
 
-        if (storedToken is null)
-        {
+        if (storedToken is null) {
             return;
         }
 
@@ -170,8 +155,7 @@ public class AuthenticationService(
     public async Task LogoutAllAsync(
         string userId,
         string? ipAddress,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default) {
         await dbContext.RefreshTokens
             .Where(token => token.UserId == userId && token.RevokedAt == null)
             .ExecuteUpdateAsync(setters => setters
@@ -180,11 +164,9 @@ public class AuthenticationService(
                 .SetProperty(token => token.RevokeReason, "Logged out from all sessions."), cancellationToken);
     }
 
-    private async Task<string> GetSingleRoleAsync(ApplicationUser user)
-    {
+    private async Task<string> GetSingleRoleAsync(ApplicationUser user) {
         var roles = await userManager.GetRolesAsync(user);
-        if (roles.Count != 1 || !UserRole.AllRoles.Contains(roles[0]))
-        {
+        if (roles.Count != 1 || !UserRole.AllRoles.Contains(roles[0])) {
             throw new UnauthorizedAccessException("The account does not have one valid role.");
         }
 
@@ -195,8 +177,7 @@ public class AuthenticationService(
         ApplicationUser user,
         string role,
         string refreshToken,
-        DateTime refreshTokenExpiresAt)
-    {
+        DateTime refreshTokenExpiresAt) {
         var accessToken = accessTokenGenerator.Generate(
             user.Id,
             user.EmployeeCode,
@@ -220,8 +201,7 @@ public class AuthenticationService(
     private (RefreshToken Token, string RawToken) CreateRefreshToken(
         string userId,
         Guid familyId,
-        string? ipAddress)
-    {
+        string? ipAddress) {
         var now = DateTime.UtcNow;
         var rawToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64))
             .TrimEnd('=')
@@ -245,8 +225,7 @@ public class AuthenticationService(
         DateTime revokedAt,
         string? ipAddress,
         string reason,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken) {
         await dbContext.RefreshTokens
             .Where(token => token.UserId == userId && token.FamilyId == familyId && token.RevokedAt == null)
             .ExecuteUpdateAsync(setters => setters
@@ -255,8 +234,7 @@ public class AuthenticationService(
                 .SetProperty(token => token.RevokeReason, reason), cancellationToken);
     }
 
-    private static string HashToken(string token)
-    {
+    private static string HashToken(string token) {
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
     }
 }

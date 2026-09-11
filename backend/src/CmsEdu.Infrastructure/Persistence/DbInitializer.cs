@@ -55,7 +55,9 @@ public static class DbInitializer
                 UserName = adminEmail,
                 Email = adminEmail,
                 EmailConfirmed = true,
-                EmployeeCode = await GenerateEmployeeCodeAsync(userManager),
+                EmployeeCode = GetRequiredSeedValue(configuration, "SeedAdmin:EmployeeCode")
+                    .Trim()
+                    .ToUpperInvariant(),
                 FullName = GetRequiredSeedValue(configuration, "SeedAdmin:FullName"),
                 EmploymentStatus = EmploymentStatus.Active
             };
@@ -74,19 +76,6 @@ public static class DbInitializer
             logger.LogError(ex, "An error occurred while migrating or seeding the database.");
             throw;
         }
-    }
-
-    private static async Task<string> GenerateEmployeeCodeAsync(
-        UserManager<ApplicationUser> userManager)
-    {
-        string employeeCode;
-        do
-        {
-            employeeCode = $"NV-{Guid.NewGuid():N}"[..11].ToUpperInvariant();
-        }
-        while (await userManager.Users.AnyAsync(user => user.EmployeeCode == employeeCode));
-
-        return employeeCode;
     }
 
     private static string GetRequiredSeedValue(IConfiguration configuration, string key)
