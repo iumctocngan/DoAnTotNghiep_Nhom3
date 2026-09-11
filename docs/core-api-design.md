@@ -60,13 +60,28 @@ Login trả access token trong response; refresh token được đặt trong coo
 | GET | `/api/students/{id}` | Chi tiết | Theo phạm vi role |
 | POST | `/api/students` | Tạo học sinh | Admin, CustomerCare |
 | PUT | `/api/students/{id}` | Sửa hồ sơ | Admin, CustomerCare |
-| POST | `/api/students/{id}/archive` | Archive hồ sơ | Admin |
+| POST | `/api/students/{id}/archive` | Lưu trữ hồ sơ | Admin |
+| POST | `/api/students/{id}/restore` | Khôi phục hồ sơ đã lưu trữ | Admin |
 | GET | `/api/students/{id}/guardians` | Người giám hộ | Theo quyền xem học sinh |
 | POST | `/api/students/{id}/guardians` | Tạo/gắn người giám hộ | Admin, CustomerCare |
 | PUT | `/api/students/{id}/guardians/{guardianId}` | Sửa quan hệ hoặc chọn guardian chính | Admin, CustomerCare |
 | DELETE | `/api/students/{id}/guardians/{guardianId}` | Gỡ liên kết | Admin, CustomerCare |
 
 Giáo viên chỉ xem học sinh thuộc lớp phụ trách. Không archive học sinh có enrollment Active hoặc Paused. Một học sinh có tối đa một guardian chính; guardian này là đầu mối liên hệ và đóng học phí. Đổi guardian chính thực hiện trong transaction. Không gỡ guardian đang giữ cờ chính khi chưa chọn người thay thế.
+
+### Tra cứu và trạng thái hồ sơ học viên (đã triển khai)
+
+- `GET /api/students?search=HV001&page=1&pageSize=20`: tìm theo một phần mã hoặc họ tên; tự bỏ khoảng trắng đầu/cuối từ khóa.
+- `isArchived=false` (mặc định): hồ sơ chưa lưu trữ; `isArchived=true`: hồ sơ đã lưu trữ. Kết quả có phân trang, tối đa 100 bản ghi/trang và giữ nguyên phạm vi xem theo vai trò.
+- `GET /api/students/{id}`: xem chi tiết cả hồ sơ đã lưu trữ nếu có quyền; trường `isArchived` thể hiện trạng thái hồ sơ, không thay thế trạng thái học tập của từng ghi danh.
+- Archive không xóa học viên hay các liên kết. Học viên có ghi danh Active hoặc Paused trả `409`.
+- Hồ sơ đã lưu trữ phải khôi phục trước khi cập nhật, nếu chưa khôi phục trả `409`.
+- Archive/restore thành công trả `204`; gọi lại cùng trạng thái không tạo thêm nhật ký. ID không tồn tại trả `404`; vai trò không có quyền trả `403`.
+- Khôi phục chỉ đổi `IsArchived` thành `false`, giữ nguyên trạng thái ghi danh. Thay đổi và nhật ký `Student.Restore` được lưu trong cùng giao dịch.
+
+Tên hàm, biến và thông báo nghiệp vụ dùng tiếng Việt không dấu/có dấu phù hợp C#. Giữ nguyên tuyến `/api/students`, trường JSON, entity, ánh xạ EF Core và cấu hình kết nối SQL Server để tương thích các phần đang có; không cần migration mới.
+
+Kiểm thử: `dotnet test backend/CmsEdu.slnx`. Các kiểm thử tích hợp cần biến môi trường `CMSEDU_TEST_SQLSERVER` trỏ tới SQL Server cho phép tạo CSDL kiểm thử riêng; nếu thiếu, chúng được bỏ qua.
 
 ## 5. Curriculum
 
