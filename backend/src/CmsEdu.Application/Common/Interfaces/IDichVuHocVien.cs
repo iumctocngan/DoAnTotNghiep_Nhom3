@@ -8,4 +8,5 @@ public interface IDichVuHocVien
     Task<PhanHoiHocVien> TaoHocVienAsync(YeuCauTaoHocVien yeuCau, CancellationToken maHuy = default);
     Task<PhanHoiHocVien> CapNhatHocVienAsync(int maDinhDanh, YeuCauCapNhatHocVien yeuCau, CancellationToken maHuy = default);
     Task LuuTruHocVienAsync(int maDinhDanh, CancellationToken maHuy = default);
+    Task KhoiPhucHocVienAsync(int maDinhDanh, CancellationToken maHuy = default);
 }

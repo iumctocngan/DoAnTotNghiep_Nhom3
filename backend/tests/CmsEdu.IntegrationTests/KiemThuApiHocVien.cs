@@ -113,6 +113,35 @@ public class KiemThuApiHocVien
     }
 
     [KiemThuSqlServer]
+    public async Task KhoiPhucHoSoVaTraCuuTheoTrangThai()
+    {
+        await using var ungDung = new UngDungKiemThu();
+        await ungDung.KhoiTaoAsync();
+        using var quanTriVien = ungDung.TaoTrinhKhach();
+        using var chamSocKhachHang = ungDung.TaoTrinhKhach("CustomerCare");
+        var phanHoiTao = await quanTriVien.PostAsJsonAsync("/api/students", TaoYeuCau());
+        var hocVien = (await phanHoiTao.Content.ReadFromJsonAsync<PhanHoiHocVien>())!;
+        var duongDan = $"/api/students/{hocVien.Id}";
+        Assert.Equal(HttpStatusCode.NoContent, (await quanTriVien.PostAsync($"{duongDan}/archive", null)).StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, (await quanTriVien.PutAsJsonAsync(duongDan,
+            new YeuCauCapNhatHocVien("HV001", "Tên thay đổi", new(2019, 5, 10), null, null))).StatusCode);
+        var daLuuTru = await quanTriVien.GetFromJsonAsync<PagedResult<PhanHoiHocVien>>("/api/students?search=HV001&isArchived=true");
+        Assert.True(Assert.Single(daLuuTru!.Items).IsArchived);
+        Assert.Equal(HttpStatusCode.Forbidden, (await chamSocKhachHang.PostAsync($"{duongDan}/restore", null)).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await quanTriVien.PostAsync($"{duongDan}/restore", null)).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await quanTriVien.PostAsync($"{duongDan}/restore", null)).StatusCode);
+        Assert.False((await quanTriVien.GetFromJsonAsync<PhanHoiHocVien>(duongDan))!.IsArchived);
+        Assert.Single((await quanTriVien.GetFromJsonAsync<PagedResult<PhanHoiHocVien>>("/api/students?search=" + Uri.EscapeDataString(" Nguyễn An ")) )!.Items);
+        Assert.Empty((await quanTriVien.GetFromJsonAsync<PagedResult<PhanHoiHocVien>>("/api/students?isArchived=true"))!.Items);
+        Assert.Equal(HttpStatusCode.NotFound, (await quanTriVien.PostAsync("/api/students/9999/restore", null)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await quanTriVien.PutAsJsonAsync(duongDan,
+            new YeuCauCapNhatHocVien("HV001", "Tên thay đổi", new(2019, 5, 10), null, null))).StatusCode);
+        using var phamVi = ungDung.Services.CreateScope();
+        Assert.Equal(1, await phamVi.ServiceProvider.GetRequiredService<AppDbContext>().AuditLogs
+            .CountAsync(nhatKy => nhatKy.Action == "Student.Restore"));
+    }
+
+    [KiemThuSqlServer]
     public async Task KiemTraDuLieuVaPhanQuyenTraDungMaHttp()
     {
         await using var ungDung = new UngDungKiemThu();

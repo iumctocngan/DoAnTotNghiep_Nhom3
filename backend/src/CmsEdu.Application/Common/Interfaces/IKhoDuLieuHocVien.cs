@@ -8,4 +8,5 @@ public interface IKhoDuLieuHocVien
     Task<bool> MaDaTonTaiAsync(string maHocVien, int? maLoaiTru, CancellationToken maHuy);
     Task LuuAsync(Student hocVien, bool laTaoMoi, string? maNguoiDung, CancellationToken maHuy);
     Task LuuTruAsync(int maDinhDanh, string? maNguoiDung, CancellationToken maHuy);
+    Task KhoiPhucAsync(int maDinhDanh, string? maNguoiDung, CancellationToken maHuy);
 }

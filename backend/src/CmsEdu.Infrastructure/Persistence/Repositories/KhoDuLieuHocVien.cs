@@ -63,6 +63,20 @@ public class KhoDuLieuHocVien(AppDbContext nguCanh) : IKhoDuLieuHocVien
         await giaoDich.CommitAsync(maHuy);
     }
 
+    public async Task KhoiPhucAsync(int maDinhDanh, string? maNguoiDung, CancellationToken maHuy)
+    {
+        await using var giaoDich = await nguCanh.Database.BeginTransactionAsync(IsolationLevel.Serializable, maHuy);
+        var hocVien = await nguCanh.Students.SingleOrDefaultAsync(hocVienTrongTruyVan => hocVienTrongTruyVan.Id == maDinhDanh, maHuy)
+            ?? throw new NotFoundException("Không tìm thấy học viên.");
+        if (hocVien.IsArchived)
+        {
+            hocVien.IsArchived = false;
+            GhiNhatKy(maDinhDanh, "Student.Restore", maNguoiDung);
+            await nguCanh.SaveChangesAsync(maHuy);
+        }
+        await giaoDich.CommitAsync(maHuy);
+    }
+
     private void GhiNhatKy(int maDinhDanh, string hanhDong, string? maNguoiDung) => nguCanh.AuditLogs.Add(new AuditLog
     {
         UserId = maNguoiDung, Action = hanhDong, EntityType = nameof(Student), EntityId = maDinhDanh.ToString(),
@@ -71,6 +85,7 @@ public class KhoDuLieuHocVien(AppDbContext nguCanh) : IKhoDuLieuHocVien
             "Student.Create" => $"Tạo hồ sơ học viên {maDinhDanh}.",
             "Student.Update" => $"Cập nhật hồ sơ học viên {maDinhDanh}.",
             "Student.Archive" => $"Lưu trữ hồ sơ học viên {maDinhDanh}.",
+            "Student.Restore" => $"Khôi phục hồ sơ học viên {maDinhDanh}.",
             _ => $"Thay đổi hồ sơ học viên {maDinhDanh}."
         }, OccurredAt = DateTime.UtcNow
     });

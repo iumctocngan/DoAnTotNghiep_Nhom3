@@ -57,6 +57,8 @@ public class DichVuHocVien(IKhoDuLieuHocVien khoDuLieu, ICurrentUser nguoiDungHi
         KiemTraQuyenGhi();
         KiemTraDuLieu(yeuCau);
         var hocVien = await khoDuLieu.TimTheoIdAsync(maDinhDanh, null, maHuy) ?? throw new NotFoundException("Không tìm thấy học viên.");
+        if (hocVien.IsArchived)
+            throw new ConflictException("Cần khôi phục hồ sơ học viên trước khi cập nhật.");
         await GanDuLieuAsync(hocVien, yeuCau, maHuy);
         await khoDuLieu.LuuAsync(hocVien, false, nguoiDungHienTai.UserId, maHuy);
         return TaoPhanHoi(hocVien);
@@ -69,6 +71,12 @@ public class DichVuHocVien(IKhoDuLieuHocVien khoDuLieu, ICurrentUser nguoiDungHi
     }
 
     private static void KiemTraDuLieu(YeuCauHocVien yeuCau) => Validator.ValidateObject(yeuCau, new ValidationContext(yeuCau), true);
+
+    public Task KhoiPhucHocVienAsync(int maDinhDanh, CancellationToken maHuy = default)
+    {
+        KiemTraQuyenGhi(true);
+        return khoDuLieu.KhoiPhucAsync(maDinhDanh, nguoiDungHienTai.UserId, maHuy);
+    }
 
     private async Task GanDuLieuAsync(Student hocVien, YeuCauHocVien yeuCau, CancellationToken maHuy)
     {

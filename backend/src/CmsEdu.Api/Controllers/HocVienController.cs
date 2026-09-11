@@ -43,4 +43,12 @@ public class HocVienController(IDichVuHocVien dichVuHocVien) : ControllerBase
         await dichVuHocVien.LuuTruHocVienAsync(maDinhDanh, maHuy);
         return NoContent();
     }
+
+    [HttpPost("{id:int}/restore")]
+    [Authorize(Roles = UserRole.Admin)]
+    public async Task<IActionResult> KhoiPhucHocVien([FromRoute(Name = "id")] int maDinhDanh, CancellationToken maHuy)
+    {
+        await dichVuHocVien.KhoiPhucHocVienAsync(maDinhDanh, maHuy);
+        return NoContent();
+    }
 }
