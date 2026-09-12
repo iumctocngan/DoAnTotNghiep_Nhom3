@@ -28,7 +28,7 @@ public sealed class KiemThuSqlServerAttribute : FactAttribute
 
 public class KiemThuApiHocVien
 {
-    private sealed class UngDungKiemThu : WebApplicationFactory<HocVienController>
+    internal sealed class UngDungKiemThu : WebApplicationFactory<HocVienController>
     {
         public const string KhoaKy = "CmsEdu-Integration-Tests-Only-Signing-Key-2026";
         private readonly string tenCoSoDuLieu = $"CmsEduStudentTests_{Guid.NewGuid():N}";

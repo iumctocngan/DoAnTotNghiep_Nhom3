@@ -48,6 +48,8 @@ public static class DependencyInjection
 
         services.AddScoped<IAccessTokenGenerator, JwtAccessTokenGenerator>();
         services.AddScoped<IAuthenticationService, AuthenticationService>();
+        services.AddScoped<IKhoDuLieuNguoiGiamHo, Persistence.Repositories.KhoDuLieuNguoiGiamHo>();
+        services.AddScoped<CmsEdu.Application.Guardians.DichVuNguoiGiamHo>();
 
         return services;
     }

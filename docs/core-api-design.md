@@ -6,7 +6,7 @@ API MVP dựa trên [overview.md](overview.md) và [core-database-design.md](cor
 
 - Base URL: `/api`.
 - JWT Bearer cho các endpoint nghiệp vụ; access token có thời hạn ngắn và được cấp lại bằng refresh token có rotation.
-- `GET`: đọc, `POST`: tạo/action, `PUT`: cập nhật, `DELETE`: chỉ gỡ liên kết guardian không giữ cờ chính.
+- `GET`: đọc, `POST`: tạo/action, `PUT`: cập nhật, `DELETE`: xóa guardian chưa liên kết hoặc gỡ liên kết theo quy tắc người giám hộ chính.
 - API danh sách hỗ trợ `page`, `pageSize`, `search` và filter cần thiết; `pageSize <= 100`.
 - Danh sách trả `{ items, page, pageSize, totalItems }`.
 - Lỗi dùng `ProblemDetails` của ASP.NET Core.
@@ -67,11 +67,21 @@ Login trả access token trong response; refresh token được đặt trong coo
 | POST   | `/api/students/{id}/archive`                | Lưu trữ hồ sơ                        | Admin                   |
 | POST   | `/api/students/{id}/restore`                | Khôi phục hồ sơ đã lưu trữ           | Admin                   |
 | GET    | `/api/students/{id}/guardians`              | Người giám hộ                        | Theo quyền xem học sinh |
-| POST   | `/api/students/{id}/guardians`              | Tạo/gắn người giám hộ                | Admin, CustomerCare     |
+| POST   | `/api/students/{id}/guardians`              | Gắn người giám hộ đã có; gắn lại để cập nhật quan hệ | Admin, CustomerCare |
 | PUT    | `/api/students/{id}/guardians/{guardianId}` | Sửa quan hệ hoặc chọn guardian chính | Admin, CustomerCare     |
+| PUT    | `/api/students/{id}/guardians/{guardianId}/primary` | Chuyển người giám hộ chính | Admin, CustomerCare |
 | DELETE | `/api/students/{id}/guardians/{guardianId}` | Gỡ liên kết                          | Admin, CustomerCare     |
+| GET    | `/api/guardians` | Tra cứu, phân trang, lọc trạng thái người giám hộ | Admin, CustomerCare |
+| GET    | `/api/guardians/{id}` | Chi tiết người giám hộ | Admin, CustomerCare |
+| POST   | `/api/guardians` | Tạo người giám hộ | Admin, CustomerCare |
+| PUT    | `/api/guardians/{id}` | Sửa hồ sơ và trạng thái hoạt động | Admin, CustomerCare |
+| DELETE | `/api/guardians/{id}` | Xóa người giám hộ chưa liên kết | Admin |
 
-Giáo viên chỉ xem học sinh thuộc lớp phụ trách. Không archive học sinh có enrollment Active hoặc Paused. Một học sinh có tối đa một guardian chính; guardian này là đầu mối liên hệ và đóng học phí. Đổi guardian chính thực hiện trong transaction. Không gỡ guardian đang giữ cờ chính khi chưa chọn người thay thế.
+Giáo viên chỉ xem học sinh thuộc lớp phụ trách, bao gồm danh sách người giám hộ của học sinh đó. Accountant xem người giám hộ qua hồ sơ học sinh. Danh bạ `/api/guardians` dành cho Admin và CustomerCare. Không archive học sinh có enrollment Active hoặc Paused.
+
+Một học sinh có tối đa một guardian chính; guardian này là đầu mối liên hệ và đóng học phí. Liên kết đầu tiên tự trở thành người chính. Khi còn liên kết khác, phải chọn người thay thế trước khi gỡ người chính; cho phép gỡ liên kết cuối cùng. Chỉ gắn hoặc chọn người giám hộ đang hoạt động. Không ngừng hoạt động người đang là giám hộ chính của bất kỳ học sinh nào. Không sửa liên kết của học sinh đã archive trước khi khôi phục. Xóa guardian đang liên kết, kể cả học sinh đã archive, trả `409`.
+
+Đổi người chính thực hiện trong một transaction với khóa cập nhật theo hồ sơ học sinh và unique index hiện có. Bỏ cờ người cũ trước rồi đặt người mới; nếu lỗi thì hoàn tác cả thay đổi lẫn nhật ký. `isPrimary: false` khi gắn lại/sửa quan hệ giữ nguyên cờ chính hiện tại; dùng `isPrimary: true` hoặc endpoint `/primary` để chuyển sang người khác. PUT `/primary` với người đã là chính trả `204` và không ghi nhật ký thêm. PUT sửa quan hệ yêu cầu liên kết đã tồn tại; POST gắn lại không tạo liên kết trùng. Chi tiết request, response và cách kiểm thử: [guardian-api.md](guardian-api.md).
 
 ## 5. Curriculum
 
