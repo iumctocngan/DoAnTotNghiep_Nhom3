@@ -26,15 +26,7 @@ public static class DbInitializer
                 await context.Database.MigrateAsync();
             }
 
-            foreach (var role in UserRole.AllRoles)
-            {
-                if (!await roleManager.RoleExistsAsync(role))
-                {
-                    var roleResult = await roleManager.CreateAsync(new IdentityRole(role));
-                    EnsureSucceeded(roleResult, $"create role '{role}'");
-                    logger.LogInformation("Created default role: {Role}", role);
-                }
-            }
+            await EnsureRolesAsync(roleManager, logger);
 
             var adminEmail = configuration["SeedAdmin:Email"];
             if (string.IsNullOrWhiteSpace(adminEmail))
@@ -50,18 +42,24 @@ public static class DbInitializer
                 return;
             }
 
+            var adminEmployeeCode = GetRequiredSeedValue(configuration, "SeedAdmin:EmployeeCode")
+                .Trim()
+                .ToUpperInvariant();
+            if (adminEmployeeCode.Length > 50) {
+                throw new InvalidOperationException("SeedAdmin:EmployeeCode must not exceed 50 characters.");
+            }
+
             var adminUserToCreate = new ApplicationUser
             {
                 UserName = adminEmail,
                 Email = adminEmail,
                 EmailConfirmed = true,
-                EmployeeCode = GetRequiredSeedValue(configuration, "SeedAdmin:EmployeeCode")
-                    .Trim()
-                    .ToUpperInvariant(),
+                EmployeeCode = adminEmployeeCode,
                 FullName = GetRequiredSeedValue(configuration, "SeedAdmin:FullName"),
                 EmploymentStatus = EmploymentStatus.Active
             };
 
+            await using var transaction = await context.Database.BeginTransactionAsync();
             var createResult = await userManager.CreateAsync(
                 adminUserToCreate,
                 GetRequiredSeedValue(configuration, "SeedAdmin:Password"));
@@ -69,12 +67,27 @@ public static class DbInitializer
 
             var addRoleResult = await userManager.AddToRoleAsync(adminUserToCreate, UserRole.Admin);
             EnsureSucceeded(addRoleResult, "assign the Admin role to the default Admin user");
+            await transaction.CommitAsync();
             logger.LogInformation("Created default Admin user with email: {Email}", adminEmail);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "An error occurred while migrating or seeding the database.");
             throw;
+        }
+    }
+
+    private static async Task EnsureRolesAsync(
+        RoleManager<IdentityRole> roleManager,
+        ILogger logger)
+    {
+        foreach (var role in UserRole.AllRoles)
+        {
+            if (await roleManager.RoleExistsAsync(role))
+                continue;
+
+            EnsureSucceeded(await roleManager.CreateAsync(new IdentityRole(role)), $"create role '{role}'");
+            logger.LogInformation("Created default role: {Role}", role);
         }
     }
 

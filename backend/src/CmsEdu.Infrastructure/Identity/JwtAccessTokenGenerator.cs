@@ -42,6 +42,6 @@ public class JwtAccessTokenGenerator(IOptions<JwtOptions> options)
 
         return new AccessTokenResult(
             new JwtSecurityTokenHandler().WriteToken(token),
-            expiresAt);
+            token.ValidTo);
     }
 }

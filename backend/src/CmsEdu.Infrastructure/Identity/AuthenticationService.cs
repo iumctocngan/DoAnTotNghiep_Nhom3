@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using CmsEdu.Application.Authentication;
+using CmsEdu.Application.Common.Exceptions;
 using CmsEdu.Application.Common.Interfaces;
 using CmsEdu.Domain.Enums;
 using CmsEdu.Infrastructure.Persistence;
@@ -156,12 +157,49 @@ public class AuthenticationService(
         string userId,
         string? ipAddress,
         CancellationToken cancellationToken = default) {
+        await RevokeAllSessionsAsync(
+            userId,
+            ipAddress,
+            "Logged out from all sessions.",
+            cancellationToken);
+    }
+
+    public async Task RevokeAllSessionsAsync(
+        string userId,
+        string? ipAddress,
+        string reason,
+        CancellationToken cancellationToken = default) {
         await dbContext.RefreshTokens
             .Where(token => token.UserId == userId && token.RevokedAt == null)
             .ExecuteUpdateAsync(setters => setters
                 .SetProperty(token => token.RevokedAt, DateTime.UtcNow)
                 .SetProperty(token => token.RevokedByIp, ipAddress)
-                .SetProperty(token => token.RevokeReason, "Logged out from all sessions."), cancellationToken);
+                .SetProperty(token => token.RevokeReason, reason), cancellationToken);
+    }
+
+    public async Task ChangePasswordAsync(
+        string userId,
+        ChangePasswordRequest request,
+        string? ipAddress,
+        CancellationToken cancellationToken = default) {
+        if (string.IsNullOrEmpty(request.CurrentPassword) || string.IsNullOrEmpty(request.NewPassword)) {
+            throw new ValidationException("Current password and new password are required.");
+        }
+
+        var user = await userManager.FindByIdAsync(userId);
+        if (user is null || user.EmploymentStatus != EmploymentStatus.Active) {
+            throw new UnauthorizedAccessException("The account is unavailable.");
+        }
+
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        var result = await userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+        if (!result.Succeeded) {
+            throw new ValidationException(
+                string.Join(" ", result.Errors.Select(error => error.Description)));
+        }
+
+        await RevokeAllSessionsAsync(userId, ipAddress, "Password changed.", cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
     }
 
     private async Task<string> GetSingleRoleAsync(ApplicationUser user) {

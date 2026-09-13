@@ -96,6 +96,25 @@ public class AuthController(
         return Ok(new CurrentUserResponse(userId, employeeCode, fullName, email, role));
     }
 
+    [Authorize]
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangePassword(
+        ChangePasswordRequest request,
+        CancellationToken cancellationToken) {
+        var userId = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+        if (userId is null) {
+            return Unauthorized();
+        }
+
+        await authenticationService.ChangePasswordAsync(
+            userId,
+            request,
+            GetIpAddress(),
+            cancellationToken);
+        DeleteRefreshTokenCookie();
+        return NoContent();
+    }
+
     private string? GetIpAddress()
     {
         return HttpContext.Connection.RemoteIpAddress?.ToString();

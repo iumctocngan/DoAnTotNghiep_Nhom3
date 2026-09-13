@@ -23,4 +23,16 @@ public interface IAuthenticationService
         string userId,
         string? ipAddress,
         CancellationToken cancellationToken = default);
+
+    Task RevokeAllSessionsAsync(
+        string userId,
+        string? ipAddress,
+        string reason,
+        CancellationToken cancellationToken = default);
+
+    Task ChangePasswordAsync(
+        string userId,
+        ChangePasswordRequest request,
+        string? ipAddress,
+        CancellationToken cancellationToken = default);
 }
