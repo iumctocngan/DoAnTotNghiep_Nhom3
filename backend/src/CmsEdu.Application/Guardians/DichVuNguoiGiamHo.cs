@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using CmsEdu.Application.Common.Exceptions;
+using ValidationException = CmsEdu.Application.Common.Exceptions.ValidationException;
 using CmsEdu.Application.Common.Interfaces;
 using CmsEdu.Application.Common.Models;
 using CmsEdu.Domain.Entities;

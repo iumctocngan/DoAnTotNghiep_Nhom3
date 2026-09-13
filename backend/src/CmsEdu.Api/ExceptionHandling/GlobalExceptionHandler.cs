@@ -17,6 +17,7 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
             ForbiddenAccessException => (StatusCodes.Status403Forbidden, "Access forbidden"),
             NotFoundException => (StatusCodes.Status404NotFound, "Resource not found"),
             ConflictException => (StatusCodes.Status409Conflict, "Conflict"),
+            ValidationException => (StatusCodes.Status400BadRequest, "Validation failed"),
             _ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred")
         };
 

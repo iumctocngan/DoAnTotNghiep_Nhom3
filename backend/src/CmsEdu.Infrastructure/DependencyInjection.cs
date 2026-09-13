@@ -1,6 +1,7 @@
 using CmsEdu.Application.Common.Interfaces;
 using CmsEdu.Infrastructure.Identity;
 using CmsEdu.Infrastructure.Persistence;
+using CmsEdu.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -50,6 +51,7 @@ public static class DependencyInjection
         services.AddScoped<IAuthenticationService, AuthenticationService>();
         services.AddScoped<IKhoDuLieuNguoiGiamHo, Persistence.Repositories.KhoDuLieuNguoiGiamHo>();
         services.AddScoped<CmsEdu.Application.Guardians.DichVuNguoiGiamHo>();
+        services.AddScoped<ISessionService, SessionService>();
 
         return services;
     }
