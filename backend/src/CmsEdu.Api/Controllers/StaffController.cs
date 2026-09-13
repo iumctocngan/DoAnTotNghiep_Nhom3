@@ -1,3 +1,4 @@
+using CmsEdu.Api.Authorization;
 using CmsEdu.Application.Common.Interfaces;
 using CmsEdu.Application.Common.Models;
 using CmsEdu.Application.Staff;
@@ -9,7 +10,7 @@ namespace CmsEdu.Api.Controllers;
 
 [ApiController]
 [Route("api/staff")]
-[Authorize(Roles = UserRole.Admin)]
+[Authorize(Policy = AuthorizationPolicies.StaffManage)]
 public class StaffController(IStaffService staffService) : ControllerBase
 {
     [HttpGet]

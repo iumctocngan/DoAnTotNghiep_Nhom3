@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using CmsEdu.Api.Authorization;
 using CmsEdu.Api.ExceptionHandling;
 using CmsEdu.Api.Services;
 using CmsEdu.Application.Common.Interfaces;
@@ -61,6 +62,11 @@ builder.Services
 
 builder.Services.AddAuthorization(options =>
 {
+    options.AddPolicy(AuthorizationPolicies.AuthSelfService,
+        policy => policy.RequireRole(UserRole.Admin, UserRole.Teacher, UserRole.Accountant, UserRole.CustomerCare));
+    options.AddPolicy(AuthorizationPolicies.StaffManage,
+        policy => policy.RequireRole(UserRole.Admin));
+
     foreach (var role in UserRole.AllRoles)
     {
         options.AddPolicy(role, policy => policy.RequireRole(role));
