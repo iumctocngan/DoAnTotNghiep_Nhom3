@@ -51,7 +51,7 @@ public static class DependencyInjection
         services.AddScoped<IAuthenticationService, AuthenticationService>();
         services.AddScoped<IKhoDuLieuNguoiGiamHo, Persistence.Repositories.KhoDuLieuNguoiGiamHo>();
         services.AddScoped<CmsEdu.Application.Guardians.DichVuNguoiGiamHo>();
-        services.AddScoped<ISessionService, SessionService>();
+        services.AddScoped<IDichVuBuoiHoc, DichVuBuoiHoc>();
 
         return services;
     }

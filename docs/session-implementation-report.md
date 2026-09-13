@@ -1,66 +1,57 @@
-# Báo cáo triển khai Session
+# Báo cáo triển khai Session (Buổi học)
 
 ## 1. Phạm vi thực hiện
 
-Đã triển khai phần Session theo tài liệu `overview.md` và `core-api-design.md`, bao gồm DTO, service, API, validation nghiệp vụ và unit test.
+Đã triển khai phần Quản lý buổi học (Session) theo tài liệu `overview.md` và `core-api-design.md`, bao gồm DTO, dịch vụ (service), API controller, validation nghiệp vụ và kiểm thử đơn vị (unit tests), áp dụng quy chuẩn đặt tên tiếng Việt đồng bộ toàn dự án.
 
 Các chức năng đã hoàn thành:
 
-- Xem danh sách Session có phân trang và lọc theo lớp, khoảng ngày.
-- Xem chi tiết Session.
-- Tạo Session thủ công cho lớp.
-- Cập nhật Session.
-- Hủy Session.
-- Hoàn tất Session.
+- Xem danh sách buổi học có phân trang và lọc theo lớp, khoảng ngày.
+- Xem chi tiết buổi học.
+- Tạo buổi học thủ công cho lớp đang hoạt động.
+- Cập nhật thông tin buổi học khi đang ở trạng thái lên lịch (`Scheduled`).
+- Hủy buổi học (`Cancelled`).
+- Hoàn tất buổi học (`Completed`) khi đã điểm danh đầy đủ học viên.
 
-## 2. DTO và service
+## 2. DTO và Dịch vụ (Service)
 
-Các DTO được đặt trong `backend/src/CmsEdu.Application/Sessions`:
+Các DTO và giao diện được tổ chức chuẩn tiếng Việt:
+- DTO đặt trong `backend/src/CmsEdu.Application/Sessions/DuLieuBuoiHoc.cs`:
+  - `YeuCauTaoBuoiHoc`
+  - `YeuCauCapNhatBuoiHoc`
+  - `PhanHoiBuoiHoc`
 
-- `CreateSessionRequest`
-- `UpdateSessionRequest`
-- `SessionResponse`
+- Giao diện `IDichVuBuoiHoc` đặt trong `backend/src/CmsEdu.Application/Common/Interfaces/IDichVuBuoiHoc.cs`.
+- Cài đặt `DichVuBuoiHoc` đặt trong `backend/src/CmsEdu.Infrastructure/Services/DichVuBuoiHoc.cs` và đã đăng ký Dependency Injection trong `DependencyInjection.cs`.
 
-Interface `ISessionService` được đặt trong `CmsEdu.Application`. Phần xử lý được cài đặt bởi `SessionService` trong `CmsEdu.Infrastructure` và đã được đăng ký dependency injection.
+## 3. API Controller
 
-## 3. API
+Controller `BuoiHocController` đặt tại `backend/src/CmsEdu.Api/Controllers/BuoiHocController.cs`:
 
-| Method | Endpoint | Chức năng | Quyền |
-|---|---|---|---|
-| GET | `/api/sessions` | Danh sách Session | Admin, Teacher theo lớp phụ trách, CustomerCare |
-| GET | `/api/sessions/{id}` | Chi tiết Session | Admin, Teacher theo lớp phụ trách, CustomerCare |
-| POST | `/api/sessions` | Tạo Session | Admin |
-| PUT | `/api/sessions/{id}` | Cập nhật Session | Admin |
-| POST | `/api/sessions/{id}/cancel` | Hủy Session | Admin |
-| POST | `/api/sessions/{id}/complete` | Hoàn tất Session | Admin hoặc Teacher phụ trách lớp |
+| Method | Endpoint | Tên phương thức | Chức năng | Quyền |
+|---|---|---|---|---|
+| GET | `/api/sessions` | `LayDanhSachBuoiHoc` | Danh sách buổi học | Admin, Teacher theo lớp phụ trách, CustomerCare |
+| GET | `/api/sessions/{id}` | `LayChiTietBuoiHoc` | Chi tiết buổi học | Admin, Teacher theo lớp phụ trách, CustomerCare |
+| POST | `/api/sessions` | `TaoBuoiHoc` | Tạo buổi học | Admin |
+| PUT | `/api/sessions/{id}` | `CapNhatBuoiHoc` | Cập nhật buổi học | Admin |
+| POST | `/api/sessions/{id}/cancel` | `HuyBuoiHoc` | Hủy buổi học | Admin |
+| POST | `/api/sessions/{id}/complete` | `HoanTatBuoiHoc` | Hoàn tất buổi học | Admin hoặc Teacher phụ trách lớp |
 
-## 4. Validation và quy tắc nghiệp vụ
+## 4. Quy tắc nghiệp vụ đã kiểm soát
 
-- Chỉ tạo Session cho lớp có trạng thái `Active`.
-- Ngày Session phải nằm trong khoảng thời gian của lớp.
-- `StartTime` phải sớm hơn `EndTime`.
-- Ghi chú không vượt quá 500 ký tự.
-- Lesson, nếu có, phải tồn tại và thuộc cùng level với lớp.
-- Không tạo hoặc cập nhật Session nếu giáo viên chính đã có Session không bị hủy trùng thời gian trong cùng ngày.
-- Chỉ Session `Scheduled` được cập nhật, hủy hoặc hoàn tất.
-- Khi hoàn tất, hệ thống kiểm tra mọi enrollment `Active`, thuộc cùng lớp và có hiệu lực tại `SessionDate` đều đã có attendance.
-- Session `Completed` hoặc `Cancelled` không thể chuyển ngược trạng thái.
-- Lỗi validation được trả dưới dạng `400 ProblemDetails`; lỗi xung đột nghiệp vụ trả `409 ProblemDetails`.
+- Chỉ tạo buổi học cho lớp có trạng thái `Active`.
+- Ngày buổi học phải nằm trong khoảng thời gian diễn ra của lớp.
+- Thời gian bắt đầu phải trước thời gian kết thúc (`StartTime < EndTime`).
+- Không tạo hoặc cập nhật buổi học nếu giáo viên chính đã có buổi học không bị hủy trùng thời gian trong cùng ngày.
+- Chỉ buổi học `Scheduled` mới được cập nhật, hủy hoặc hoàn tất.
+- Khi hoàn tất, hệ thống kiểm tra mọi enrollment `Active`, thuộc cùng lớp và có hiệu lực tại `SessionDate` đều đã có điểm danh (`Attendance`).
+- Buổi học `Completed` hoặc `Cancelled` không thể chuyển ngược trạng thái.
 
-## 5. Kiểm thử
+## 5. Kiểm thử đơn vị (Unit Tests)
 
-Đã thêm `SessionServiceTests` với EF Core InMemory. Các test đã kiểm tra:
-
-1. Từ chối lesson thuộc level khác lớp.
-2. Từ chối Session trùng lịch giáo viên.
-3. Hủy Session đang `Scheduled` thành công.
-4. Từ chối hoàn tất khi còn enrollment chưa điểm danh.
-5. Hoàn tất thành công khi toàn bộ enrollment hợp lệ đã được điểm danh.
-
-Lệnh kiểm tra đã chạy:
-
-```powershell
-dotnet test backend\CmsEdu.slnx --no-restore
-```
-
-Kết quả: 5/5 unit test đạt, solution build thành công không có warning hoặc error.
+Đã triển khai file `KiemThuDichVuBuoiHoc.cs` trong `backend/tests/CmsEdu.UnitTests/`:
+1. Từ chối bài học khác cấp độ với lớp học.
+2. Từ chối buổi học trùng lịch của giáo viên phụ trách.
+3. Hủy buổi học đang `Scheduled` thành công.
+4. Từ chối hoàn tất buổi học khi chưa điểm danh đủ học viên hợp lệ.
+5. Hoàn tất thành công khi toàn bộ học viên hợp lệ đã có bản ghi điểm danh.
