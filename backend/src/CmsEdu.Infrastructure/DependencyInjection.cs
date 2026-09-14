@@ -1,6 +1,8 @@
 using CmsEdu.Application.Common.Interfaces;
+using CmsEdu.Application.Teachers;
 using CmsEdu.Infrastructure.Identity;
 using CmsEdu.Infrastructure.Persistence;
+using CmsEdu.Infrastructure.Persistence.Repositories;
 using CmsEdu.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -54,6 +56,7 @@ public static class DependencyInjection
         services.AddScoped<IDichVuBuoiHoc, DichVuBuoiHoc>();
         services.AddScoped<IDichVuDiemDanh, DichVuDiemDanh>();
         services.AddScoped<IStaffService, StaffService>();
+        services.AddScoped<ITeacherRepository, TeacherRepository>();
         services.AddScoped<ITeacherService, TeacherService>();
 
         return services;

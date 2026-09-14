@@ -1,15 +1,23 @@
-using CmsEdu.Application.Common.Exceptions;
 using CmsEdu.Application.Common.Interfaces;
 using CmsEdu.Application.Common.Models;
 using CmsEdu.Application.Teachers;
 using CmsEdu.Domain.Enums;
-using CmsEdu.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace CmsEdu.Infrastructure.Identity;
+namespace CmsEdu.Infrastructure.Persistence.Repositories;
 
-public class TeacherService(AppDbContext dbContext, ICurrentUser currentUser) : ITeacherService
+public class TeacherRepository(AppDbContext dbContext) : ITeacherRepository
 {
+    public Task<bool> ExistsAsync(string teacherId, CancellationToken cancellationToken = default)
+    {
+        return (from user in dbContext.Users.AsNoTracking()
+                join userRole in dbContext.UserRoles.AsNoTracking() on user.Id equals userRole.UserId
+                join role in dbContext.Roles.AsNoTracking() on userRole.RoleId equals role.Id
+                where user.Id == teacherId && role.Name == UserRole.Teacher
+                select user.Id)
+            .AnyAsync(cancellationToken);
+    }
+
     public async Task<PagedResult<TeacherClassResponse>> GetClassesAsync(
         string teacherId,
         ClassStatus? status,
@@ -17,13 +25,6 @@ public class TeacherService(AppDbContext dbContext, ICurrentUser currentUser) : 
         int pageSize,
         CancellationToken cancellationToken = default)
     {
-        ValidateAccess(teacherId);
-        ValidatePaging(page, pageSize);
-        if (status is not null && !Enum.IsDefined(status.Value))
-            throw new ValidationException("Class status is invalid.");
-
-        await EnsureTeacherExistsAsync(teacherId, cancellationToken);
-
         var query = dbContext.Classes
             .AsNoTracking()
             .Where(item => item.MainTeacherUserId == teacherId);
@@ -62,13 +63,6 @@ public class TeacherService(AppDbContext dbContext, ICurrentUser currentUser) : 
         int pageSize,
         CancellationToken cancellationToken = default)
     {
-        ValidateAccess(teacherId);
-        ValidatePaging(page, pageSize);
-        if (fromDate is not null && toDate is not null && fromDate > toDate)
-            throw new ValidationException("From date must not be after to date.");
-
-        await EnsureTeacherExistsAsync(teacherId, cancellationToken);
-
         var query = dbContext.Sessions
             .AsNoTracking()
             .Where(item => item.Class.MainTeacherUserId == teacherId);
@@ -101,36 +95,5 @@ public class TeacherService(AppDbContext dbContext, ICurrentUser currentUser) : 
             .ToListAsync(cancellationToken);
 
         return new PagedResult<TeacherScheduleResponse>(items, page, pageSize, totalItems);
-    }
-
-    private void ValidateAccess(string teacherId)
-    {
-        if (!currentUser.IsAuthenticated)
-            throw new UnauthorizedAccessException();
-        if (currentUser.Role == UserRole.Admin)
-            return;
-        if (currentUser.Role == UserRole.Teacher && currentUser.UserId == teacherId)
-            return;
-
-        throw new ForbiddenAccessException("You cannot view another teacher's assignments.");
-    }
-
-    private async Task EnsureTeacherExistsAsync(string teacherId, CancellationToken cancellationToken)
-    {
-        var exists = await (from user in dbContext.Users.AsNoTracking()
-                            join userRole in dbContext.UserRoles.AsNoTracking() on user.Id equals userRole.UserId
-                            join role in dbContext.Roles.AsNoTracking() on userRole.RoleId equals role.Id
-                            where user.Id == teacherId && role.Name == UserRole.Teacher
-                            select user.Id)
-            .AnyAsync(cancellationToken);
-
-        if (!exists)
-            throw new NotFoundException("Teacher account was not found.");
-    }
-
-    private static void ValidatePaging(int page, int pageSize)
-    {
-        if (page < 1 || pageSize < 1 || pageSize > 100 || (long)(page - 1) * pageSize > int.MaxValue)
-            throw new ValidationException("Page must be at least 1 and pageSize must be between 1 and 100.");
     }
 }
