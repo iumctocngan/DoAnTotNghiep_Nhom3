@@ -18,6 +18,7 @@ Hệ thống sử dụng mô hình:
 |---|:---:|:---:|:---:|:---:|
 | Tài khoản cá nhân; xem Course/Level/Lesson | ✓ | ✓ | ✓ | ✓ |
 | Quản lý Staff, danh mục, lớp; tạo/sửa/hủy buổi học | ✓ | — | — | — |
+| Tra cứu lớp phụ trách và lịch dạy của Teacher | ✓ | P | — | — |
 | Xem học viên, guardian của học viên, lớp, chi tiết ghi danh | ✓ | P | P | ✓ |
 | Tạo/sửa học viên; tra cứu/tạo/sửa guardian, quản lý liên kết | ✓ | — | — | ✓ |
 | Lưu trữ/khôi phục học viên; xóa hồ sơ guardian chưa liên kết | ✓ | — | — | — |
@@ -48,7 +49,7 @@ Service lọc phạm vi trước đếm/phân trang và cả khi lấy chi tiế
 
 ## Thực thi
 
-- **API:** gắn policy hoặc `[Authorize(Roles = ...)]` cho endpoint nghiệp vụ. Hiện chưa có fallback policy tự bảo vệ endpoint quên khai báo.
+- **API:** fallback policy yêu cầu đăng nhập mặc định. Endpoint public phải khai báo `[AllowAnonymous]`; endpoint nghiệp vụ gắn policy hoặc `[Authorize(Roles = ...)]` để kiểm tra quyền cụ thể.
 - **Service:** dùng `ICurrentUser` và DB để kiểm tra phạm vi; thao tác tài khoản cá nhân lấy UserId từ JWT.
 - **Tài khoản:** một trong bốn role cố định, không có bảng Permission hay CRUD định nghĩa role. Login/refresh yêu cầu Active; thay email/role, đổi/reset mật khẩu hoặc deactivate thu hồi refresh token, JWT cũ còn tới hạn (mặc định 15 phút).
 
@@ -59,6 +60,8 @@ Service lọc phạm vi trước đếm/phân trang và cả khi lấy chi tiế
 |---|---|---|
 | `Auth.SelfService` | Bốn role | Đã triển khai cho `me`, `change-password`, `logout-all` |
 | `Staff.Manage` | Admin | Đã triển khai cho toàn bộ `/api/staff` |
+| `Teachers.Classes.Read` | Admin, Teacher | Đã triển khai; Teacher chỉ xem chính mình |
+| `Teachers.Schedule.Read` | Admin, Teacher | Đã triển khai; Teacher chỉ xem chính mình |
 | `Students.Read`, `Students.Write`, `Students.Archive` | Theo bảng role | Tên dự kiến; code đã có role check và lọc Teacher, ẩn LearningNote với Accountant |
 | `Guardians.Directory.Read`, `Guardians.Write`, `Guardians.Delete` | Danh bạ/ghi: Admin, CustomerCare; xóa: Admin | Tên dự kiến; code đã có kiểm tra role |
 | `StudentGuardians.Read`, `StudentGuardians.Write` | Đọc: bốn role theo phạm vi; ghi: Admin, CustomerCare | Tên dự kiến; code đã có kiểm tra role và phạm vi Teacher |
@@ -68,9 +71,18 @@ Service lọc phạm vi trước đếm/phân trang và cả khi lấy chi tiế
 
 Mỗi module tự gắn policy vào endpoint và tự triển khai resource scope trong service. Phần authorization dùng chung không chứa trạng thái hoặc quy tắc nghiệp vụ riêng của module.
 
-Chỉ `Auth.SelfService`, `Staff.Manage` đã được định nghĩa và đăng ký dưới dạng policy chức năng. Các tên dự kiến phải được thêm vào constants và đăng ký trong `AddAuthorization` trước khi dùng; gắn tên chưa đăng ký sẽ gây lỗi. Không coi việc chưa dùng named policy là chưa có phân quyền.
+`Auth.SelfService`, `Staff.Manage`, `Teachers.Classes.Read` và `Teachers.Schedule.Read` đã được định nghĩa và đăng ký dưới dạng policy chức năng. Các tên dự kiến phải được thêm vào constants và đăng ký trong `AddAuthorization` trước khi dùng; gắn tên chưa đăng ký sẽ gây lỗi. Không coi việc chưa dùng named policy là chưa có phân quyền.
+
+### API Teacher
+
+| Method | Endpoint | Quyền |
+|---|---|---|
+| GET | `/api/teachers/{teacherId}/classes` | Admin hoặc chính Teacher đó |
+| GET | `/api/teachers/{teacherId}/schedule` | Admin hoặc chính Teacher đó |
+
+Danh sách lớp được lọc bằng `Class.MainTeacherUserId`. Lịch dạy lấy từ Session của các lớp Teacher hiện phụ trách; không giữ quyền theo phân công cũ. Hai API hỗ trợ phân trang; lịch dạy hỗ trợ lọc `fromDate`, `toDate`.
 
 ## Trách nhiệm và kiểm chứng trước bàn giao
 
-- Minh: nền Authentication/RBAC, Staff và ràng buộc quản lý tài khoản; tiếp theo Teacher lookup, Course/Level/Lesson và Dashboard theo phân công.
+- Minh: nền Authentication/RBAC, Staff, ràng buộc quản lý tài khoản và Teacher lookup; tiếp theo Course/Level/Lesson và Dashboard theo phân công.
 - Người phụ trách Student/Guardian, Class/Enrollment, Session/Attendance/Remark, Finance: gắn quyền chức năng và thực hiện lọc phạm vi, quan hệ, trạng thái trong module của mình. Không cần một engine nghiệp vụ chung.

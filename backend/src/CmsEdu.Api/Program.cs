@@ -10,6 +10,7 @@ using CmsEdu.Infrastructure;
 using CmsEdu.Infrastructure.Identity;
 using CmsEdu.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -62,10 +63,18 @@ builder.Services
 
 builder.Services.AddAuthorization(options =>
 {
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+
     options.AddPolicy(AuthorizationPolicies.AuthSelfService,
         policy => policy.RequireRole(UserRole.Admin, UserRole.Teacher, UserRole.Accountant, UserRole.CustomerCare));
     options.AddPolicy(AuthorizationPolicies.StaffManage,
         policy => policy.RequireRole(UserRole.Admin));
+    options.AddPolicy(AuthorizationPolicies.TeacherClassesRead,
+        policy => policy.RequireRole(UserRole.Admin, UserRole.Teacher));
+    options.AddPolicy(AuthorizationPolicies.TeacherScheduleRead,
+        policy => policy.RequireRole(UserRole.Admin, UserRole.Teacher));
 
     foreach (var role in UserRole.AllRoles)
     {
@@ -80,7 +89,7 @@ app.UseExceptionHandler();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.MapOpenApi().AllowAnonymous();
 }
 
 app.UseHttpsRedirection();

@@ -32,26 +32,38 @@ public class StaffService(
         if (status is not null && !Enum.IsDefined(status.Value))
             throw new ValidationException("Status is invalid.");
 
-        var query = StaffQuery();
+        var query = from user in dbContext.Users.AsNoTracking()
+                    join userRole in dbContext.UserRoles.AsNoTracking() on user.Id equals userRole.UserId
+                    join identityRole in dbContext.Roles.AsNoTracking() on userRole.RoleId equals identityRole.Id
+                    select new { User = user, Role = identityRole.Name! };
+
         if (!string.IsNullOrWhiteSpace(search))
         {
             var keyword = search.Trim();
             query = query.Where(staff =>
-                staff.EmployeeCode.Contains(keyword) ||
-                staff.FullName.Contains(keyword) ||
-                staff.Email.Contains(keyword));
+                staff.User.EmployeeCode.Contains(keyword) ||
+                staff.User.FullName.Contains(keyword) ||
+                staff.User.Email!.Contains(keyword));
         }
 
         if (role is not null)
             query = query.Where(staff => staff.Role == role);
         if (status is not null)
-            query = query.Where(staff => staff.Status == status);
+            query = query.Where(staff => staff.User.EmploymentStatus == status);
 
         var totalItems = await query.CountAsync(cancellationToken);
         var items = await query
-            .OrderBy(staff => staff.EmployeeCode)
+            .OrderBy(staff => staff.User.EmployeeCode)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .Select(staff => new StaffResponse(
+                staff.User.Id,
+                staff.User.EmployeeCode,
+                staff.User.FullName,
+                staff.User.Email!,
+                staff.User.PhoneNumber,
+                staff.Role,
+                staff.User.EmploymentStatus))
             .ToListAsync(cancellationToken);
 
         return new PagedResult<StaffResponse>(items, page, pageSize, totalItems);
@@ -61,7 +73,19 @@ public class StaffService(
         string id,
         CancellationToken cancellationToken = default)
     {
-        return await StaffQuery().SingleOrDefaultAsync(staff => staff.Id == id, cancellationToken)
+        return await (from user in dbContext.Users.AsNoTracking()
+                      join userRole in dbContext.UserRoles.AsNoTracking() on user.Id equals userRole.UserId
+                      join role in dbContext.Roles.AsNoTracking() on userRole.RoleId equals role.Id
+                      where user.Id == id
+                      select new StaffResponse(
+                          user.Id,
+                          user.EmployeeCode,
+                          user.FullName,
+                          user.Email!,
+                          user.PhoneNumber,
+                          role.Name!,
+                          user.EmploymentStatus))
+            .SingleOrDefaultAsync(cancellationToken)
             ?? throw new NotFoundException("Staff account was not found.");
     }
 
@@ -298,21 +322,6 @@ public class StaffService(
         AddAudit(user.Id, "Staff.Deactivated", $"Deactivated staff account {user.EmployeeCode}.");
         await dbContext.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
-    }
-
-    private IQueryable<StaffResponse> StaffQuery()
-    {
-        return from user in dbContext.Users.AsNoTracking()
-               join userRole in dbContext.UserRoles.AsNoTracking() on user.Id equals userRole.UserId
-               join role in dbContext.Roles.AsNoTracking() on userRole.RoleId equals role.Id
-               select new StaffResponse(
-                   user.Id,
-                   user.EmployeeCode,
-                   user.FullName,
-                   user.Email!,
-                   user.PhoneNumber,
-                   role.Name!,
-                   user.EmploymentStatus);
     }
 
     private Task<bool> HasAnotherActiveAdminAsync(string excludedUserId, CancellationToken cancellationToken)

@@ -54,6 +54,7 @@ public static class DependencyInjection
         services.AddScoped<IDichVuBuoiHoc, DichVuBuoiHoc>();
         services.AddScoped<IDichVuDiemDanh, DichVuDiemDanh>();
         services.AddScoped<IStaffService, StaffService>();
+        services.AddScoped<ITeacherService, TeacherService>();
 
         return services;
     }

@@ -159,7 +159,7 @@ public class AuthenticationApiTests {
         return cookie.Split(';', 2)[0]["refreshToken=".Length..];
     }
 
-    private sealed class AuthenticationTestApp : WebApplicationFactory<AuthController> {
+    internal sealed class AuthenticationTestApp : WebApplicationFactory<AuthController> {
         public const string Email = "admin@cms.edu.vn";
         public const string Password = "Password123";
         public const string EmployeeCode = "ADMIN001";
@@ -195,7 +195,9 @@ public class AuthenticationApiTests {
             databaseCreated = true;
 
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            Assert.True((await roleManager.CreateAsync(new IdentityRole(UserRole.Admin))).Succeeded);
+            foreach (var role in UserRole.AllRoles) {
+                Assert.True((await roleManager.CreateAsync(new IdentityRole(role))).Succeeded);
+            }
 
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var user = new ApplicationUser {
