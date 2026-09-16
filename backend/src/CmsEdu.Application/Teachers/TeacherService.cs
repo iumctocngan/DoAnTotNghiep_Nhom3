@@ -5,7 +5,7 @@ using CmsEdu.Domain.Enums;
 
 namespace CmsEdu.Application.Teachers;
 
-public class TeacherService(ITeacherRepository repository, ICurrentUser currentUser) : ITeacherService
+public class TeacherService(ITeacherRepository repository, ICurrentUser currentUser)
 {
     public async Task<PagedResult<TeacherClassResponse>> GetClassesAsync(
         string teacherId,

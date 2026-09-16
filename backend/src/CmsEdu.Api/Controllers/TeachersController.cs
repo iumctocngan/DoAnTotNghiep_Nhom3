@@ -10,7 +10,7 @@ namespace CmsEdu.Api.Controllers;
 
 [ApiController]
 [Route("api/teachers/{teacherId}")]
-public class TeachersController(ITeacherService teacherService) : ControllerBase
+public class TeachersController(TeacherService teacherService) : ControllerBase
 {
     [HttpGet("classes")]
     [Authorize(Policy = AuthorizationPolicies.TeacherClassesRead)]

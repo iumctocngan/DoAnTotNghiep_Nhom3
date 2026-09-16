@@ -8,12 +8,7 @@ public class CourseConfiguration : IEntityTypeConfiguration<Course>
 {
     public void Configure(EntityTypeBuilder<Course> builder)
     {
-        builder.ToTable("Courses", table =>
-        {
-            table.HasCheckConstraint(
-                "CK_Courses_AgeRange",
-                "[MinAge] IS NULL OR [MaxAge] IS NULL OR [MinAge] <= [MaxAge]");
-        });
+        builder.ToTable("Courses");
 
         builder.HasKey(c => c.Id);
 

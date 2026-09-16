@@ -91,7 +91,6 @@ Ràng buộc:
 
 ```text
 Id (khóa chính), Code (mã chương trình, unique), Name (tên),
-MinAge? (tuổi tối thiểu), MaxAge? (tuổi tối đa),
 Description? (mô tả), IsActive (đang áp dụng)
 ```
 
@@ -301,7 +300,7 @@ Bảng `RefreshTokens` thuộc hạ tầng xác thực và nằm ngoài danh sá
 4. Kiểm tra kỳ invoice 6 tháng không chồng lấn theo học sinh.
 5. Kiểm tra tổng payment không vượt AmountDue.
 6. Cập nhật guardian chính phải dùng transaction.
-7. Kiểm tra `Capacity > 0`, khoảng ngày hợp lệ, `StartTime < EndTime` và `MinAge <= MaxAge`.
+7. Kiểm tra `Capacity > 0`, khoảng ngày hợp lệ và `StartTime < EndTime`.
 8. Kiểm tra học sinh có guardian chính trước khi ghi danh.
 9. Kiểm tra trạng thái enrollment khi pause/resume, tạo invoice, complete, withdraw và tạo remark.
 10. Xoay refresh token trong transaction, chỉ lưu token hash và thu hồi token family khi phát hiện token cũ bị tái sử dụng.
