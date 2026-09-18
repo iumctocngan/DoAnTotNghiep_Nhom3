@@ -62,16 +62,18 @@ Service lọc phạm vi trước đếm/phân trang và cả khi lấy chi tiế
 | `Staff.Manage` | Admin | Đã triển khai cho toàn bộ `/api/staff` |
 | `Teachers.Classes.Read` | Admin, Teacher | Đã triển khai; Teacher chỉ xem chính mình |
 | `Teachers.Schedule.Read` | Admin, Teacher | Đã triển khai; Teacher chỉ xem chính mình |
+| `Catalog.Read` | Bốn role | Đã triển khai cho GET Course, Level và Lesson |
+| `Catalog.Manage` | Admin | Đã triển khai cho tạo, sửa và deactivate Course, Level, Lesson |
 | `Students.Read`, `Students.Write`, `Students.Archive` | Theo bảng role | Tên dự kiến; code đã có role check và lọc Teacher, ẩn LearningNote với Accountant |
 | `Guardians.Directory.Read`, `Guardians.Write`, `Guardians.Delete` | Danh bạ/ghi: Admin, CustomerCare; xóa: Admin | Tên dự kiến; code đã có kiểm tra role |
 | `StudentGuardians.Read`, `StudentGuardians.Write` | Đọc: bốn role theo phạm vi; ghi: Admin, CustomerCare | Tên dự kiến; code đã có kiểm tra role và phạm vi Teacher |
 | `Sessions.Read`, `Sessions.Manage`, `Sessions.Complete` | Theo bảng role | Tên dự kiến; code đã lọc Teacher, chặn Accountant đọc, kiểm tra giáo viên khi complete |
-| Course, Level, Lesson, Class, Enrollment, Attendance, Remark | Theo bảng role | Chờ endpoint hoặc người phụ trách module áp dụng |
+| Class, Enrollment, Attendance, Remark | Theo bảng role | Chờ endpoint hoặc người phụ trách module áp dụng |
 | Invoice, Payment, Dashboard | Theo bảng role | Chờ endpoint tương ứng |
 
 Mỗi module tự gắn policy vào endpoint và tự triển khai resource scope trong service. Phần authorization dùng chung không chứa trạng thái hoặc quy tắc nghiệp vụ riêng của module.
 
-`Auth.SelfService`, `Staff.Manage`, `Teachers.Classes.Read` và `Teachers.Schedule.Read` đã được định nghĩa và đăng ký dưới dạng policy chức năng. Các tên dự kiến phải được thêm vào constants và đăng ký trong `AddAuthorization` trước khi dùng; gắn tên chưa đăng ký sẽ gây lỗi. Không coi việc chưa dùng named policy là chưa có phân quyền.
+`Auth.SelfService`, `Staff.Manage`, `Teachers.Classes.Read`, `Teachers.Schedule.Read`, `Catalog.Read` và `Catalog.Manage` đã được định nghĩa và đăng ký dưới dạng policy chức năng. Các tên dự kiến phải được thêm vào constants và đăng ký trong `AddAuthorization` trước khi dùng; gắn tên chưa đăng ký sẽ gây lỗi. Không coi việc chưa dùng named policy là chưa có phân quyền.
 
 ### API Teacher
 
@@ -84,5 +86,5 @@ Danh sách lớp được lọc bằng `Class.MainTeacherUserId`. Lịch dạy l
 
 ## Trách nhiệm và kiểm chứng trước bàn giao
 
-- Minh: nền Authentication/RBAC, Staff, ràng buộc quản lý tài khoản và Teacher lookup; tiếp theo Course/Level/Lesson và Dashboard theo phân công.
+- Minh: nền Authentication/RBAC, Staff, ràng buộc quản lý tài khoản, Teacher lookup và Course/Level/Lesson; Dashboard làm sau khi các module liên quan hoàn thành.
 - Người phụ trách Student/Guardian, Class/Enrollment, Session/Attendance/Remark, Finance: gắn quyền chức năng và thực hiện lọc phạm vi, quan hệ, trạng thái trong module của mình. Không cần một engine nghiệp vụ chung.

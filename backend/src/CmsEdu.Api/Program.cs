@@ -75,6 +75,10 @@ builder.Services.AddAuthorization(options =>
         policy => policy.RequireRole(UserRole.Admin, UserRole.Teacher));
     options.AddPolicy(AuthorizationPolicies.TeacherScheduleRead,
         policy => policy.RequireRole(UserRole.Admin, UserRole.Teacher));
+    options.AddPolicy(AuthorizationPolicies.CatalogRead,
+        policy => policy.RequireRole(UserRole.AllRoles));
+    options.AddPolicy(AuthorizationPolicies.CatalogManage,
+        policy => policy.RequireRole(UserRole.Admin));
 
     foreach (var role in UserRole.AllRoles)
     {
