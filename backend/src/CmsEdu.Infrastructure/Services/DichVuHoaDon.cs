@@ -113,7 +113,7 @@ public class DichVuHoaDon(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai) :
             throw new ConflictException(
                 "Kỳ học phí bị chồng lấn với hóa đơn đã tồn tại của ghi danh này.");
 
-        // --- Tạo hóa đơn ---
+        // --- Tạo hóa đơn & Ghi AuditLog trong Transaction ---
         var soHoaDon = await TaoSoHoaDonAsync(yeuCau.PeriodStart, maHuy);
         var hoaDon = new Invoice
         {
@@ -129,20 +129,43 @@ public class DichVuHoaDon(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai) :
             CreatedAt     = DateTime.UtcNow
         };
 
-        nguCanh.Invoices.Add(hoaDon);
+        if (nguCanh.Database.IsRelational())
+        {
+            await using var tx = await nguCanh.Database.BeginTransactionAsync(maHuy);
+            try
+            {
+                nguCanh.Invoices.Add(hoaDon);
+                await nguCanh.SaveChangesAsync(maHuy);
 
-        // --- Ghi audit log ---
-        GhiAuditLog("CREATE_INVOICE",
-            hoaDon.Id.ToString(),
-            $"Tạo hóa đơn {soHoaDon} cho ghi danh {yeuCau.EnrollmentId}, kỳ {yeuCau.PeriodStart:yyyy-MM-dd} đến {ngayKetThucKy:yyyy-MM-dd}, số tiền {yeuCau.AmountDue:N0} VNĐ.");
+                GhiAuditLog("CREATE_INVOICE",
+                    hoaDon.Id.ToString(),
+                    $"Tạo hóa đơn {soHoaDon} cho ghi danh {yeuCau.EnrollmentId}, kỳ {yeuCau.PeriodStart:yyyy-MM-dd} đến {ngayKetThucKy:yyyy-MM-dd}, số tiền {yeuCau.AmountDue:N0} VNĐ.");
+                await nguCanh.SaveChangesAsync(maHuy);
 
-        await nguCanh.SaveChangesAsync(maHuy);
+                await tx.CommitAsync(maHuy);
+            }
+            catch
+            {
+                await tx.RollbackAsync(maHuy);
+                throw;
+            }
+        }
+        else
+        {
+            nguCanh.Invoices.Add(hoaDon);
+            await nguCanh.SaveChangesAsync(maHuy);
+
+            GhiAuditLog("CREATE_INVOICE",
+                hoaDon.Id.ToString(),
+                $"Tạo hóa đơn {soHoaDon} cho ghi danh {yeuCau.EnrollmentId}, kỳ {yeuCau.PeriodStart:yyyy-MM-dd} đến {ngayKetThucKy:yyyy-MM-dd}, số tiền {yeuCau.AmountDue:N0} VNĐ.");
+            await nguCanh.SaveChangesAsync(maHuy);
+        }
 
         hoaDon.Enrollment = ghiDanh;
         return ChuyenThanhPhanHoi(hoaDon);
     }
 
-    // [Hủy hóa đơn] Không xóa vật lý — bắt buộc có lý do và ghi audit log
+    // [Hủy hóa đơn] Không xóa vật lý — bắt buộc có lý do và ghi audit log trong Transaction
     public async Task<PhanHoiHoaDon> HuyHoaDonAsync(
         int maHoaDon,
         YeuCauHuyHoaDon yeuCau,
@@ -165,18 +188,42 @@ public class DichVuHoaDon(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai) :
         if (hoaDon.Status == InvoiceStatus.Paid)
             throw new ConflictException("Không thể hủy hóa đơn đã thanh toán đủ.");
 
+        if (hoaDon.Payments.Any(p => p.Status == PaymentStatus.Confirmed))
+            throw new ConflictException("Không thể hủy hóa đơn đã phát sinh thanh toán được xác nhận.");
+
         // --- Cập nhật trạng thái hủy ---
         hoaDon.Status       = InvoiceStatus.Cancelled;
         hoaDon.CancelledBy  = nguoiDungHienTai.UserId;
         hoaDon.CancelledAt  = DateTime.UtcNow;
         hoaDon.CancelReason = yeuCau.LyDoHuy.Trim();
 
-        // --- Ghi audit log bắt buộc khi hủy ---
-        GhiAuditLog("CANCEL_INVOICE",
-            hoaDon.Id.ToString(),
-            $"Hủy hóa đơn {hoaDon.InvoiceNumber}. Lý do: {yeuCau.LyDoHuy.Trim()}");
+        if (nguCanh.Database.IsRelational())
+        {
+            await using var tx = await nguCanh.Database.BeginTransactionAsync(maHuy);
+            try
+            {
+                GhiAuditLog("CANCEL_INVOICE",
+                    hoaDon.Id.ToString(),
+                    $"Hủy hóa đơn {hoaDon.InvoiceNumber}. Lý do: {yeuCau.LyDoHuy.Trim()}");
 
-        await nguCanh.SaveChangesAsync(maHuy);
+                await nguCanh.SaveChangesAsync(maHuy);
+                await tx.CommitAsync(maHuy);
+            }
+            catch
+            {
+                await tx.RollbackAsync(maHuy);
+                throw;
+            }
+        }
+        else
+        {
+            GhiAuditLog("CANCEL_INVOICE",
+                hoaDon.Id.ToString(),
+                $"Hủy hóa đơn {hoaDon.InvoiceNumber}. Lý do: {yeuCau.LyDoHuy.Trim()}");
+
+            await nguCanh.SaveChangesAsync(maHuy);
+        }
+
         return ChuyenThanhPhanHoi(hoaDon);
     }
 
