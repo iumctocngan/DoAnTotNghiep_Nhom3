@@ -105,7 +105,10 @@ Một học sinh có tối đa một guardian chính; guardian này là đầu m
 
 Danh mục đã được sử dụng không có API DELETE.
 
+`Code` được chuẩn hóa thành chữ hoa. Database giữ `Code` của Course duy nhất toàn hệ thống; `Code` và `SortOrder` của Level/Lesson duy nhất trong parent tương ứng. Tạo hoặc sửa bị trùng trả `409 Conflict`.
+
 Lesson trực tiếp thuộc Level; request tạo hoặc cập nhật lesson dùng `LevelId`.
+Không chuyển Level sang Course khác hoặc Lesson sang Level khác sau khi tạo; nếu chọn nhầm parent thì deactivate bản ghi cũ và tạo bản ghi mới.
 
 ## 6. Lớp và lịch học
 

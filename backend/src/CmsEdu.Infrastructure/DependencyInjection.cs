@@ -1,4 +1,5 @@
 using CmsEdu.Application.Common.Interfaces;
+using CmsEdu.Application.Curriculum;
 using CmsEdu.Application.Teachers;
 using CmsEdu.Infrastructure.Identity;
 using CmsEdu.Infrastructure.Persistence;
@@ -59,6 +60,8 @@ public static class DependencyInjection
         services.AddScoped<IStaffService, StaffService>();
         services.AddScoped<ITeacherRepository, TeacherRepository>();
         services.AddScoped<TeacherService>();
+        services.AddScoped<ICurriculumRepository, CurriculumRepository>();
+        services.AddScoped<CurriculumService>();
 
         return services;
     }
