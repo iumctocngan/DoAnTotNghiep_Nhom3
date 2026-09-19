@@ -9,6 +9,6 @@ public class CurrentUser(IHttpContextAccessor httpContextAccessor) : ICurrentUse
     private ClaimsPrincipal? Principal => httpContextAccessor.HttpContext?.User;
 
     public string? UserId => Principal?.FindFirstValue(JwtRegisteredClaimNames.Sub);
-    public string? Role => Principal?.FindFirstValue(ClaimTypes.Role);
+    public string? Role => Principal?.FindFirstValue("role");
     public bool IsAuthenticated => Principal?.Identity?.IsAuthenticated == true;
 }

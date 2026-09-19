@@ -29,7 +29,7 @@ public class JwtAccessTokenGenerator(IOptions<JwtOptions> options)
             new Claim(JwtRegisteredClaimNames.Email, email),
             new Claim(JwtRegisteredClaimNames.Name, fullName),
             new Claim("employee_code", employeeCode),
-            new Claim(ClaimTypes.Role, role)
+            new Claim("role", role)
         };
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SigningKey));
         var token = new JwtSecurityToken(

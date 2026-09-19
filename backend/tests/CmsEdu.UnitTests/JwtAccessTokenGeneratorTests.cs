@@ -30,7 +30,7 @@ public class JwtAccessTokenGeneratorTests {
         Assert.Equal("NV001", token.Claims.Single(claim => claim.Type == "employee_code").Value);
         Assert.Equal("Nguyen Van A", token.Claims.Single(claim => claim.Type == JwtRegisteredClaimNames.Name).Value);
         Assert.Equal("a@cms.edu.vn", token.Claims.Single(claim => claim.Type == JwtRegisteredClaimNames.Email).Value);
-        Assert.Equal("Teacher", token.Claims.Single(claim => claim.Type == ClaimTypes.Role).Value);
+        Assert.Equal("Teacher", token.Claims.Single(claim => claim.Type == "role").Value);
         Assert.Equal(result.ExpiresAtUtc, token.ValidTo);
         Assert.InRange(result.ExpiresAtUtc, DateTime.UtcNow.AddMinutes(14), DateTime.UtcNow.AddMinutes(16));
     }

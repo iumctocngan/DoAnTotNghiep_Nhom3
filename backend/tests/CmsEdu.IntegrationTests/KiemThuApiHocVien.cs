@@ -56,7 +56,7 @@ public class KiemThuApiHocVien
             if (vaiTro is not null)
             {
                 var maTruyCap = new JwtSecurityToken("CmsEdu.Api", "CmsEdu.Web",
-                    [new Claim(JwtRegisteredClaimNames.Sub, "test-user"), new Claim(ClaimTypes.Role, vaiTro)],
+                    [new Claim(JwtRegisteredClaimNames.Sub, "test-user"), new Claim("role", vaiTro)],
                     expires: DateTime.UtcNow.AddMinutes(5),
                     signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(KhoaKy)), SecurityAlgorithms.HmacSha256));
                 trinhKhach.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", new JwtSecurityTokenHandler().WriteToken(maTruyCap));

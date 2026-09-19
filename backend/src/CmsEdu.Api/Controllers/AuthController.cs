@@ -87,7 +87,7 @@ public class AuthController(
         var employeeCode = User.FindFirstValue("employee_code");
         var fullName = User.FindFirstValue(JwtRegisteredClaimNames.Name);
         var email = User.FindFirstValue(JwtRegisteredClaimNames.Email);
-        var role = User.FindFirstValue(ClaimTypes.Role);
+        var role = User.FindFirstValue("role");
 
         if (userId is null || employeeCode is null || fullName is null || email is null || role is null)
         {

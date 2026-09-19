@@ -57,7 +57,7 @@ builder.Services
             RequireExpirationTime = true,
             ClockSkew = TimeSpan.Zero,
             NameClaimType = JwtRegisteredClaimNames.Name,
-            RoleClaimType = ClaimTypes.Role
+            RoleClaimType = "role"
         };
     });
 
