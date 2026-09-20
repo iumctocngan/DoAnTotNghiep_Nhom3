@@ -1,3 +1,4 @@
+using System.Data;
 using CmsEdu.Application.Common.Exceptions;
 using CmsEdu.Application.Common.Interfaces;
 using CmsEdu.Application.Common.Models;
@@ -27,7 +28,7 @@ public class DichVuHoaDon(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai) :
         CancellationToken maHuy = default)
     {
         KiemTraPhanTrang(trang, kichThuocTrang);
-        KiemTraQuyenKeToan();
+        KiemTraQuyenDocHoaDon();
 
         var truyVan = nguCanh.Invoices
             .AsNoTracking()
@@ -63,7 +64,7 @@ public class DichVuHoaDon(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai) :
         int maHoaDon,
         CancellationToken maHuy = default)
     {
-        KiemTraQuyenKeToan();
+        KiemTraQuyenDocHoaDon();
 
         var hoaDon = await LayHoaDonAsync(maHoaDon, coTracking: false, maHuy)
             ?? throw new NotFoundException("Không tìm thấy hóa đơn.");
@@ -76,7 +77,7 @@ public class DichVuHoaDon(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai) :
         YeuCauTaoHoaDon yeuCau,
         CancellationToken maHuy = default)
     {
-        KiemTraQuyenKeToan();
+        KiemTraQuyenGhiHoaDon();
 
         // --- Kiểm tra enrollment tồn tại và đang Active ---
         var ghiDanh = await nguCanh.Enrollments
@@ -100,40 +101,23 @@ public class DichVuHoaDon(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai) :
             throw new ValidationException(
                 $"Ngày đến hạn không được sau ngày kết thúc kỳ học phí ({ngayKetThucKy:dd/MM/yyyy}).");
 
-        // --- Kiểm tra kỳ không chồng lấn với các hóa đơn chưa hủy của enrollment ---
-        var biTrungKy = await nguCanh.Invoices
-            .AnyAsync(hd =>
-                hd.EnrollmentId == yeuCau.EnrollmentId &&
-                hd.Status != InvoiceStatus.Cancelled &&
-                hd.PeriodStart <= ngayKetThucKy &&
-                hd.PeriodEnd >= yeuCau.PeriodStart,
-                maHuy);
-
-        if (biTrungKy)
-            throw new ConflictException(
-                "Kỳ học phí bị chồng lấn với hóa đơn đã tồn tại của ghi danh này.");
-
-        // --- Tạo hóa đơn & Ghi AuditLog trong Transaction ---
-        var soHoaDon = await TaoSoHoaDonAsync(yeuCau.PeriodStart, maHuy);
-        var hoaDon = new Invoice
-        {
-            InvoiceNumber = soHoaDon,
-            EnrollmentId  = yeuCau.EnrollmentId,
-            PeriodStart   = yeuCau.PeriodStart,
-            PeriodEnd     = ngayKetThucKy,
-            AmountDue     = yeuCau.AmountDue,
-            DueDate       = yeuCau.DueDate,
-            Status        = InvoiceStatus.Issued,
-            Note          = ChuanHoaGhiChu(yeuCau.Note),
-            CreatedBy     = nguoiDungHienTai.UserId ?? string.Empty,
-            CreatedAt     = DateTime.UtcNow
-        };
-
+        Invoice hoaDon;
         if (nguCanh.Database.IsRelational())
         {
-            await using var tx = await nguCanh.Database.BeginTransactionAsync(maHuy);
+            await using var tx = await nguCanh.Database.BeginTransactionAsync(
+                IsolationLevel.Serializable, maHuy);
             try
             {
+                await KhoaHoaDonTheoHocVienAsync(ghiDanh.StudentId, maHuy);
+
+                var biTrungKy = await KiemTraTrungKyAsync(
+                    ghiDanh.StudentId, yeuCau.PeriodStart, ngayKetThucKy, maHuy);
+                if (biTrungKy)
+                    throw new ConflictException(
+                        "Kỳ học phí bị chồng lấn với hóa đơn đã tồn tại của học sinh.");
+
+                var soHoaDon = await TaoSoHoaDonAsync(yeuCau.PeriodStart, maHuy);
+                hoaDon = TaoHoaDonEntity(yeuCau, ngayKetThucKy, soHoaDon);
                 nguCanh.Invoices.Add(hoaDon);
                 await nguCanh.SaveChangesAsync(maHuy);
 
@@ -152,6 +136,14 @@ public class DichVuHoaDon(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai) :
         }
         else
         {
+            var biTrungKy = await KiemTraTrungKyAsync(
+                ghiDanh.StudentId, yeuCau.PeriodStart, ngayKetThucKy, maHuy);
+            if (biTrungKy)
+                throw new ConflictException(
+                    "Kỳ học phí bị chồng lấn với hóa đơn đã tồn tại của học sinh.");
+
+            var soHoaDon = await TaoSoHoaDonAsync(yeuCau.PeriodStart, maHuy);
+            hoaDon = TaoHoaDonEntity(yeuCau, ngayKetThucKy, soHoaDon);
             nguCanh.Invoices.Add(hoaDon);
             await nguCanh.SaveChangesAsync(maHuy);
 
@@ -171,7 +163,7 @@ public class DichVuHoaDon(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai) :
         YeuCauHuyHoaDon yeuCau,
         CancellationToken maHuy = default)
     {
-        KiemTraQuyenKeToan();
+        KiemTraQuyenGhiHoaDon();
 
         if (string.IsNullOrWhiteSpace(yeuCau.LyDoHuy))
             throw new ValidationException("Lý do hủy không được để trống.");
@@ -235,7 +227,7 @@ public class DichVuHoaDon(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai) :
         CancellationToken maHuy = default)
     {
         KiemTraPhanTrang(trang, kichThuocTrang);
-        KiemTraQuyenKeToan();
+        KiemTraQuyenDocHoaDon();
 
         _ = await nguCanh.Students
             .SingleOrDefaultAsync(hv => hv.Id == studentId, maHuy)
@@ -266,7 +258,7 @@ public class DichVuHoaDon(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai) :
         int studentId,
         CancellationToken maHuy = default)
     {
-        KiemTraQuyenKeToan();
+        KiemTraQuyenDocHoaDon();
 
         var hocVien = await nguCanh.Students
             .SingleOrDefaultAsync(hv => hv.Id == studentId, maHuy)
@@ -315,7 +307,7 @@ public class DichVuHoaDon(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai) :
         CancellationToken maHuy = default)
     {
         KiemTraPhanTrang(trang, kichThuocTrang);
-        KiemTraQuyenKeToan();
+        KiemTraQuyenDocHoaDon();
 
         var ngayHienTai = DateOnly.FromDateTime(DateTime.UtcNow);
 
@@ -399,6 +391,55 @@ public class DichVuHoaDon(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai) :
         return $"{tienTo}{soThuTu}";
     }
 
+    private async Task<bool> KiemTraTrungKyAsync(
+        int studentId,
+        DateOnly periodStart,
+        DateOnly periodEnd,
+        CancellationToken maHuy)
+        => await nguCanh.Invoices.AnyAsync(hd =>
+            hd.Enrollment.StudentId == studentId &&
+            hd.Status != InvoiceStatus.Cancelled &&
+            hd.PeriodStart <= periodEnd &&
+            hd.PeriodEnd >= periodStart, maHuy);
+
+    private async Task KhoaHoaDonTheoHocVienAsync(
+        int studentId,
+        CancellationToken maHuy)
+    {
+        if (!nguCanh.Database.IsSqlServer())
+            return;
+
+        var resource = $"CmsEdu:Invoice:Student:{studentId}";
+        await nguCanh.Database.ExecuteSqlInterpolatedAsync($"""
+            DECLARE @result int;
+            EXEC @result = sp_getapplock
+                @Resource = {resource},
+                @LockMode = N'Exclusive',
+                @LockOwner = N'Transaction',
+                @LockTimeout = 10000;
+            IF @result < 0
+                THROW 50001, 'Không thể khóa nghiệp vụ hóa đơn của học sinh.', 1;
+            """, maHuy);
+    }
+
+    private Invoice TaoHoaDonEntity(
+        YeuCauTaoHoaDon yeuCau,
+        DateOnly ngayKetThucKy,
+        string soHoaDon)
+        => new()
+        {
+            InvoiceNumber = soHoaDon,
+            EnrollmentId = yeuCau.EnrollmentId,
+            PeriodStart = yeuCau.PeriodStart,
+            PeriodEnd = ngayKetThucKy,
+            AmountDue = yeuCau.AmountDue,
+            DueDate = yeuCau.DueDate,
+            Status = InvoiceStatus.Issued,
+            Note = ChuanHoaGhiChu(yeuCau.Note),
+            CreatedBy = nguoiDungHienTai.UserId ?? string.Empty,
+            CreatedAt = DateTime.UtcNow
+        };
+
     // -------------------------------------------------------------------------
     // HELPER: Ghi audit log cho các thao tác quan trọng
     // -------------------------------------------------------------------------
@@ -416,9 +457,22 @@ public class DichVuHoaDon(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai) :
     }
 
     // -------------------------------------------------------------------------
-    // HELPER: Kiểm tra quyền — chỉ Admin và Accountant được thao tác hóa đơn
+    // HELPER: Kiểm tra quyền đọc hóa đơn
     // -------------------------------------------------------------------------
-    private void KiemTraQuyenKeToan()
+    private void KiemTraQuyenDocHoaDon()
+    {
+        if (nguoiDungHienTai.Role != UserRole.Admin &&
+            nguoiDungHienTai.Role != UserRole.Accountant &&
+            nguoiDungHienTai.Role != UserRole.CustomerCare)
+        {
+            throw new ForbiddenAccessException("Bạn không có quyền xem hóa đơn.");
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // HELPER: Kiểm tra quyền ghi hóa đơn
+    // -------------------------------------------------------------------------
+    private void KiemTraQuyenGhiHoaDon()
     {
         if (nguoiDungHienTai.Role != UserRole.Admin &&
             nguoiDungHienTai.Role != UserRole.Accountant)

@@ -125,6 +125,38 @@ public class KiemThuDichVuHoaDon
     }
 
     [Fact]
+    public async Task TaoHoaDonAsync_ThatBai_KhiTrungKyQuaEnrollmentKhacCungHocVien()
+    {
+        await using var boGiaLap = await GiaLapHoaDon.TaoMoiAsync();
+        var ghiDanhMoi = new Enrollment
+        {
+            StudentId = boGiaLap.HocVien.Id,
+            ClassId = boGiaLap.LopHoc.Id,
+            StartDate = new DateOnly(2026, 9, 1),
+            Status = EnrollmentStatus.Active
+        };
+        boGiaLap.NguCanh.Enrollments.Add(ghiDanhMoi);
+        await boGiaLap.NguCanh.SaveChangesAsync();
+
+        await boGiaLap.DichVu.TaoHoaDonAsync(new YeuCauTaoHoaDon(
+            boGiaLap.GhiDanhActive.Id,
+            new DateOnly(2026, 9, 1),
+            6_000_000m,
+            new DateOnly(2027, 2, 28),
+            null));
+
+        var ex = await Assert.ThrowsAsync<ConflictException>(() =>
+            boGiaLap.DichVu.TaoHoaDonAsync(new YeuCauTaoHoaDon(
+                ghiDanhMoi.Id,
+                new DateOnly(2026, 11, 1),
+                6_000_000m,
+                new DateOnly(2027, 4, 30),
+                null)));
+
+        Assert.Contains("học sinh", ex.Message);
+    }
+
+    [Fact]
     public async Task HuyHoaDonAsync_ThanhCong_CapNhatTrangThaiVaGhiAuditLog()
     {
         await using var boGiaLap = await GiaLapHoaDon.TaoMoiAsync();
@@ -444,6 +476,30 @@ public class KiemThuDichVuHoaDon
         var ketQua = await boGiaLap.DichVu.TaoHoaDonAsync(yeuCau);
         Assert.NotNull(ketQua);
         Assert.Equal(InvoiceStatus.Issued, ketQua.TrangThai);
+    }
+
+    [Fact]
+    public async Task KiemTraQuyen_CustomerCareDuocPhepDocHoaDon()
+    {
+        await using var boGiaLap = await GiaLapHoaDon.TaoMoiAsync(vaiTro: UserRole.CustomerCare);
+        var hoaDon = new Invoice
+        {
+            InvoiceNumber = "INV-CUSTOMERCARE-001",
+            EnrollmentId = boGiaLap.GhiDanhActive.Id,
+            PeriodStart = new DateOnly(2026, 9, 1),
+            PeriodEnd = new DateOnly(2027, 2, 28),
+            AmountDue = 6_000_000m,
+            DueDate = new DateOnly(2027, 2, 28),
+            Status = InvoiceStatus.Issued,
+            CreatedBy = "admin",
+            CreatedAt = DateTime.UtcNow
+        };
+        boGiaLap.NguCanh.Invoices.Add(hoaDon);
+        await boGiaLap.NguCanh.SaveChangesAsync();
+
+        var ketQua = await boGiaLap.DichVu.LayChiTietHoaDonAsync(hoaDon.Id);
+
+        Assert.Equal(hoaDon.Id, ketQua.Id);
     }
 
     // -------------------------------------------------------------------------

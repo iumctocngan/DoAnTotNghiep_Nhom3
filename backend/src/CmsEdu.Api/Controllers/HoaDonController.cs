@@ -12,7 +12,7 @@ namespace CmsEdu.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/invoices")]
-[Authorize(Roles = $"{UserRole.Admin},{UserRole.Accountant}")]
+[Authorize(Roles = $"{UserRole.Admin},{UserRole.Accountant},{UserRole.CustomerCare}")]
 public class HoaDonController(IDichVuHoaDon dichVuHoaDon) : ControllerBase
 {
     /// <summary>
@@ -47,6 +47,7 @@ public class HoaDonController(IDichVuHoaDon dichVuHoaDon) : ControllerBase
     /// Ràng buộc: kỳ không được chồng lấn, DueDate &lt;= PeriodEnd, AmountDue &gt; 0.
     /// </summary>
     [HttpPost]
+    [Authorize(Roles = $"{UserRole.Admin},{UserRole.Accountant}")]
     public async Task<ActionResult<PhanHoiHoaDon>> TaoHoaDon(
         [FromBody] YeuCauTaoHoaDon yeuCau,
         CancellationToken maHuy = default)
@@ -59,6 +60,7 @@ public class HoaDonController(IDichVuHoaDon dichVuHoaDon) : ControllerBase
     /// Hủy hóa đơn. Bắt buộc có lý do — không xóa vật lý, lưu audit log.
     /// </summary>
     [HttpPost("{id:int}/cancel")]
+    [Authorize(Roles = $"{UserRole.Admin},{UserRole.Accountant}")]
     public async Task<ActionResult<PhanHoiHoaDon>> HuyHoaDon(
         [FromRoute(Name = "id")] int maHoaDon,
         [FromBody] YeuCauHuyHoaDon yeuCau,
