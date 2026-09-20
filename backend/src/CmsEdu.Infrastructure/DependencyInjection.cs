@@ -1,5 +1,8 @@
 using CmsEdu.Application.Common.Interfaces;
 using CmsEdu.Application.Curriculum;
+using CmsEdu.Application.Classes;
+using CmsEdu.Application.Enrollments;
+using CmsEdu.Application.Remarks;
 using CmsEdu.Application.Teachers;
 using CmsEdu.Infrastructure.Identity;
 using CmsEdu.Infrastructure.Persistence;
@@ -62,6 +65,13 @@ public static class DependencyInjection
         services.AddScoped<TeacherService>();
         services.AddScoped<ICurriculumRepository, CurriculumRepository>();
         services.AddScoped<CurriculumService>();
+        services.AddScoped<KhoDuLieuQuanLyLop>();
+        services.AddScoped<IKhoDuLieuLopHoc>(provider => provider.GetRequiredService<KhoDuLieuQuanLyLop>());
+        services.AddScoped<IKhoDuLieuGhiDanh>(provider => provider.GetRequiredService<KhoDuLieuQuanLyLop>());
+        services.AddScoped<IKhoDuLieuNhanXet>(provider => provider.GetRequiredService<KhoDuLieuQuanLyLop>());
+        services.AddScoped<DichVuLopHoc>();
+        services.AddScoped<DichVuGhiDanh>();
+        services.AddScoped<DichVuNhanXetHocVien>();
 
         return services;
     }
