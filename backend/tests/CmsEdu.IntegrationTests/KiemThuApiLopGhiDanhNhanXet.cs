@@ -30,7 +30,7 @@ public class KiemThuApiLopGhiDanhNhanXet
         using var chuaDangNhap = ungDung.CreateTestClient();
 
         Assert.Equal(HttpStatusCode.Unauthorized, (await chuaDangNhap.GetAsync("/api/classes")).StatusCode);
-        Assert.Equal(HttpStatusCode.Forbidden, (await chamSoc.GetAsync("/api/classes")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await chamSoc.GetAsync("/api/classes")).StatusCode);
 
         var homNay = DateOnly.FromDateTime(DateTime.Today);
         var yeuCauLop = new YeuCauLopHoc("LOP-KT-01", "Lớp kiểm thử", capDoId, giaoVienId,

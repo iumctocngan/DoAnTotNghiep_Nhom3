@@ -12,11 +12,12 @@ public record ThongTinLopHoc(int Id, string MaLop, string TenLop, int CapDoId, s
     int SiSoToiDa, int SiSoHienTai, DateOnly NgayBatDau, DateOnly? NgayKetThuc,
     DayOfWeek Thu, TimeOnly GioBatDau, TimeOnly GioKetThuc, ClassStatus TrangThai);
 
-public class DichVuLopHoc(IKhoDuLieuLopHoc kho)
+public class DichVuLopHoc(IKhoDuLieuLopHoc kho, ICurrentUser nguoiDung)
 {
     public async Task<List<ThongTinLopHoc>> DanhSach(CancellationToken maHuy)
     {
-        var danhSach = await kho.LayLopAsync(maHuy);
+        KiemTraQuyen(UserRole.Admin, UserRole.Teacher, UserRole.Accountant, UserRole.CustomerCare);
+        var danhSach = await kho.LayLopAsync(maHuy, nguoiDung.Role == UserRole.Teacher ? nguoiDung.UserId : null);
         var ketQua = new List<ThongTinLopHoc>(danhSach.Count);
         foreach (var lop in danhSach)
             ketQua.Add(ChuyenDoi(lop, await kho.DemSiSoAsync(lop.Id, maHuy)));
@@ -25,12 +26,16 @@ public class DichVuLopHoc(IKhoDuLieuLopHoc kho)
 
     public async Task<ThongTinLopHoc> ChiTiet(int id, CancellationToken maHuy)
     {
+        KiemTraQuyen(UserRole.Admin, UserRole.Teacher, UserRole.Accountant, UserRole.CustomerCare);
         var lop = await Tim(id, maHuy);
+        if (nguoiDung.Role == UserRole.Teacher && lop.MainTeacherUserId != nguoiDung.UserId)
+            throw new ForbiddenAccessException("Bạn không phụ trách lớp này.");
         return ChuyenDoi(lop, await kho.DemSiSoAsync(id, maHuy));
     }
 
     public async Task<ThongTinLopHoc> Tao(YeuCauLopHoc yeuCau, CancellationToken maHuy)
     {
+        KiemTraQuyen(UserRole.Admin);
         await KiemTra(yeuCau, null, maHuy);
         var lop = new Class();
         Gan(lop, yeuCau);
@@ -42,6 +47,7 @@ public class DichVuLopHoc(IKhoDuLieuLopHoc kho)
     public Task<ThongTinLopHoc> CapNhat(int id, YeuCauLopHoc yeuCau, CancellationToken maHuy) =>
         kho.TrongGiaoDichAsync(async () =>
         {
+            KiemTraQuyen(UserRole.Admin);
             var lop = await Tim(id, maHuy);
             await KiemTra(yeuCau, id, maHuy);
             var siSo = await kho.DemSiSoAsync(id, maHuy);
@@ -56,11 +62,19 @@ public class DichVuLopHoc(IKhoDuLieuLopHoc kho)
 
     public async Task Xoa(int id, CancellationToken maHuy)
     {
+        KiemTraQuyen(UserRole.Admin);
         var lop = await Tim(id, maHuy);
         if (await kho.CoDuLieuLienQuanAsync(id, maHuy))
             throw new ConflictException("Lớp đã có ghi danh hoặc buổi học; không thể xóa.");
         kho.Xoa(lop);
         await kho.LuuAsync(maHuy);
+    }
+
+    private void KiemTraQuyen(params string[] roles)
+    {
+        if (!nguoiDung.IsAuthenticated || string.IsNullOrWhiteSpace(nguoiDung.UserId) ||
+            !roles.Contains(nguoiDung.Role))
+            throw new ForbiddenAccessException("Bạn không có quyền thực hiện chức năng này.");
     }
 
     private async Task<Class> Tim(int id, CancellationToken maHuy) =>

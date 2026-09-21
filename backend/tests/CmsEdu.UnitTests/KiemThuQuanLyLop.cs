@@ -16,7 +16,7 @@ public class KiemThuQuanLyLop
         var kho = new KhoGhiDanhGia { SiSo = 2, Lop = new Class
             { Id = 3, Capacity = 2, Status = ClassStatus.Active,
               StartDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-1)) } };
-        var dichVu = new DichVuGhiDanh(kho);
+        var dichVu = new DichVuGhiDanh(kho, new NguoiDungGia(UserRole.Admin));
 
         await Assert.ThrowsAsync<ConflictException>(() => dichVu.Tao(
             new YeuCauGhiDanh(1, 3, DateOnly.FromDateTime(DateTime.Today)), default));
@@ -50,10 +50,10 @@ public class KiemThuQuanLyLop
         Assert.Equal(string.Empty, kho.NhanXet.Content);
     }
 
-    private sealed class NguoiDungGia : ICurrentUser
+    private sealed class NguoiDungGia(string role = UserRole.Teacher) : ICurrentUser
     {
         public string? UserId => "gv-1";
-        public string? Role => UserRole.Teacher;
+        public string? Role => role;
         public bool IsAuthenticated => true;
     }
 

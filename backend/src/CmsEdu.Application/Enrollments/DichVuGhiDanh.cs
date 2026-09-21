@@ -12,18 +12,28 @@ public record ThongTinGhiDanh(int Id, int HocVienId, int LopId, DateOnly NgayBat
     DateOnly? NgayKetThuc, EnrollmentStatus TrangThai, string? LyDoBaoLuu,
     DateOnly? NgayDuKienTroLai, string? LyDoKetThuc);
 
-public class DichVuGhiDanh(IKhoDuLieuGhiDanh kho)
+public class DichVuGhiDanh(IKhoDuLieuGhiDanh kho, ICurrentUser nguoiDung)
 {
     public async Task<List<ThongTinGhiDanh>> DanhSach(int? lopId, int? hocVienId,
-        CancellationToken maHuy) =>
-        (await kho.LayDanhSachAsync(lopId, hocVienId, maHuy)).Select(ChuyenDoi).ToList();
+        CancellationToken maHuy)
+    {
+        KiemTraQuyen(UserRole.Admin, UserRole.Accountant, UserRole.CustomerCare);
+        return (await kho.LayDanhSachAsync(lopId, hocVienId, maHuy)).Select(ChuyenDoi).ToList();
+    }
 
-    public async Task<ThongTinGhiDanh> ChiTiet(int id, CancellationToken maHuy) =>
-        ChuyenDoi(await Tim(id, maHuy));
+    public async Task<ThongTinGhiDanh> ChiTiet(int id, CancellationToken maHuy)
+    {
+        KiemTraQuyen(UserRole.Admin, UserRole.Teacher, UserRole.Accountant, UserRole.CustomerCare);
+        var x = await Tim(id, maHuy);
+        if (nguoiDung.Role == UserRole.Teacher && x.Class.MainTeacherUserId != nguoiDung.UserId)
+            throw new ForbiddenAccessException("Bạn không phụ trách lớp của ghi danh này.");
+        return ChuyenDoi(x);
+    }
 
     public Task<ThongTinGhiDanh> Tao(YeuCauGhiDanh yeuCau, CancellationToken maHuy) =>
         kho.TrongGiaoDichAsync(async () =>
         {
+            KiemTraQuyen(UserRole.Admin, UserRole.CustomerCare);
             await KiemTraCho(yeuCau.HocVienId, yeuCau.LopId, yeuCau.NgayBatDau, maHuy);
             var ghiDanh = new Enrollment
             {
@@ -37,6 +47,7 @@ public class DichVuGhiDanh(IKhoDuLieuGhiDanh kho)
 
     public async Task<ThongTinGhiDanh> BaoLuu(int id, YeuCauBaoLuu yeuCau, CancellationToken maHuy)
     {
+        KiemTraQuyen(UserRole.Admin, UserRole.CustomerCare);
         var x = await Tim(id, maHuy);
         if (x.Status != EnrollmentStatus.Active)
             throw new ConflictException("Chỉ ghi danh đang học mới được bảo lưu.");
@@ -52,6 +63,7 @@ public class DichVuGhiDanh(IKhoDuLieuGhiDanh kho)
 
     public async Task<ThongTinGhiDanh> TroLai(int id, CancellationToken maHuy)
     {
+        KiemTraQuyen(UserRole.Admin, UserRole.CustomerCare);
         var x = await Tim(id, maHuy);
         if (x.Status != EnrollmentStatus.Paused)
             throw new ConflictException("Chỉ ghi danh bảo lưu mới được trở lại học.");
@@ -72,6 +84,8 @@ public class DichVuGhiDanh(IKhoDuLieuGhiDanh kho)
     private async Task<ThongTinGhiDanh> KetThuc(int id, KetThucYeuCauGhiDanh yeuCau,
         EnrollmentStatus trangThai, CancellationToken maHuy)
     {
+        KiemTraQuyen(trangThai == EnrollmentStatus.Completed
+            ? [UserRole.Admin] : [UserRole.Admin, UserRole.CustomerCare]);
         var x = await Tim(id, maHuy);
         if (x.Status is not (EnrollmentStatus.Active or EnrollmentStatus.Paused))
             throw new ConflictException("Ghi danh đã kết thúc.");
@@ -100,9 +114,17 @@ public class DichVuGhiDanh(IKhoDuLieuGhiDanh kho)
             throw new ConflictException("Lớp đã đủ sĩ số.");
     }
 
+    private void KiemTraQuyen(params string[] roles)
+    {
+        if (!nguoiDung.IsAuthenticated || string.IsNullOrWhiteSpace(nguoiDung.UserId) ||
+            !roles.Contains(nguoiDung.Role))
+            throw new ForbiddenAccessException("Bạn không có quyền thực hiện chức năng này.");
+    }
+
     private async Task<Enrollment> Tim(int id, CancellationToken maHuy) =>
         await kho.TimAsync(id, maHuy) ?? throw new NotFoundException("Không tìm thấy ghi danh.");
 
-    private static ThongTinGhiDanh ChuyenDoi(Enrollment x) => new(x.Id, x.StudentId, x.ClassId,
-        x.StartDate, x.EndDate, x.Status, x.PauseReason, x.ExpectedReturnDate, x.EndReason);
+    private ThongTinGhiDanh ChuyenDoi(Enrollment x) => new(x.Id, x.StudentId, x.ClassId,
+        x.StartDate, x.EndDate, x.Status, nguoiDung.Role == UserRole.Accountant ? null : x.PauseReason, x.ExpectedReturnDate,
+        nguoiDung.Role == UserRole.Accountant ? null : x.EndReason);
 }

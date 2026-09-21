@@ -10,8 +10,8 @@ namespace CmsEdu.Infrastructure.Persistence.Repositories;
 public class KhoDuLieuQuanLyLop(AppDbContext duLieu) :
     IKhoDuLieuLopHoc, IKhoDuLieuGhiDanh, IKhoDuLieuNhanXet
 {
-    public Task<List<Class>> LayLopAsync(CancellationToken maHuy) =>
-        duLieu.Classes.AsNoTracking().OrderBy(x => x.Id).ToListAsync(maHuy);
+    public Task<List<Class>> LayLopAsync(CancellationToken maHuy, string? giaoVienId = null) =>
+        duLieu.Classes.AsNoTracking().Where(x => giaoVienId == null || x.MainTeacherUserId == giaoVienId).OrderBy(x => x.Id).ToListAsync(maHuy);
 
     public Task<Class?> TimLopAsync(int id, CancellationToken maHuy) =>
         duLieu.Classes.FirstOrDefaultAsync(x => x.Id == id, maHuy);

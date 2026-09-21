@@ -4,7 +4,7 @@ namespace CmsEdu.Application.Common.Interfaces;
 
 public interface IKhoDuLieuLopHoc
 {
-    Task<List<Class>> LayLopAsync(CancellationToken maHuy);
+    Task<List<Class>> LayLopAsync(CancellationToken maHuy, string? giaoVienId = null);
     Task<Class?> TimLopAsync(int id, CancellationToken maHuy);
     Task<int> DemSiSoAsync(int id, CancellationToken maHuy);
     Task<bool> TrungMaAsync(string ma, int? boQuaId, CancellationToken maHuy);
