@@ -14,36 +14,36 @@ Hệ thống sử dụng mô hình:
 
 ✓: được phép; —: không được phép; P: theo phạm vi dữ liệu.
 
-| Chức năng | Admin | Teacher | Accountant | CustomerCare |
-|---|:---:|:---:|:---:|:---:|
-| Tài khoản cá nhân; xem Course/Level/Lesson | ✓ | ✓ | ✓ | ✓ |
-| Quản lý Staff, danh mục, lớp; tạo/sửa/hủy buổi học | ✓ | — | — | — |
-| Tra cứu lớp phụ trách và lịch dạy của Teacher | ✓ | P | — | — |
-| Xem học viên, guardian của học viên, lớp, chi tiết ghi danh | ✓ | P | P | ✓ |
-| Tạo/sửa học viên; tra cứu/tạo/sửa guardian, quản lý liên kết | ✓ | — | — | ✓ |
-| Lưu trữ/khôi phục học viên; xóa hồ sơ guardian chưa liên kết | ✓ | — | — | — |
-| Xem danh sách ghi danh | ✓ | — | P | ✓ |
-| Tạo/bảo lưu/học lại/nghỉ học ghi danh | ✓ | — | — | ✓ |
-| Hoàn tất ghi danh | ✓ | — | — | — |
-| Xem buổi học, nhận xét | ✓ | P | — | P |
-| Hoàn tất buổi học, điểm danh, tạo/sửa nhận xét* | ✓ | P | — | — |
-| Xem invoice và payment liên quan | ✓ | — | ✓ | P |
-| Tạo/sửa/hủy invoice; xem/tạo/hủy payment | ✓ | — | ✓ | — |
-| Dashboard riêng của role | ✓ | P | ✓ | ✓ |
+| Chức năng                                                    | Admin | Teacher | Accountant | CustomerCare |
+| ------------------------------------------------------------ | :---: | :-----: | :--------: | :----------: |
+| Tài khoản cá nhân; xem Course/Level/Lesson                   |   ✓   |    ✓    |     ✓      |      ✓       |
+| Quản lý Staff, danh mục, lớp; tạo/sửa/hủy buổi học           |   ✓   |    —    |     —      |      —       |
+| Tra cứu lớp phụ trách và lịch dạy của Teacher                |   ✓   |    P    |     —      |      —       |
+| Xem học viên, guardian của học viên, lớp, chi tiết ghi danh  |   ✓   |    P    |     P      |      ✓       |
+| Tạo/sửa học viên; tra cứu/tạo/sửa guardian, quản lý liên kết |   ✓   |    —    |     —      |      ✓       |
+| Lưu trữ/khôi phục học viên; xóa hồ sơ guardian chưa liên kết |   ✓   |    —    |     —      |      —       |
+| Xem danh sách ghi danh                                       |   ✓   |    —    |     P      |      ✓       |
+| Tạo/bảo lưu/học lại/nghỉ học ghi danh                        |   ✓   |    —    |     —      |      ✓       |
+| Hoàn tất ghi danh                                            |   ✓   |    —    |     —      |      —       |
+| Xem buổi học, nhận xét                                       |   ✓   |    P    |     —      |      P       |
+| Hoàn tất buổi học, điểm danh, tạo/sửa nhận xét\*             |   ✓   |    P    |     —      |      —       |
+| Xem invoice và tổng payment liên quan                        |   ✓   |    —    |     ✓      |      P       |
+| Tạo/sửa/hủy invoice; xem/tạo/hủy payment                     |   ✓   |    —    |     ✓      |      —       |
+| Dashboard riêng của role                                     |   ✓   |    P    |     ✓      |      ✓       |
 
-- *Teacher chỉ sửa nhận xét mình tạo khi vẫn phụ trách lớp.*
+- _Teacher chỉ sửa nhận xét mình tạo khi vẫn phụ trách lớp._
 - Teacher/Accountant xem guardian qua học viên, không được tra cứu danh bạ `/guardians` riêng.
-- CSKH được gỡ liên kết guardian, nhưng không xóa hồ sơ guardian; không gọi API `/payments` riêng.
+- CSKH được gỡ liên kết guardian, nhưng không xóa hồ sơ guardian; không gọi API `/payments` riêng. CSKH chỉ xem được thông tin tài chính cần thiết qua Invoice theo phạm vi, không có quyền ghi chứng từ.
 - Mỗi role chỉ truy cập dashboard của mình, kể cả Admin. Quyền cụ thể theo endpoint xem [core-api-design.md](core-api-design.md).
 
 ## Resource scope
 
-| Role | Phạm vi dữ liệu |
-|---|---|
-| Admin | Toàn bộ dữ liệu của chức năng được cấp quyền. |
-| Teacher | Lớp hiện phụ trách: `Class.MainTeacherUserId = UserId` từ JWT; không giữ quyền theo phân công cũ. |
-| Accountant | Dữ liệu phục vụ học phí; không xem ghi chú học tập, điểm danh, nhận xét. Chứng từ không giới hạn theo người tạo. |
-| CustomerCare | Dữ liệu chăm sóc học viên và tài chính cần thiết; không ghi chứng từ. |
+| Role         | Phạm vi dữ liệu                                                                                                  |
+| ------------ | ---------------------------------------------------------------------------------------------------------------- |
+| Admin        | Toàn bộ dữ liệu của chức năng được cấp quyền.                                                                    |
+| Teacher      | Lớp hiện phụ trách: `Class.MainTeacherUserId = UserId` từ JWT; không giữ quyền theo phân công cũ.                |
+| Accountant   | Dữ liệu phục vụ học phí; không xem ghi chú học tập, điểm danh, nhận xét. Chứng từ không giới hạn theo người tạo. |
+| CustomerCare | Dữ liệu chăm sóc học viên và tài chính cần thiết; không ghi chứng từ.                                            |
 
 Service lọc phạm vi trước đếm/phân trang và cả khi lấy chi tiết; kiểm tra quan hệ parent–child bằng DB, không tin ID client gửi. DTO chỉ trả trường được phép; người phụ trách module chốt cụ thể các trường tài chính. Mọi role, kể cả Admin, vẫn tuân thủ nghiệp vụ.
 
@@ -53,34 +53,46 @@ Service lọc phạm vi trước đếm/phân trang và cả khi lấy chi tiế
 - **Service:** dùng `ICurrentUser` và DB để kiểm tra phạm vi; thao tác tài khoản cá nhân lấy UserId từ JWT.
 - **Tài khoản:** một trong bốn role cố định, không có bảng Permission hay CRUD định nghĩa role. Login/refresh yêu cầu Active; thay email/role, đổi/reset mật khẩu hoặc deactivate thu hồi refresh token, JWT cũ còn tới hạn (mặc định 15 phút).
 
-
 ## Policy và trạng thái triển khai
 
-| Policy | Role | Trạng thái |
-|---|---|---|
-| `Auth.SelfService` | Bốn role | Đã triển khai cho `me`, `change-password`, `logout-all` |
-| `Staff.Manage` | Admin | Đã triển khai cho toàn bộ `/api/staff` |
-| `Teachers.Classes.Read` | Admin, Teacher | Đã triển khai; Teacher chỉ xem chính mình |
-| `Teachers.Schedule.Read` | Admin, Teacher | Đã triển khai; Teacher chỉ xem chính mình |
-| `Catalog.Read` | Bốn role | Đã triển khai cho GET Course, Level và Lesson |
-| `Catalog.Manage` | Admin | Đã triển khai cho tạo, sửa và deactivate Course, Level, Lesson |
-| `Students.Read`, `Students.Write`, `Students.Archive` | Theo bảng role | Tên dự kiến; code đã có role check và lọc Teacher, ẩn LearningNote với Accountant |
-| `Guardians.Directory.Read`, `Guardians.Write`, `Guardians.Delete` | Danh bạ/ghi: Admin, CustomerCare; xóa: Admin | Tên dự kiến; code đã có kiểm tra role |
-| `StudentGuardians.Read`, `StudentGuardians.Write` | Đọc: bốn role theo phạm vi; ghi: Admin, CustomerCare | Tên dự kiến; code đã có kiểm tra role và phạm vi Teacher |
-| `Sessions.Read`, `Sessions.Manage`, `Sessions.Complete` | Theo bảng role | Tên dự kiến; code đã lọc Teacher, chặn Accountant đọc, kiểm tra giáo viên khi complete |
-| Class, Enrollment, Attendance, Remark | Theo bảng role | Chờ endpoint hoặc người phụ trách module áp dụng |
-| Invoice, Payment, Dashboard | Theo bảng role | Chờ endpoint tương ứng |
+| Policy                                                            | Role                                                                                         | Trạng thái                                                                                                                     |
+| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `Auth.SelfService`                                                | Bốn role                                                                                     | Đã triển khai cho `me`, `change-password`, `logout-all`                                                                        |
+| `Staff.Manage`                                                    | Admin                                                                                        | Đã triển khai cho toàn bộ `/api/staff`                                                                                         |
+| `Teachers.Classes.Read`                                           | Admin, Teacher                                                                               | Đã triển khai; Teacher chỉ xem chính mình                                                                                      |
+| `Teachers.Schedule.Read`                                          | Admin, Teacher                                                                               | Đã triển khai; Teacher chỉ xem chính mình                                                                                      |
+| `Catalog.Read`                                                    | Bốn role                                                                                     | Đã triển khai cho GET Course, Level và Lesson                                                                                  |
+| `Catalog.Manage`                                                  | Admin                                                                                        | Đã triển khai cho tạo, sửa và deactivate Course, Level, Lesson                                                                 |
+| `Students.Read`, `Students.Write`, `Students.Archive`             | Theo bảng role                                                                               | Tên dự kiến; code đã có role check và lọc Teacher, ẩn LearningNote với Accountant                                              |
+| `Guardians.Directory.Read`, `Guardians.Write`, `Guardians.Delete` | Danh bạ/ghi: Admin, CustomerCare; xóa: Admin                                                 | Tên dự kiến; code đã có kiểm tra role                                                                                          |
+| `StudentGuardians.Read`, `StudentGuardians.Write`                 | Đọc: bốn role theo phạm vi; ghi: Admin, CustomerCare                                         | Tên dự kiến; code đã có kiểm tra role và phạm vi Teacher                                                                       |
+| `Sessions.Read`, `Sessions.Manage`, `Sessions.Complete`           | Theo bảng role                                                                               | Tên dự kiến; code đã lọc Teacher, chặn Accountant đọc, kiểm tra giáo viên khi complete                                         |
+| Class, Enrollment, Attendance, Remark                             | Theo bảng role                                                                               | Chờ endpoint hoặc người phụ trách module áp dụng                                                                               |
+| Invoice                                                           | Theo bảng role                                                                               | Invoice API và service đã có; Payment trong chi tiết hiện mới thể hiện tổng đã xác nhận/còn nợ                                 |
+| Payment                                                           | Admin, Accountant ghi và xem API riêng; CustomerCare chỉ xem thông tin liên quan qua Invoice | Entity/configuration, DTO/interface/controller, service và DI đã có; đã có unit test nghiệp vụ, còn thiếu test HTTP end-to-end |
+| Dashboard                                                         | Theo bảng role                                                                               | Chờ endpoint tương ứng                                                                                                         |
 
 Mỗi module tự gắn policy vào endpoint và tự triển khai resource scope trong service. Phần authorization dùng chung không chứa trạng thái hoặc quy tắc nghiệp vụ riêng của module.
+
+### Trạng thái Invoice và Payment
+
+`InvoiceStatus` trong code khai báo `Issued`, `Cancelled`, `Draft`, `Partial`, `Paid` và `Overdue`. Tuy nhiên hiện trạng triển khai chưa đồng nhất:
+
+- Tạo Invoice mới luôn lưu `Issued`.
+- `DichVuHoaDon` có đọc/kiểm tra `Paid`; `DichVuPayment` cập nhật Invoice sang `Partial` hoặc `Paid` sau khi tạo/hủy Payment.
+- `Overdue` hiện được tính động từ `DueDate` và tổng Payment `Confirmed`; chưa có workflow lưu trạng thái này.
+- Payment có entity, cấu hình database, service ghi nhận/hủy và DI với trạng thái `Confirmed`/`Cancelled`.
+
+Vì vậy, quyền Payment đã được áp dụng ở controller và service; phần còn thiếu là kiểm thử HTTP end-to-end.
 
 `Auth.SelfService`, `Staff.Manage`, `Teachers.Classes.Read`, `Teachers.Schedule.Read`, `Catalog.Read` và `Catalog.Manage` đã được định nghĩa và đăng ký dưới dạng policy chức năng. Các tên dự kiến phải được thêm vào constants và đăng ký trong `AddAuthorization` trước khi dùng; gắn tên chưa đăng ký sẽ gây lỗi. Không coi việc chưa dùng named policy là chưa có phân quyền.
 
 ### API Teacher
 
-| Method | Endpoint | Quyền |
-|---|---|---|
-| GET | `/api/teachers/{teacherId}/classes` | Admin hoặc chính Teacher đó |
-| GET | `/api/teachers/{teacherId}/schedule` | Admin hoặc chính Teacher đó |
+| Method | Endpoint                             | Quyền                       |
+| ------ | ------------------------------------ | --------------------------- |
+| GET    | `/api/teachers/{teacherId}/classes`  | Admin hoặc chính Teacher đó |
+| GET    | `/api/teachers/{teacherId}/schedule` | Admin hoặc chính Teacher đó |
 
 Danh sách lớp được lọc bằng `Class.MainTeacherUserId`. Lịch dạy lấy từ Session của các lớp Teacher hiện phụ trách; không giữ quyền theo phân công cũ. Hai API hỗ trợ phân trang; lịch dạy hỗ trợ lọc `fromDate`, `toDate`.
 
