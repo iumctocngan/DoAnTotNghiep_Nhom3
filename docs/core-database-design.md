@@ -19,12 +19,12 @@ Sử dụng các bảng Identity chuẩn: `AspNetUsers`, `AspNetRoles`, `AspNetU
 
 Mở rộng `ApplicationUser`:
 
-| Cột | Ý nghĩa |
-|---|---|
-| EmployeeCode | Mã nhân viên do Admin nhập, unique và không được sửa hoặc tái sử dụng |
-| FullName | Họ tên |
-| PhoneNumber? | Số điện thoại không bắt buộc, không unique |
-| EmploymentStatus | Active, Inactive |
+| Cột              | Ý nghĩa                                                               |
+| ---------------- | --------------------------------------------------------------------- |
+| EmployeeCode     | Mã nhân viên do Admin nhập, unique và không được sửa hoặc tái sử dụng |
+| FullName         | Họ tên                                                                |
+| PhoneNumber?     | Số điện thoại không bắt buộc, không unique                            |
+| EmploymentStatus | Active, Inactive                                                      |
 
 Role cố định: `Admin`, `Teacher`, `Accountant`, `CustomerCare`. Application layer chỉ cho mỗi user một role chính; Admin không được tự đổi role hoặc tự deactivate; hệ thống luôn phải còn ít nhất một Admin Active; không cho deactivate/đổi role Teacher khi user còn phụ trách lớp Active. Admin được đổi role của tài khoản Inactive. Tài khoản mới luôn là Active, có EmailConfirmed bằng true và giữ nguyên role khi deactivate.
 
@@ -220,7 +220,7 @@ CreatedAt (thời điểm tạo), CancelledBy? (người hủy),
 CancelledAt? (thời điểm hủy), CancelReason? (lý do hủy)
 ```
 
-`Status`: Issued, Cancelled.
+`Status`: Issued, Partial, Paid, Cancelled. `Overdue` được tính động theo `DueDate` và tổng payment Confirmed, không lưu như trạng thái nghiệp vụ riêng.
 
 Quy tắc:
 
@@ -230,6 +230,7 @@ Quy tắc:
 - `DueDate <= PeriodEnd`.
 - Kỳ invoice còn hiệu lực của cùng học sinh không được chồng lấn, kể cả qua enrollment khác.
 - Không hủy invoice khi còn payment Confirmed.
+- Payment Confirmed một phần cập nhật Invoice thành `Partial`; khi tổng payment Confirmed bằng `AmountDue`, cập nhật thành `Paid`. Khi hủy payment, trạng thái được tính lại từ tổng payment Confirmed còn lại.
 - Hủy invoice bắt buộc có lý do; cập nhật trạng thái, người hủy, thời gian hủy và tạo AuditLog trong cùng transaction.
 - Withdraw enrollment không tự động hủy invoice, payment hoặc công nợ đã phát sinh.
 
