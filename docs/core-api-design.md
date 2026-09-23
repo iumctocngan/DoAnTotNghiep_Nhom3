@@ -180,9 +180,9 @@ Backend sinh `InvoiceNumber`, `PaymentNumber`, `ReceiptNumber`. Chỉ enrollment
 | GET    | `/api/dashboard/accounting`    | Dashboard kế toán | Admin, Accountant |
 | GET    | `/api/dashboard/customer-care` | Dashboard CSKH    | CustomerCare |
 
-Dashboard MVP tính trực tiếp từ dữ liệu nghiệp vụ, không tạo bảng thống kê riêng. Dashboard Admin trả số nhân viên, học viên, lớp và ghi danh đang hoạt động. Dashboard Teacher trả số lớp phụ trách, số học viên đang học, số buổi học hôm nay và tối đa 5 buổi học sắp tới thuộc lớp mình phụ trách. Dashboard kế toán trả doanh thu, công nợ, giao dịch và audit tài chính gần đây. Dashboard CustomerCare trả số học viên đang hoạt động, ghi danh đang học, ghi danh bảo lưu và học viên chưa có người giám hộ.
+Dashboard MVP tính trực tiếp từ dữ liệu nghiệp vụ, không tạo bảng thống kê riêng. Dashboard Admin trả số nhân viên Active, học viên chưa lưu trữ, lớp Active, ghi danh Active và số lớp theo trạng thái. Dashboard Teacher trả dữ liệu của chính giáo viên gồm số lớp Active đang phụ trách, số học viên đang học, số buổi học hôm nay và tối đa 5 buổi học chưa bắt đầu; ngày giờ được tính theo múi giờ Việt Nam. Dashboard kế toán nhận `fromDate` và `toDate` dạng ngày, trả doanh thu và giao dịch trong toàn bộ khoảng ngày, công nợ hiện tại không gồm invoice Draft/Cancelled, doanh thu theo tháng và audit tài chính gần đây. Dashboard CustomerCare trả số học viên chưa lưu trữ, ghi danh Active/Paused, học viên chưa có người giám hộ và số ghi danh theo trạng thái.
 
-Backend vẫn tự ghi audit cho thao tác quan trọng, nhưng màn hình và API tra cứu audit được hoãn sau MVP.
+Backend vẫn tự ghi audit cho thao tác quan trọng. Dashboard kế toán chỉ trả tối đa 50 audit tài chính gần nhất trong khoảng lọc; API tra cứu audit tổng quát được hoãn sau MVP.
 
 ## 11. Chuyển trạng thái
 

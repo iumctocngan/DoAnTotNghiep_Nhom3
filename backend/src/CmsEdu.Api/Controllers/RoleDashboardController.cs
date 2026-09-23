@@ -8,40 +8,40 @@ namespace CmsEdu.Api.Controllers;
 
 [ApiController]
 [Route("api/dashboard")]
-public class DashboardTheoVaiTroController(IDichVuDashboardVaiTro dichVu) : ControllerBase
+public class RoleDashboardController(IRoleDashboardService dashboardService) : ControllerBase
 {
     [HttpGet("admin")]
     [Authorize(Roles = UserRole.Admin)]
-    public async Task<ActionResult<PhanHoiDashboardAdmin>> LayDashboardAdmin(
+    public async Task<ActionResult<AdminDashboardResponse>> GetAdminDashboard(
         CancellationToken cancellationToken = default)
     {
-        return Ok(await dichVu.LayDashboardAdminAsync(cancellationToken));
+        return Ok(await dashboardService.GetAdminDashboardAsync(cancellationToken));
     }
 
     [HttpGet("teacher")]
     [Authorize(Roles = UserRole.Teacher)]
-    public async Task<ActionResult<PhanHoiDashboardTeacher>> LayDashboardTeacher(
+    public async Task<ActionResult<TeacherDashboardResponse>> GetTeacherDashboard(
         CancellationToken cancellationToken = default)
     {
-        return Ok(await dichVu.LayDashboardTeacherAsync(cancellationToken));
+        return Ok(await dashboardService.GetTeacherDashboardAsync(cancellationToken));
     }
 
     [HttpGet("customer-care")]
     [Authorize(Roles = UserRole.CustomerCare)]
-    public async Task<ActionResult<PhanHoiDashboardCustomerCare>> LayDashboardCustomerCare(
+    public async Task<ActionResult<CustomerCareDashboardResponse>> GetCustomerCareDashboard(
         CancellationToken cancellationToken = default)
     {
-        return Ok(await dichVu.LayDashboardCustomerCareAsync(cancellationToken));
+        return Ok(await dashboardService.GetCustomerCareDashboardAsync(cancellationToken));
     }
 
     [HttpGet("accounting")]
     [Authorize(Roles = $"{UserRole.Admin},{UserRole.Accountant}")]
-    public async Task<ActionResult<PhanHoiDashboardTaiChinh>> LayDashboardKeToan(
-        [FromQuery] DateTimeOffset? fromDate,
-        [FromQuery] DateTimeOffset? toDate,
+    public async Task<ActionResult<AccountingDashboardResponse>> GetAccountingDashboard(
+        [FromQuery] DateOnly? fromDate,
+        [FromQuery] DateOnly? toDate,
         CancellationToken cancellationToken = default)
     {
-        return Ok(await dichVu.LayDashboardKeToanAsync(
+        return Ok(await dashboardService.GetAccountingDashboardAsync(
             fromDate, toDate, cancellationToken));
     }
 }
