@@ -29,6 +29,34 @@ public class KiemThuDichVuPayment
         Assert.StartsWith("REC-202609-", result.ReceiptNumber);
         Assert.Equal(InvoiceStatus.Partial, fixture.Invoice.Status);
         Assert.Single(await fixture.Context.Payments.ToListAsync());
+        Assert.Contains(
+            await fixture.Context.AuditLogs.ToListAsync(),
+            log => log.Action == "CREATE_PAYMENT" && log.EntityType == "Payment");
+    }
+
+    [Fact]
+    public async Task TaoPaymentAsync_TaoHaiPayment_SinhReceiptNumberKhacNhau()
+    {
+        await using var fixture = await Fixture.TaoMoiAsync();
+
+        var firstPayment = await fixture.Service.TaoPaymentAsync(
+            fixture.Invoice.Id,
+            new YeuCauTaoPayment(
+                2_000_000m,
+                new DateTimeOffset(2026, 9, 10, 8, 0, 0, TimeSpan.Zero),
+                PaymentMethod.Cash,
+                null));
+        var secondPayment = await fixture.Service.TaoPaymentAsync(
+            fixture.Invoice.Id,
+            new YeuCauTaoPayment(
+                1_000_000m,
+                new DateTimeOffset(2026, 9, 11, 8, 0, 0, TimeSpan.Zero),
+                PaymentMethod.Cash,
+                null));
+
+        Assert.NotEqual(firstPayment.ReceiptNumber, secondPayment.ReceiptNumber);
+        Assert.All(new[] { firstPayment, secondPayment }, payment =>
+            Assert.StartsWith("REC-202609-", payment.ReceiptNumber));
     }
 
     [Fact]

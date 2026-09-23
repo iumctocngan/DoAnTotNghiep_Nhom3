@@ -85,6 +85,7 @@ public sealed class DichVuPayment(AppDbContext nguCanh, ICurrentUser nguoiDungHi
             try
             {
                 await KhoaInvoiceAsync(invoiceId, cancellationToken);
+                await KhoaSinhSoChungTuAsync(request.PaidAt, cancellationToken);
                 var payment = await TaoPaymentTrongGiaoDichAsync(invoiceId, request, cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
                 return ChuyenThanhPhanHoi(payment);
@@ -259,6 +260,26 @@ public sealed class DichVuPayment(AppDbContext nguCanh, ICurrentUser nguoiDungHi
                 @LockTimeout = 10000;
             IF @result < 0
                 THROW 50002, 'Không thể khóa nghiệp vụ payment của hóa đơn.', 1;
+            """, cancellationToken);
+    }
+
+    private async Task KhoaSinhSoChungTuAsync(
+        DateTimeOffset paidAt,
+        CancellationToken cancellationToken)
+    {
+        if (!nguCanh.Database.IsSqlServer())
+            return;
+
+        var resource = $"CmsEdu:Payment:Number:{paidAt:yyyyMM}";
+        await nguCanh.Database.ExecuteSqlInterpolatedAsync($"""
+            DECLARE @result int;
+            EXEC @result = sp_getapplock
+                @Resource = {resource},
+                @LockMode = N'Exclusive',
+                @LockOwner = N'Transaction',
+                @LockTimeout = 10000;
+            IF @result < 0
+                THROW 50003, 'Không thể khóa sinh số payment và phiếu thu.', 1;
             """, cancellationToken);
     }
 

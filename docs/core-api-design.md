@@ -33,22 +33,22 @@ Reset password, archive, deactivate danh mục và màn hình tra cứu audit l�
 
 ## 3. Authentication và nhân viên
 
-| Method | Endpoint | Mục đích | Quyền |
-|---|---|---|---|
-| POST | `/api/auth/login` | Nhận JWT | Public |
-| POST | `/api/auth/refresh` | Xoay refresh token và cấp access token mới | Public, yêu cầu refresh token hợp lệ |
-| POST | `/api/auth/logout` | Thu hồi phiên refresh token hiện tại | Public, yêu cầu refresh token hợp lệ |
-| POST | `/api/auth/logout-all` | Thu hồi toàn bộ refresh token của tài khoản | Authenticated |
-| GET | `/api/auth/me` | Thông tin bản thân | Authenticated |
-| POST | `/api/auth/change-password` | Nhân viên đổi mật khẩu bằng mật khẩu hiện tại | Authenticated |
-| GET | `/api/staff` | Danh sách nhân viên | Admin |
-| GET | `/api/staff/{id}` | Chi tiết nhân viên | Admin |
-| POST | `/api/staff` | Tạo tài khoản | Admin |
-| PUT | `/api/staff/{id}` | Sửa họ tên, email và số điện thoại | Admin |
-| PUT | `/api/staff/{id}/role` | Đổi role | Admin |
-| POST | `/api/staff/{id}/reset-password` | Đặt lại mật khẩu | Admin |
-| POST | `/api/staff/{id}/deactivate` | Ngừng tài khoản | Admin |
-| POST | `/api/staff/{id}/activate` | Kích hoạt tài khoản | Admin |
+| Method | Endpoint                         | Mục đích                                      | Quyền                                |
+| ------ | -------------------------------- | --------------------------------------------- | ------------------------------------ |
+| POST   | `/api/auth/login`                | Nhận JWT                                      | Public                               |
+| POST   | `/api/auth/refresh`              | Xoay refresh token và cấp access token mới    | Public, yêu cầu refresh token hợp lệ |
+| POST   | `/api/auth/logout`               | Thu hồi phiên refresh token hiện tại          | Public, yêu cầu refresh token hợp lệ |
+| POST   | `/api/auth/logout-all`           | Thu hồi toàn bộ refresh token của tài khoản   | Authenticated                        |
+| GET    | `/api/auth/me`                   | Thông tin bản thân                            | Authenticated                        |
+| POST   | `/api/auth/change-password`      | Nhân viên đổi mật khẩu bằng mật khẩu hiện tại | Authenticated                        |
+| GET    | `/api/staff`                     | Danh sách nhân viên                           | Admin                                |
+| GET    | `/api/staff/{id}`                | Chi tiết nhân viên                            | Admin                                |
+| POST   | `/api/staff`                     | Tạo tài khoản                                 | Admin                                |
+| PUT    | `/api/staff/{id}`                | Sửa họ tên, email và số điện thoại            | Admin                                |
+| PUT    | `/api/staff/{id}/role`           | Đổi role                                      | Admin                                |
+| POST   | `/api/staff/{id}/reset-password` | Đặt lại mật khẩu                              | Admin                                |
+| POST   | `/api/staff/{id}/deactivate`     | Ngừng tài khoản                               | Admin                                |
+| POST   | `/api/staff/{id}/activate`       | Kích hoạt tài khoản                           | Admin                                |
 
 Bốn role cố định; mỗi user có một role chính. Admin không được tự đổi role hoặc tự deactivate; hệ thống luôn phải còn ít nhất một Admin Active. Không deactivate hoặc đổi role Teacher khi user còn phụ trách lớp Active. Admin được đổi role của tài khoản Inactive và role mới có hiệu lực khi tài khoản được activate lại. Tài khoản mới luôn là Active; request tạo không nhận trạng thái và email được đánh dấu đã xác nhận. Tài khoản Inactive không đăng nhập hoặc refresh được nhưng Admin vẫn có thể reset mật khẩu trước khi activate. Khi đổi email, deactivate, đổi role hoặc reset password, backend thu hồi toàn bộ refresh token của tài khoản; access token đã cấp còn hiệu lực tối đa 15 phút. Nhân viên tự đổi mật khẩu sẽ bị đăng xuất khỏi tất cả thiết bị và phải đăng nhập lại. Admin nhập EmployeeCode khi tạo tài khoản; mã phải unique và không được sửa hoặc tái sử dụng. Email đăng nhập được phép thay đổi nếu không trùng và phải đồng bộ với UserName. Admin nhập mật khẩu tạm khi tạo tài khoản.
 
@@ -58,24 +58,24 @@ Login trả access token trong response; refresh token được đặt trong coo
 
 ## 4. Học sinh và phụ huynh
 
-| Method | Endpoint                                    | Mục đích                             | Quyền                   |
-| ------ | ------------------------------------------- | ------------------------------------ | ----------------------- |
-| GET    | `/api/students`                             | Danh sách/tìm kiếm                   | Theo phạm vi role       |
-| GET    | `/api/students/{id}`                        | Chi tiết                             | Theo phạm vi role       |
-| POST   | `/api/students`                             | Tạo học sinh                         | Admin, CustomerCare     |
-| PUT    | `/api/students/{id}`                        | Sửa hồ sơ                            | Admin, CustomerCare     |
-| POST   | `/api/students/{id}/archive`                | Lưu trữ hồ sơ                        | Admin                   |
-| POST   | `/api/students/{id}/restore`                | Khôi phục hồ sơ đã lưu trữ           | Admin                   |
-| GET    | `/api/students/{id}/guardians`              | Người giám hộ                        | Theo quyền xem học sinh |
-| POST   | `/api/students/{id}/guardians`              | Gắn người giám hộ đã có; gắn lại để cập nhật quan hệ | Admin, CustomerCare |
-| PUT    | `/api/students/{id}/guardians/{guardianId}` | Sửa quan hệ hoặc chọn guardian chính | Admin, CustomerCare     |
-| PUT    | `/api/students/{id}/guardians/{guardianId}/primary` | Chuyển người giám hộ chính | Admin, CustomerCare |
-| DELETE | `/api/students/{id}/guardians/{guardianId}` | Gỡ liên kết                          | Admin, CustomerCare     |
-| GET    | `/api/guardians` | Tra cứu, phân trang, lọc trạng thái người giám hộ | Admin, CustomerCare |
-| GET    | `/api/guardians/{id}` | Chi tiết người giám hộ | Admin, CustomerCare |
-| POST   | `/api/guardians` | Tạo người giám hộ | Admin, CustomerCare |
-| PUT    | `/api/guardians/{id}` | Sửa hồ sơ và trạng thái hoạt động | Admin, CustomerCare |
-| DELETE | `/api/guardians/{id}` | Xóa người giám hộ chưa liên kết | Admin |
+| Method | Endpoint                                            | Mục đích                                             | Quyền                   |
+| ------ | --------------------------------------------------- | ---------------------------------------------------- | ----------------------- |
+| GET    | `/api/students`                                     | Danh sách/tìm kiếm                                   | Theo phạm vi role       |
+| GET    | `/api/students/{id}`                                | Chi tiết                                             | Theo phạm vi role       |
+| POST   | `/api/students`                                     | Tạo học sinh                                         | Admin, CustomerCare     |
+| PUT    | `/api/students/{id}`                                | Sửa hồ sơ                                            | Admin, CustomerCare     |
+| POST   | `/api/students/{id}/archive`                        | Lưu trữ hồ sơ                                        | Admin                   |
+| POST   | `/api/students/{id}/restore`                        | Khôi phục hồ sơ đã lưu trữ                           | Admin                   |
+| GET    | `/api/students/{id}/guardians`                      | Người giám hộ                                        | Theo quyền xem học sinh |
+| POST   | `/api/students/{id}/guardians`                      | Gắn người giám hộ đã có; gắn lại để cập nhật quan hệ | Admin, CustomerCare     |
+| PUT    | `/api/students/{id}/guardians/{guardianId}`         | Sửa quan hệ hoặc chọn guardian chính                 | Admin, CustomerCare     |
+| PUT    | `/api/students/{id}/guardians/{guardianId}/primary` | Chuyển người giám hộ chính                           | Admin, CustomerCare     |
+| DELETE | `/api/students/{id}/guardians/{guardianId}`         | Gỡ liên kết                                          | Admin, CustomerCare     |
+| GET    | `/api/guardians`                                    | Tra cứu, phân trang, lọc trạng thái người giám hộ    | Admin, CustomerCare     |
+| GET    | `/api/guardians/{id}`                               | Chi tiết người giám hộ                               | Admin, CustomerCare     |
+| POST   | `/api/guardians`                                    | Tạo người giám hộ                                    | Admin, CustomerCare     |
+| PUT    | `/api/guardians/{id}`                               | Sửa hồ sơ và trạng thái hoạt động                    | Admin, CustomerCare     |
+| DELETE | `/api/guardians/{id}`                               | Xóa người giám hộ chưa liên kết                      | Admin                   |
 
 Giáo viên chỉ xem học sinh thuộc lớp phụ trách, bao gồm danh sách người giám hộ của học sinh đó. Accountant xem người giám hộ qua hồ sơ học sinh. Danh bạ `/api/guardians` dành cho Admin và CustomerCare. Không archive học sinh có enrollment Active hoặc Paused.
 
@@ -196,7 +196,8 @@ Enrollment: Active → Paused → Active
             Active → Completed
 
 Session:    Scheduled → Completed hoặc Cancelled
-Invoice:    Issued → Cancelled
+Invoice:    Issued → Partial → Paid
+            Issued/Partial → Cancelled
 Payment:    Confirmed → Cancelled
 ```
 
