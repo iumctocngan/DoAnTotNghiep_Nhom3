@@ -44,12 +44,16 @@ Bảng mô tả **code hiện tại**. `—` là không có quyền; `✓` là �
 | Invoice | Tạo, hủy | ✓ | — | ✓ | — |
 | Payment `/api/payments` | Xem | Tất cả | — | Tất cả | — |
 | Payment `/api/payments` | Tạo, hủy | ✓ | — | ✓ | — |
+| Dashboard Admin | Xem | Tất cả | — | — | — |
+| Dashboard Teacher | Xem | — | Lớp phụ trách | — | — |
+| Dashboard kế toán | Xem | Tất cả | — | Tất cả | — |
+| Dashboard CustomerCare | Xem | — | — | — | Tất cả |
 
-¹ Accountant xem toàn bộ học viên nhưng `LearningNote = null`; guardian gắn với học viên vẫn gồm họ tên, điện thoại, email và quan hệ. ² Trong phản hồi ghi danh cho Accountant, lý do bảo lưu và kết thúc là `null`. ³ CustomerCare xem toàn bộ invoice, gồm số tiền, số đã thanh toán, công nợ, ghi chú, người tạo, người hủy và lý do hủy; không được gọi API Payment riêng. CustomerCare cũng xem `Note` của buổi học và nội dung nhận xét. Các quyền đọc rộng này được chấp nhận cho MVP; không lọc theo invoice hoặc nhân viên phụ trách.
+¹ Accountant xem toàn bộ học viên nhưng `LearningNote = null`; guardian gắn với học viên vẫn gồm họ tên, điện thoại, email và quan hệ. ² Trong phản hồi ghi danh cho Accountant, lý do bảo lưu và kết thúc là `null`. ³ CustomerCare xem toàn bộ invoice, gồm số tiền, số đã thanh toán, công nợ, ghi chú, người tạo, người hủy và lý do hủy; không được gọi API Payment riêng. CustomerCare cũng xem `Note` của buổi học và nội dung nhận xét.
 
 Admin chỉ đổi role sau khi tài khoản nhân viên đã Inactive. Không được deactivate Admin Active cuối cùng; không được deactivate hoặc đổi role Teacher còn phụ trách lớp Active. Các ràng buộc này được kiểm tra tại `StaffService`, ngoài kiểm tra role của controller.
 
-Invoice hiện có API tạo và hủy, **chưa có API sửa (`PUT`)** dù [core-api-design.md](core-api-design.md) liệt kê. Dashboard theo role **chưa có endpoint**; bảng trên không coi dashboard là quyền đã triển khai.
+Bốn dashboard theo role đã được triển khai.
 
 ## Cách thực thi
 
@@ -61,6 +65,4 @@ Invoice hiện có API tạo và hủy, **chưa có API sửa (`PUT`)** dù [cor
 
 ## Phần chưa triển khai
 
-- Dashboard: dự kiến bốn endpoint `/api/dashboard/admin`, `/teacher`, `/accounting`, `/customer-care`; mỗi endpoint chỉ cho role tương ứng. Hiện chưa có controller hoặc policy dashboard.
-- `PUT /api/invoices/{id}` được liệt kê trong [core-api-design.md](core-api-design.md) nhưng hiện chưa có trong `HoaDonController`; vì vậy chưa có quyền sửa invoice để kiểm tra.
 - Chưa có kiểm thử HTTP end-to-end cho Payment. Unit test Payment đã có; kết quả unit test không thay thế kiểm tra role qua HTTP.

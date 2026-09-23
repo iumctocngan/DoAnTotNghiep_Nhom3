@@ -163,7 +163,6 @@ Request tạo session không nhận `TeacherUserId`; giáo viên được suy ra
 | GET    | `/api/invoices`               | Danh sách khoản phải thu    | Admin, Accountant, CustomerCare |
 | GET    | `/api/invoices/{id}`          | Chi tiết invoice/payment    | Admin, Accountant, CustomerCare |
 | POST   | `/api/invoices`               | Lập kỳ học phí              | Admin, Accountant               |
-| PUT    | `/api/invoices/{id}`          | Sửa invoice chưa có payment | Admin, Accountant               |
 | POST   | `/api/invoices/{id}/cancel`   | Hủy invoice                 | Admin, Accountant               |
 | GET    | `/api/payments`               | Danh sách khoản thu         | Admin, Accountant               |
 | GET    | `/api/payments/{id}`          | Chi tiết/phiếu thu          | Admin, Accountant               |
@@ -178,10 +177,10 @@ Backend sinh `InvoiceNumber`, `PaymentNumber`, `ReceiptNumber`. Chỉ enrollment
 | ------ | ------------------------------ | ----------------- | ------------ |
 | GET    | `/api/dashboard/admin`         | Dashboard Admin   | Admin        |
 | GET    | `/api/dashboard/teacher`       | Dashboard Teacher | Teacher      |
-| GET    | `/api/dashboard/accounting`    | Dashboard kế toán | Accountant   |
+| GET    | `/api/dashboard/accounting`    | Dashboard kế toán | Admin, Accountant |
 | GET    | `/api/dashboard/customer-care` | Dashboard CSKH    | CustomerCare |
 
-Dashboard MVP trả số liệu cơ bản, danh sách học sinh Active chưa có invoice và công nợ quá hạn, được tính trực tiếp từ dữ liệu nghiệp vụ. Cảnh báo tái phí trong 30 ngày và thống kê vắng nhiều theo 10 session gần nhất được hoãn. Các màn hình đầy đủ tiếp tục dùng API danh sách hiện có với filter phù hợp, không tạo resource hoặc bảng thống kê riêng.
+Dashboard MVP tính trực tiếp từ dữ liệu nghiệp vụ, không tạo bảng thống kê riêng. Dashboard Admin trả số nhân viên, học viên, lớp và ghi danh đang hoạt động. Dashboard Teacher trả số lớp phụ trách, số học viên đang học, số buổi học hôm nay và tối đa 5 buổi học sắp tới thuộc lớp mình phụ trách. Dashboard kế toán trả doanh thu, công nợ, giao dịch và audit tài chính gần đây. Dashboard CustomerCare trả số học viên đang hoạt động, ghi danh đang học, ghi danh bảo lưu và học viên chưa có người giám hộ.
 
 Backend vẫn tự ghi audit cho thao tác quan trọng, nhưng màn hình và API tra cứu audit được hoãn sau MVP.
 
