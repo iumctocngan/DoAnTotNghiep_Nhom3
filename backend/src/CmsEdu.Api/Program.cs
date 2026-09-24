@@ -1,11 +1,9 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using CmsEdu.Api.Authorization;
 using CmsEdu.Api.ExceptionHandling;
 using CmsEdu.Api.Services;
 using CmsEdu.Application.Common.Interfaces;
-using CmsEdu.Domain.Enums;
 using CmsEdu.Infrastructure;
 using CmsEdu.Infrastructure.Identity;
 using CmsEdu.Infrastructure.Persistence;
@@ -66,24 +64,6 @@ builder.Services.AddAuthorization(options =>
     options.FallbackPolicy = new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
         .Build();
-
-    options.AddPolicy(AuthorizationPolicies.AuthSelfService,
-        policy => policy.RequireRole(UserRole.Admin, UserRole.Teacher, UserRole.Accountant, UserRole.CustomerCare));
-    options.AddPolicy(AuthorizationPolicies.StaffManage,
-        policy => policy.RequireRole(UserRole.Admin));
-    options.AddPolicy(AuthorizationPolicies.TeacherClassesRead,
-        policy => policy.RequireRole(UserRole.Admin, UserRole.Teacher));
-    options.AddPolicy(AuthorizationPolicies.TeacherScheduleRead,
-        policy => policy.RequireRole(UserRole.Admin, UserRole.Teacher));
-    options.AddPolicy(AuthorizationPolicies.CatalogRead,
-        policy => policy.RequireRole(UserRole.AllRoles));
-    options.AddPolicy(AuthorizationPolicies.CatalogManage,
-        policy => policy.RequireRole(UserRole.Admin));
-
-    foreach (var role in UserRole.AllRoles)
-    {
-        options.AddPolicy(role, policy => policy.RequireRole(role));
-    }
 });
 
 var app = builder.Build();

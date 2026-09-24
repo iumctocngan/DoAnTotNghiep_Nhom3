@@ -1,6 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using CmsEdu.Api.Authorization;
 using CmsEdu.Application.Authentication;
 using CmsEdu.Application.Common.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -64,7 +63,7 @@ public class AuthController(
         return NoContent();
     }
 
-    [Authorize(Policy = AuthorizationPolicies.AuthSelfService)]
+    [Authorize]
     [HttpPost("logout-all")]
     public async Task<IActionResult> LogoutAll(CancellationToken cancellationToken)
     {
@@ -79,7 +78,7 @@ public class AuthController(
         return NoContent();
     }
 
-    [Authorize(Policy = AuthorizationPolicies.AuthSelfService)]
+    [Authorize]
     [HttpGet("me")]
     public ActionResult<CurrentUserResponse> Me()
     {
@@ -97,7 +96,7 @@ public class AuthController(
         return Ok(new CurrentUserResponse(userId, employeeCode, fullName, email, role));
     }
 
-    [Authorize(Policy = AuthorizationPolicies.AuthSelfService)]
+    [Authorize]
     [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword(
         ChangePasswordRequest request,

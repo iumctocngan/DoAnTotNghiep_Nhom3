@@ -1,4 +1,3 @@
-using CmsEdu.Api.Authorization;
 using CmsEdu.Application.Common.Interfaces;
 using CmsEdu.Application.Common.Models;
 using CmsEdu.Application.Teachers;
@@ -10,10 +9,10 @@ namespace CmsEdu.Api.Controllers;
 
 [ApiController]
 [Route("api/teachers/{teacherId}")]
+[Authorize(Roles = $"{UserRole.Admin},{UserRole.Teacher}")]
 public class TeachersController(TeacherService teacherService) : ControllerBase
 {
     [HttpGet("classes")]
-    [Authorize(Policy = AuthorizationPolicies.TeacherClassesRead)]
     public async Task<ActionResult<PagedResult<TeacherClassResponse>>> GetClasses(
         string teacherId,
         [FromQuery] ClassStatus? status,
@@ -26,7 +25,6 @@ public class TeachersController(TeacherService teacherService) : ControllerBase
     }
 
     [HttpGet("schedule")]
-    [Authorize(Policy = AuthorizationPolicies.TeacherScheduleRead)]
     public async Task<ActionResult<PagedResult<TeacherScheduleResponse>>> GetSchedule(
         string teacherId,
         [FromQuery] DateOnly? fromDate,

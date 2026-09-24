@@ -1,6 +1,6 @@
-using CmsEdu.Api.Authorization;
 using CmsEdu.Application.Common.Models;
 using CmsEdu.Application.Curriculum;
+using CmsEdu.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,10 +8,10 @@ namespace CmsEdu.Api.Controllers;
 
 [ApiController]
 [Route("api/courses")]
+[Authorize]
 public class CoursesController(CurriculumService curriculumService) : ControllerBase
 {
     [HttpGet]
-    [Authorize(Policy = AuthorizationPolicies.CatalogRead)]
     public async Task<ActionResult<PagedResult<CourseResponse>>> GetCourses(
         [FromQuery] string? search,
         [FromQuery] bool? isActive,
@@ -24,7 +24,6 @@ public class CoursesController(CurriculumService curriculumService) : Controller
     }
 
     [HttpGet("{id:int}")]
-    [Authorize(Policy = AuthorizationPolicies.CatalogRead)]
     public async Task<ActionResult<CourseResponse>> GetCourse(
         int id,
         CancellationToken cancellationToken = default)
@@ -33,7 +32,7 @@ public class CoursesController(CurriculumService curriculumService) : Controller
     }
 
     [HttpPost]
-    [Authorize(Policy = AuthorizationPolicies.CatalogManage)]
+    [Authorize(Roles = UserRole.Admin)]
     public async Task<ActionResult<CourseResponse>> CreateCourse(
         CourseRequest request,
         CancellationToken cancellationToken = default)
@@ -43,7 +42,7 @@ public class CoursesController(CurriculumService curriculumService) : Controller
     }
 
     [HttpPut("{id:int}")]
-    [Authorize(Policy = AuthorizationPolicies.CatalogManage)]
+    [Authorize(Roles = UserRole.Admin)]
     public async Task<ActionResult<CourseResponse>> UpdateCourse(
         int id,
         CourseRequest request,
@@ -53,7 +52,7 @@ public class CoursesController(CurriculumService curriculumService) : Controller
     }
 
     [HttpPost("{id:int}/deactivate")]
-    [Authorize(Policy = AuthorizationPolicies.CatalogManage)]
+    [Authorize(Roles = UserRole.Admin)]
     public async Task<IActionResult> DeactivateCourse(
         int id,
         CancellationToken cancellationToken = default)
