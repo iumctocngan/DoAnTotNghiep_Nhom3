@@ -9,48 +9,7 @@ import { LevelModal } from './LevelModal';
 import { LessonModal } from './LessonModal';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
-
-const pageSize = 20;
-
-function CatalogPagination({ totalItems, page, onPageChange }: {
-  totalItems: number;
-  page: number;
-  onPageChange: (page: number) => void;
-}) {
-  const totalPages = Math.ceil(totalItems / pageSize);
-  if (totalPages <= 1) return null;
-
-  return (
-    <div className="pagination">
-      <div>
-        Hiển thị <strong>{(page - 1) * pageSize + 1}</strong> -{' '}
-        <strong>{Math.min(page * pageSize, totalItems)}</strong> trên tổng số{' '}
-        <strong>{totalItems}</strong> mục
-      </div>
-      <div className="flex gap-2">
-        <button
-          type="button"
-          className="btn btn-secondary px-3 py-1.5 text-xs"
-          disabled={page <= 1}
-          onClick={() => onPageChange(page - 1)}
-        >
-          Trang trước
-        </button>
-        <span className="flex items-center px-2 text-sm text-slate-600">
-          Trang {page} / {totalPages}
-        </span>
-        <button
-          type="button"
-          className="btn btn-secondary px-3 py-1.5 text-xs"
-          disabled={page >= totalPages}
-          onClick={() => onPageChange(page + 1)}
-        >
-          Trang sau
-        </button>
-      </div>
-    </div>
-  );
-}
+import { Pagination, PAGE_SIZE } from '../../components/common/Pagination';
 
 export const CurriculumPage: React.FC = () => {
   const { user } = useAuth();
@@ -95,7 +54,7 @@ export const CurriculumPage: React.FC = () => {
         search: debouncedCourseSearch || undefined,
         isActive: courseIsActive,
         page: coursePage,
-        pageSize,
+        pageSize: PAGE_SIZE,
       }),
     placeholderData: keepPreviousData,
   });
@@ -108,7 +67,7 @@ export const CurriculumPage: React.FC = () => {
     error: levelsError,
   } = useQuery({
     queryKey: ['levels', selectedCourse?.id, levelPage],
-    queryFn: () => (selectedCourse ? curriculumApi.getLevels(selectedCourse.id, { page: levelPage, pageSize }) : null),
+    queryFn: () => (selectedCourse ? curriculumApi.getLevels(selectedCourse.id, { page: levelPage, pageSize: PAGE_SIZE }) : null),
     enabled: !!selectedCourse,
   });
 
@@ -120,7 +79,7 @@ export const CurriculumPage: React.FC = () => {
     error: lessonsError,
   } = useQuery({
     queryKey: ['lessons', selectedLevel?.id, lessonPage],
-    queryFn: () => (selectedLevel ? curriculumApi.getLessons(selectedLevel.id, { page: lessonPage, pageSize }) : null),
+    queryFn: () => (selectedLevel ? curriculumApi.getLessons(selectedLevel.id, { page: lessonPage, pageSize: PAGE_SIZE }) : null),
     enabled: !!selectedLevel,
   });
 
@@ -188,18 +147,20 @@ export const CurriculumPage: React.FC = () => {
   return (
     <div>
       {/* Header & Breadcrumbs */}
-      <div className="mb-5">
-        <div className="flex items-center gap-2 text-sm mb-2">
-          <button
-            type="button"
-            className={`bg-transparent border-0 p-0 ${selectedCourse ? 'text-primary font-medium cursor-pointer' : 'text-slate-800 font-bold cursor-default'}`}
-            onClick={() => {
-              setSelectedCourse(null);
-              setSelectedLevel(null);
-            }}
-          >
-            Chương trình học
-          </button>
+      <div className="page-header">
+        <div className="flex items-center gap-2 flex-wrap text-sm">
+          <h1>
+            <button
+              type="button"
+              className={`bg-transparent border-0 p-0 ${selectedCourse ? 'text-primary cursor-pointer' : 'text-slate-900 cursor-default'}`}
+              onClick={() => {
+                setSelectedCourse(null);
+                setSelectedLevel(null);
+              }}
+            >
+              Chương trình học
+            </button>
+          </h1>
 
           {selectedCourse && (
             <>
@@ -224,9 +185,6 @@ export const CurriculumPage: React.FC = () => {
           )}
         </div>
 
-        <p className="text-sm text-slate-500">
-          Danh mục đào tạo được sắp xếp theo cấp: <strong>Khóa học → Cấp độ → Bài học</strong>.
-        </p>
       </div>
 
       {actionError && <div className="alert alert-danger">{actionError}</div>}
@@ -253,7 +211,7 @@ export const CurriculumPage: React.FC = () => {
           {/* Filter Khóa học */}
           <div className="card grid grid-cols-1 sm:grid-cols-2 gap-3 px-4 py-3 mb-4">
             <div>
-              <label htmlFor="courseSearch" className="text-xs">Tìm kiếm khóa học:</label>
+              <label htmlFor="courseSearch">Tìm kiếm khóa học:</label>
               <input
                 id="courseSearch"
                 type="text"
@@ -263,7 +221,7 @@ export const CurriculumPage: React.FC = () => {
               />
             </div>
             <div>
-              <label htmlFor="courseActiveFilter" className="text-xs">Trạng thái áp dụng:</label>
+              <label htmlFor="courseActiveFilter">Trạng thái áp dụng:</label>
               <select
                 id="courseActiveFilter"
                 value={courseIsActive === undefined ? '' : courseIsActive.toString()}
@@ -370,7 +328,7 @@ export const CurriculumPage: React.FC = () => {
               </tbody>
             </table>
           </div>
-          {coursesData && <CatalogPagination totalItems={coursesData.totalItems} page={coursePage} onPageChange={setCoursePage} />}
+          {coursesData && <Pagination totalItems={coursesData.totalItems} page={coursePage} onPageChange={setCoursePage} itemLabel="mục" hideSinglePage />}
         </div>
       )}
 
@@ -499,7 +457,7 @@ export const CurriculumPage: React.FC = () => {
               </tbody>
             </table>
           </div>
-          {levelsData && <CatalogPagination totalItems={levelsData.totalItems} page={levelPage} onPageChange={setLevelPage} />}
+          {levelsData && <Pagination totalItems={levelsData.totalItems} page={levelPage} onPageChange={setLevelPage} itemLabel="mục" hideSinglePage />}
         </div>
       )}
 
@@ -622,7 +580,7 @@ export const CurriculumPage: React.FC = () => {
               </tbody>
             </table>
           </div>
-          {lessonsData && <CatalogPagination totalItems={lessonsData.totalItems} page={lessonPage} onPageChange={setLessonPage} />}
+          {lessonsData && <Pagination totalItems={lessonsData.totalItems} page={lessonPage} onPageChange={setLessonPage} itemLabel="mục" hideSinglePage />}
         </div>
       )}
 

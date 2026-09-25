@@ -880,25 +880,12 @@ const AccountingDashboardView: React.FC = () => {
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
 
-  const getRoleSubtitle = (role?: string) => {
-    switch (role) {
-      case 'Admin': return 'Theo dõi hoạt động toàn hệ thống trung tâm';
-      case 'Teacher': return 'Quản lý lịch dạy và lớp học của bạn';
-      case 'CustomerCare': return 'Theo dõi, hỗ trợ và chăm sóc học viên';
-      case 'Accountant': return 'Theo dõi doanh thu, công nợ và giao dịch';
-      default: return 'Bảng điều khiển hoạt động';
-    }
-  };
-
   return (
     <div className="dashboard-page">
-      <div className="mb-5">
-        <h1 className="text-2xl font-semibold mb-1 text-slate-900">
+      <div className="page-header">
+        <h1>
           Tổng quan {getRoleLabel(user?.role)}
         </h1>
-        <p className="text-base text-slate-600">
-          {getRoleSubtitle(user?.role)}
-        </p>
       </div>
 
       {user?.role === 'Admin' && <AdminDashboardView />}

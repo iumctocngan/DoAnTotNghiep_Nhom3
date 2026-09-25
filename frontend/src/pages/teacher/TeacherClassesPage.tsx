@@ -7,6 +7,7 @@ import type { ClassStatus } from '../../types/teacher';
 import { formatDateDisplay } from '../../utils/date';
 import { TeacherSelect } from '../../components/TeacherSelect';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
+import { Pagination, PAGE_SIZE } from '../../components/common/Pagination';
 
 export const TeacherClassesPage: React.FC = () => {
   const { user } = useAuth();
@@ -15,7 +16,6 @@ export const TeacherClassesPage: React.FC = () => {
   const debouncedTeacherSearch = useDebouncedValue(teacherSearch);
   const [status, setStatus] = useState<ClassStatus | undefined>(undefined);
   const [page, setPage] = useState(1);
-  const pageSize = 20;
 
   const { data: teachers, isLoading: isTeachersLoading, isFetching: isTeachersFetching, isError: isTeachersError } = useQuery({
     queryKey: ['staff', 'teachers', debouncedTeacherSearch],
@@ -30,8 +30,8 @@ export const TeacherClassesPage: React.FC = () => {
     isError,
     error,
   } = useQuery({
-    queryKey: ['teacher-classes', selectedTeacherId, status, page, pageSize],
-    queryFn: () => teacherApi.getClasses(selectedTeacherId, { status, page, pageSize }),
+    queryKey: ['teacher-classes', selectedTeacherId, status, page, PAGE_SIZE],
+    queryFn: () => teacherApi.getClasses(selectedTeacherId, { status, page, pageSize: PAGE_SIZE }),
     enabled: !!selectedTeacherId,
   });
 
@@ -55,24 +55,19 @@ export const TeacherClassesPage: React.FC = () => {
     }
   };
 
-  const totalPages = pagedData ? Math.ceil(pagedData.totalItems / pageSize) : 1;
-
   return (
     <div>
-      <div className="mb-5">
-        <h1 className="text-xl font-semibold mb-1 text-slate-900">
+      <div className="page-header">
+        <h1>
           Lớp học phụ trách
         </h1>
-        <p className="text-sm text-slate-600">
-          Danh sách các lớp học được phân công giảng dạy cho giáo viên.
-        </p>
       </div>
 
       {/* Thanh bộ lọc */}
       <div className="card grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 p-4 mb-4 items-start">
         {user?.role === 'Admin' && (
           <div>
-            <label htmlFor="teacherSelect" className="text-xs font-semibold text-slate-700 mb-1">
+            <label htmlFor="teacherSelect">
               Giáo viên:
             </label>
             <TeacherSelect
@@ -97,7 +92,7 @@ export const TeacherClassesPage: React.FC = () => {
         )}
 
         <div>
-          <label htmlFor="classStatusFilter" className="text-xs font-semibold text-slate-700 mb-1">
+          <label htmlFor="classStatusFilter">
             Trạng thái lớp:
           </label>
           <select
@@ -176,38 +171,7 @@ export const TeacherClassesPage: React.FC = () => {
         </table>
       </div>
 
-      {/* Phân trang */}
-      {pagedData && pagedData.totalItems > 0 && (
-        <div className="pagination">
-          <div>
-            Hiển thị <strong>{(page - 1) * pageSize + 1}</strong> -{' '}
-            <strong>{Math.min(page * pageSize, pagedData.totalItems)}</strong> trên tổng số{' '}
-            <strong>{pagedData.totalItems}</strong> lớp
-          </div>
-
-          <div className="flex gap-2">
-            <button
-              type="button"
-              className="btn btn-secondary px-3 py-1.5 text-xs"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            >
-              Trang trước
-            </button>
-            <span className="flex items-center px-2 text-sm text-slate-600">
-              Trang {page} / {totalPages || 1}
-            </span>
-            <button
-              type="button"
-              className="btn btn-secondary px-3 py-1.5 text-xs"
-              disabled={page >= totalPages}
-              onClick={() => setPage((p) => p + 1)}
-            >
-              Trang sau
-            </button>
-          </div>
-        </div>
-      )}
+      {pagedData && <Pagination totalItems={pagedData.totalItems} page={page} onPageChange={setPage} itemLabel="lớp" />}
     </div>
   );
 };

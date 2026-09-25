@@ -11,6 +11,7 @@ import { ChangeRoleModal } from './ChangeRoleModal';
 import { ResetStaffPasswordModal } from './ResetStaffPasswordModal';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
+import { Pagination, PAGE_SIZE } from '../../components/common/Pagination';
 
 export const StaffListPage: React.FC = () => {
   const { user: currentUser } = useAuth();
@@ -22,7 +23,6 @@ export const StaffListPage: React.FC = () => {
   const [role, setRole] = useState<string>('');
   const [status, setStatus] = useState<EmploymentStatus | undefined>(undefined);
   const [page, setPage] = useState(1);
-  const pageSize = 20;
 
   // Modal states
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -44,8 +44,8 @@ export const StaffListPage: React.FC = () => {
     isError,
     error,
   } = useQuery({
-    queryKey: ['staff', { search: debouncedSearch, role, status, page, pageSize }],
-    queryFn: () => staffApi.getStaff({ search: debouncedSearch, role, status, page, pageSize }),
+    queryKey: ['staff', { search: debouncedSearch, role, status, page, pageSize: PAGE_SIZE }],
+    queryFn: () => staffApi.getStaff({ search: debouncedSearch, role, status, page, pageSize: PAGE_SIZE }),
     placeholderData: keepPreviousData,
   });
 
@@ -99,32 +99,12 @@ export const StaffListPage: React.FC = () => {
     }
   };
 
-  const getRoleBadgeClass = (roleName: string) => {
-    switch (roleName?.toLowerCase()) {
-      case 'admin':
-        return 'badge badge-admin';
-      case 'teacher':
-        return 'badge badge-teacher';
-      case 'accountant':
-        return 'badge badge-accountant';
-      case 'customercare':
-        return 'badge badge-customercare';
-      default:
-        return 'badge';
-    }
-  };
-
-  const totalPages = pagedData ? Math.ceil(pagedData.totalItems / pageSize) : 1;
-
   return (
     <div>
       {/* Tiêu đề trang & Nút thêm mới */}
-      <div className="flex justify-between items-center mb-5 flex-wrap gap-4">
+      <div className="page-header flex justify-between items-center gap-3 flex-wrap">
         <div>
-          <h1 className="text-xl font-semibold text-slate-800 mb-1">Quản lý nhân sự</h1>
-          <p className="text-sm text-slate-500">
-            Quản lý tài khoản, vai trò, bảo mật và trạng thái làm việc của cán bộ nhân viên CMS EDU.
-          </p>
+          <h1>Quản lý nhân sự</h1>
         </div>
 
         <button
@@ -146,7 +126,7 @@ export const StaffListPage: React.FC = () => {
       {/* Thanh bộ lọc và tìm kiếm */}
       <div className="card grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 p-4 mb-4">
         <div>
-          <label htmlFor="searchFilter" className="text-xs font-semibold text-slate-700 mb-1">Tìm kiếm:</label>
+          <label htmlFor="searchFilter">Tìm kiếm:</label>
           <input
             id="searchFilter"
             type="text"
@@ -160,7 +140,7 @@ export const StaffListPage: React.FC = () => {
         </div>
 
         <div>
-          <label htmlFor="roleFilter" className="text-xs font-semibold text-slate-700 mb-1">Vai trò:</label>
+          <label htmlFor="roleFilter">Vai trò:</label>
           <select
             id="roleFilter"
             value={role}
@@ -178,7 +158,7 @@ export const StaffListPage: React.FC = () => {
         </div>
 
         <div>
-          <label htmlFor="statusFilter" className="text-xs font-semibold text-slate-700 mb-1">Trạng thái:</label>
+          <label htmlFor="statusFilter">Trạng thái:</label>
           <select
             id="statusFilter"
             value={status === undefined ? '' : status}
@@ -226,7 +206,7 @@ export const StaffListPage: React.FC = () => {
                   <td className="text-slate-500">{staff.email}</td>
                   <td>{staff.phoneNumber || '—'}</td>
                   <td>
-                    <span className={getRoleBadgeClass(staff.role)}>{getRoleLabel(staff.role)}</span>
+                    <span className="badge badge-role">{getRoleLabel(staff.role)}</span>
                   </td>
                   <td>
                     {staff.status === 1 ? (
@@ -301,38 +281,7 @@ export const StaffListPage: React.FC = () => {
         </table>
       </div>
 
-      {/* Phân trang */}
-      {pagedData && pagedData.totalItems > 0 && (
-        <div className="pagination">
-          <div>
-            Hiển thị <strong>{(page - 1) * pageSize + 1}</strong> -{' '}
-            <strong>{Math.min(page * pageSize, pagedData.totalItems)}</strong> trên tổng số{' '}
-            <strong>{pagedData.totalItems}</strong> nhân viên
-          </div>
-
-          <div className="flex gap-2">
-            <button
-              type="button"
-              className="btn btn-secondary px-3 py-1.5 text-xs"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            >
-              Trang trước
-            </button>
-            <span className="flex items-center px-2 text-sm text-slate-600">
-              Trang {page} / {totalPages || 1}
-            </span>
-            <button
-              type="button"
-              className="btn btn-secondary px-3 py-1.5 text-xs"
-              disabled={page >= totalPages}
-              onClick={() => setPage((p) => p + 1)}
-            >
-              Trang sau
-            </button>
-          </div>
-        </div>
-      )}
+      {pagedData && <Pagination totalItems={pagedData.totalItems} page={page} onPageChange={setPage} itemLabel="nhân viên" />}
 
       {/* Các modals */}
       <CreateStaffModal

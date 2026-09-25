@@ -7,6 +7,7 @@ import type { SessionStatus } from '../../types/teacher';
 import { formatDateDisplay } from '../../utils/date';
 import { TeacherSelect } from '../../components/TeacherSelect';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
+import { Pagination, PAGE_SIZE } from '../../components/common/Pagination';
 
 export const TeacherSchedulePage: React.FC = () => {
   const { user } = useAuth();
@@ -16,7 +17,6 @@ export const TeacherSchedulePage: React.FC = () => {
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
   const [page, setPage] = useState(1);
-  const pageSize = 20;
 
   const { data: teachers, isLoading: isTeachersLoading, isFetching: isTeachersFetching, isError: isTeachersError } = useQuery({
     queryKey: ['staff', 'teachers', debouncedTeacherSearch],
@@ -31,13 +31,13 @@ export const TeacherSchedulePage: React.FC = () => {
     isError,
     error,
   } = useQuery({
-    queryKey: ['teacher-schedule', selectedTeacherId, fromDate, toDate, page, pageSize],
+    queryKey: ['teacher-schedule', selectedTeacherId, fromDate, toDate, page, PAGE_SIZE],
     queryFn: () =>
       teacherApi.getSchedule(selectedTeacherId, {
         fromDate: fromDate || undefined,
         toDate: toDate || undefined,
         page,
-        pageSize,
+        pageSize: PAGE_SIZE,
       }),
     enabled: !!selectedTeacherId && !(fromDate && toDate && fromDate > toDate),
   });
@@ -56,22 +56,17 @@ export const TeacherSchedulePage: React.FC = () => {
     }
   };
 
-  const totalPages = pagedData ? Math.ceil(pagedData.totalItems / pageSize) : 1;
-
   return (
     <div>
-      <div className="mb-5">
-        <h1 className="text-xl font-semibold mb-1 text-slate-900">Lịch giảng dạy</h1>
-        <p className="text-sm text-slate-600">
-          Xem chi tiết các buổi học, bài học và thời gian giảng dạy được phân công.
-        </p>
+      <div className="page-header">
+        <h1>Lịch giảng dạy</h1>
       </div>
 
       {/* Bộ lọc khoảng ngày */}
       <div className="card grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 p-4 mb-4 items-start">
         {user?.role === 'Admin' && (
           <div>
-            <label htmlFor="scheduleTeacherSelect" className="text-xs font-semibold text-slate-700 mb-1">
+            <label htmlFor="scheduleTeacherSelect">
               Giáo viên:
             </label>
             <TeacherSelect
@@ -96,7 +91,7 @@ export const TeacherSchedulePage: React.FC = () => {
         )}
 
         <div>
-          <label htmlFor="fromDate" className="text-xs font-semibold text-slate-700 mb-1">Từ ngày:</label>
+          <label htmlFor="fromDate">Từ ngày:</label>
           <input
             id="fromDate"
             type="date"
@@ -109,7 +104,7 @@ export const TeacherSchedulePage: React.FC = () => {
         </div>
 
         <div>
-          <label htmlFor="toDate" className="text-xs font-semibold text-slate-700 mb-1">Đến ngày:</label>
+          <label htmlFor="toDate">Đến ngày:</label>
           <input
             id="toDate"
             type="date"
@@ -194,38 +189,7 @@ export const TeacherSchedulePage: React.FC = () => {
         </table>
       </div>
 
-      {/* Phân trang */}
-      {pagedData && pagedData.totalItems > 0 && (
-        <div className="pagination">
-          <div>
-            Hiển thị <strong>{(page - 1) * pageSize + 1}</strong> -{' '}
-            <strong>{Math.min(page * pageSize, pagedData.totalItems)}</strong> trên tổng số{' '}
-            <strong>{pagedData.totalItems}</strong> buổi học
-          </div>
-
-          <div className="flex gap-2">
-            <button
-              type="button"
-              className="btn btn-secondary px-3 py-1.5 text-xs"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            >
-              Trang trước
-            </button>
-            <span className="flex items-center px-2 text-sm text-slate-600">
-              Trang {page} / {totalPages || 1}
-            </span>
-            <button
-              type="button"
-              className="btn btn-secondary px-3 py-1.5 text-xs"
-              disabled={page >= totalPages}
-              onClick={() => setPage((p) => p + 1)}
-            >
-              Trang sau
-            </button>
-          </div>
-        </div>
-      )}
+      {pagedData && <Pagination totalItems={pagedData.totalItems} page={page} onPageChange={setPage} itemLabel="buổi học" />}
     </div>
   );
 };
