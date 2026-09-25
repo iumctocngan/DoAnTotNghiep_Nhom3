@@ -75,11 +75,10 @@ public class AuthenticationApiTests {
     }
 
     [KiemThuSqlServer]
-    public async Task LogoutAndLogoutAllRevokeRefreshTokens() {
+    public async Task LogoutRevokesRefreshToken() {
         await using var app = new AuthenticationTestApp();
         await app.InitializeAsync();
         using var firstClient = app.CreateTestClient();
-        using var secondClient = app.CreateTestClient();
 
         var firstLogin = await LoginAsync(firstClient);
         var firstToken = ReadRefreshToken(firstLogin.Response);
@@ -88,20 +87,6 @@ public class AuthenticationApiTests {
         Assert.Equal(
             HttpStatusCode.Unauthorized,
             (await PostWithRefreshTokenAsync(firstClient, "/api/auth/refresh", firstToken)).StatusCode);
-
-        var secondLogin = await LoginAsync(firstClient);
-        var thirdLogin = await LoginAsync(secondClient);
-        firstClient.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", secondLogin.Body.AccessToken);
-
-        var logoutAll = await firstClient.PostAsync("/api/auth/logout-all", null);
-        Assert.Equal(HttpStatusCode.NoContent, logoutAll.StatusCode);
-        Assert.Equal(
-            HttpStatusCode.Unauthorized,
-            (await PostWithRefreshTokenAsync(firstClient, "/api/auth/refresh", ReadRefreshToken(secondLogin.Response))).StatusCode);
-        Assert.Equal(
-            HttpStatusCode.Unauthorized,
-            (await PostWithRefreshTokenAsync(secondClient, "/api/auth/refresh", ReadRefreshToken(thirdLogin.Response))).StatusCode);
     }
 
     [KiemThuSqlServer]

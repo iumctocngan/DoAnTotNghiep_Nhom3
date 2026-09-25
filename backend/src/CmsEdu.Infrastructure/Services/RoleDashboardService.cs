@@ -16,6 +16,10 @@ public class RoleDashboardService(AppDbContext dbContext, ICurrentUser currentUs
         CancellationToken cancellationToken = default)
     {
         EnsureRole(UserRole.Admin);
+        var vietnamToday = DateOnly.FromDateTime(
+            DateTimeOffset.UtcNow.ToOffset(VietnamOffset).DateTime);
+        var currentMonth = new DateOnly(vietnamToday.Year, vietnamToday.Month, 1);
+        var firstMonth = currentMonth.AddMonths(-5);
 
         var classCounts = await dbContext.Classes
             .AsNoTracking()
@@ -28,6 +32,26 @@ public class RoleDashboardService(AppDbContext dbContext, ICurrentUser currentUs
             .Select(status => new StatusCountResponse(
                 status.ToString(), classCountMap.GetValueOrDefault(status)))
             .ToList();
+        var enrollmentCounts = await dbContext.Enrollments
+            .AsNoTracking()
+            .Where(item => item.StartDate >= firstMonth && item.StartDate < currentMonth.AddMonths(1))
+            .GroupBy(item => new { item.StartDate.Year, item.StartDate.Month })
+            .Select(group => new
+            {
+                group.Key.Year,
+                group.Key.Month,
+                Count = group.Count()
+            })
+            .ToListAsync(cancellationToken);
+        var enrollmentCountMap = enrollmentCounts.ToDictionary(
+            item => (item.Year, item.Month), item => item.Count);
+        var enrollmentStartsByMonth = Enumerable.Range(0, 6)
+            .Select(index => firstMonth.AddMonths(index))
+            .Select(month => new MonthlyCountResponse(
+                month.Year,
+                month.Month,
+                enrollmentCountMap.GetValueOrDefault((month.Year, month.Month))))
+            .ToList();
 
         return new AdminDashboardResponse(
             await dbContext.Users.CountAsync(
@@ -37,7 +61,8 @@ public class RoleDashboardService(AppDbContext dbContext, ICurrentUser currentUs
             classCountMap.GetValueOrDefault(ClassStatus.Active),
             await dbContext.Enrollments.CountAsync(
                 enrollment => enrollment.Status == EnrollmentStatus.Active, cancellationToken),
-            classesByStatus);
+            classesByStatus,
+            enrollmentStartsByMonth);
     }
 
     public async Task<TeacherDashboardResponse> GetTeacherDashboardAsync(
@@ -67,6 +92,14 @@ public class RoleDashboardService(AppDbContext dbContext, ICurrentUser currentUs
                 item.SessionDate == today &&
                 item.Status != SessionStatus.Cancelled,
             cancellationToken);
+        var pendingSessionCount = await dbContext.Sessions.CountAsync(
+            item =>
+                item.Class.MainTeacherUserId == teacherId &&
+                item.Class.Status == ClassStatus.Active &&
+                item.Status == SessionStatus.Scheduled &&
+                (item.SessionDate < today ||
+                 item.SessionDate == today && item.EndTime <= currentTime),
+            cancellationToken);
         var upcomingSessions = await dbContext.Sessions
             .AsNoTracking()
             .Where(item =>
@@ -89,7 +122,11 @@ public class RoleDashboardService(AppDbContext dbContext, ICurrentUser currentUs
             .ToListAsync(cancellationToken);
 
         return new TeacherDashboardResponse(
-            assignedClassCount, activeStudentCount, todaySessionCount, upcomingSessions);
+            assignedClassCount,
+            activeStudentCount,
+            todaySessionCount,
+            pendingSessionCount,
+            upcomingSessions);
     }
 
     public async Task<CustomerCareDashboardResponse> GetCustomerCareDashboardAsync(
@@ -108,6 +145,17 @@ public class RoleDashboardService(AppDbContext dbContext, ICurrentUser currentUs
             .Select(status => new StatusCountResponse(
                 status.ToString(), enrollmentCountMap.GetValueOrDefault(status)))
             .ToList();
+        var studentsWithoutGuardian = await dbContext.Students
+            .AsNoTracking()
+            .Where(student => !student.IsArchived && !student.StudentGuardians.Any())
+            .OrderBy(student => student.FullName)
+            .ThenBy(student => student.Id)
+            .Take(5)
+            .Select(student => new StudentSummaryResponse(
+                student.Id,
+                student.StudentCode,
+                student.FullName))
+            .ToListAsync(cancellationToken);
 
         return new CustomerCareDashboardResponse(
             await dbContext.Students.CountAsync(
@@ -117,7 +165,8 @@ public class RoleDashboardService(AppDbContext dbContext, ICurrentUser currentUs
             await dbContext.Students.CountAsync(
                 student => !student.IsArchived && !student.StudentGuardians.Any(),
                 cancellationToken),
-            enrollmentsByStatus);
+            enrollmentsByStatus,
+            studentsWithoutGuardian);
     }
 
     public async Task<AccountingDashboardResponse> GetAccountingDashboardAsync(
@@ -125,7 +174,7 @@ public class RoleDashboardService(AppDbContext dbContext, ICurrentUser currentUs
         DateOnly? toDate,
         CancellationToken cancellationToken = default)
     {
-        EnsureRole(UserRole.Admin, UserRole.Accountant);
+        EnsureRole(UserRole.Accountant);
 
         if (fromDate.HasValue && toDate.HasValue && fromDate > toDate)
             throw new ValidationException("fromDate không được sau toDate.");
@@ -179,6 +228,20 @@ public class RoleDashboardService(AppDbContext dbContext, ICurrentUser currentUs
             .Select(item => (decimal?)item.Amount)
             .SumAsync(cancellationToken) ?? 0m;
         var currentDebt = Math.Max(0m, totalInvoice - totalConfirmedPayment);
+        var vietnamToday = DateOnly.FromDateTime(
+            DateTimeOffset.UtcNow.ToOffset(VietnamOffset).DateTime);
+        var overdueBalances = await collectibleInvoices
+            .Where(item => item.DueDate < vietnamToday)
+            .Select(item => new
+            {
+                item.AmountDue,
+                Paid = item.Payments
+                    .Where(payment => payment.Status == PaymentStatus.Confirmed)
+                    .Select(payment => (decimal?)payment.Amount)
+                    .Sum() ?? 0m
+            })
+            .ToListAsync(cancellationToken);
+        var overdueDebt = overdueBalances.Sum(item => Math.Max(0m, item.AmountDue - item.Paid));
 
         var paymentEntities = await paymentQuery
             .Include(item => item.Invoice)
@@ -223,6 +286,7 @@ public class RoleDashboardService(AppDbContext dbContext, ICurrentUser currentUs
         return new AccountingDashboardResponse(
             revenue,
             currentDebt,
+            overdueDebt,
             fromDate,
             toDate,
             revenueByMonth,

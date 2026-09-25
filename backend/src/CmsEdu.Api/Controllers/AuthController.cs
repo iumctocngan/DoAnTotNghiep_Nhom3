@@ -64,21 +64,6 @@ public class AuthController(
     }
 
     [Authorize]
-    [HttpPost("logout-all")]
-    public async Task<IActionResult> LogoutAll(CancellationToken cancellationToken)
-    {
-        var userId = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
-        if (userId is null)
-        {
-            return Unauthorized();
-        }
-
-        await authenticationService.LogoutAllAsync(userId, GetIpAddress(), cancellationToken);
-        DeleteRefreshTokenCookie();
-        return NoContent();
-    }
-
-    [Authorize]
     [HttpGet("me")]
     public ActionResult<CurrentUserResponse> Me()
     {

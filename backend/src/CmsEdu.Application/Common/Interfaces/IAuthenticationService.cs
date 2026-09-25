@@ -19,11 +19,6 @@ public interface IAuthenticationService
         string? ipAddress,
         CancellationToken cancellationToken = default);
 
-    Task LogoutAllAsync(
-        string userId,
-        string? ipAddress,
-        CancellationToken cancellationToken = default);
-
     Task RevokeAllSessionsAsync(
         string userId,
         string? ipAddress,

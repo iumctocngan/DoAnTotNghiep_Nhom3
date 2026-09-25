@@ -22,6 +22,7 @@ public class RoleDashboardServiceTests
         Assert.Equal(1, result.UnarchivedStudentCount);
         Assert.Equal(1, result.ActiveClassCount);
         Assert.Equal(1, result.ActiveEnrollmentCount);
+        Assert.Equal(6, result.EnrollmentStartsByMonth.Count);
         Assert.Contains(result.ClassesByStatus,
             item => item.Status == nameof(ClassStatus.Active) && item.Count == 1);
     }
@@ -36,6 +37,7 @@ public class RoleDashboardServiceTests
         Assert.Equal(1, result.AssignedClassCount);
         Assert.Equal(1, result.ActiveStudentCount);
         Assert.Equal(1, result.TodaySessionCount);
+        Assert.Equal(0, result.PendingSessionCount);
         Assert.Single(result.UpcomingSessions);
         Assert.Equal("CLS-001", result.UpcomingSessions[0].ClassCode);
     }
@@ -51,6 +53,7 @@ public class RoleDashboardServiceTests
         Assert.Equal(1, result.ActiveEnrollmentCount);
         Assert.Equal(0, result.PausedEnrollmentCount);
         Assert.Equal(1, result.StudentsWithoutGuardianCount);
+        Assert.Single(result.StudentsWithoutGuardian);
         Assert.Contains(result.EnrollmentsByStatus,
             item => item.Status == nameof(EnrollmentStatus.Active) && item.Count == 1);
     }
@@ -69,6 +72,20 @@ public class RoleDashboardServiceTests
         Assert.Equal("REC-202609-0001", result.Transactions[0].ReceiptNumber);
         Assert.Equal("Cancelled", result.Transactions[1].Status);
         Assert.Single(result.AuditLogs);
+    }
+
+    [Fact]
+    public async Task GetAccountingDashboardAsync_ReturnsOverdueDebt()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var invoice = await fixture.Context.Invoices
+            .SingleAsync(item => item.InvoiceNumber == "INV-202609-0001");
+        invoice.DueDate = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-1);
+        await fixture.Context.SaveChangesAsync();
+
+        var result = await fixture.Service.GetAccountingDashboardAsync(null, null);
+
+        Assert.Equal(4_000_000m, result.OverdueDebt);
     }
 
     [Fact]
@@ -96,10 +113,12 @@ public class RoleDashboardServiceTests
                 new DateOnly(2026, 9, 1)));
     }
 
-    [Fact]
-    public async Task GetAccountingDashboardAsync_RejectsTeacher()
+    [Theory]
+    [InlineData(UserRole.Admin)]
+    [InlineData(UserRole.Teacher)]
+    public async Task GetAccountingDashboardAsync_RejectsOtherRoles(string role)
     {
-        await using var fixture = await Fixture.CreateAsync(UserRole.Teacher);
+        await using var fixture = await Fixture.CreateAsync(role);
 
         await Assert.ThrowsAsync<ForbiddenAccessException>(() =>
             fixture.Service.GetAccountingDashboardAsync(null, null));

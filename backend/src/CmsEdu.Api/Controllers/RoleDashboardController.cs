@@ -35,7 +35,7 @@ public class RoleDashboardController(IRoleDashboardService dashboardService) : C
     }
 
     [HttpGet("accounting")]
-    [Authorize(Roles = $"{UserRole.Admin},{UserRole.Accountant}")]
+    [Authorize(Roles = UserRole.Accountant)]
     public async Task<ActionResult<AccountingDashboardResponse>> GetAccountingDashboard(
         [FromQuery] DateOnly? fromDate,
         [FromQuery] DateOnly? toDate,

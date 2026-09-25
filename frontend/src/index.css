@@ -1,0 +1,502 @@
+:root {
+  --bg-page: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f8fafc;
+  --border-color: #cbd5e1;
+  --border-subtle: #e2e8f0;
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-light: #64748b;
+  --primary: #0284c7;
+  --primary-hover: #0369a1;
+  --primary-bg: #e0f2fe;
+  --sidebar-bg: #ffffff;
+  --sidebar-border: #e2e8f0;
+  --sidebar-hover: #f1f5f9;
+  --danger: #b91c1c;
+  --danger-bg: #fef2f2;
+  --danger-border: #fecaca;
+  --success: #15803d;
+  --success-bg: #f0fdf4;
+  --radius: 6px;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased font-sans;
+  }
+  h1 { @apply text-2xl font-semibold text-slate-900 leading-tight; }
+  h2 { @apply text-xl font-semibold text-slate-900 leading-tight; }
+  h3 { @apply text-lg font-semibold text-slate-900 leading-tight; }
+  h4 { @apply text-base font-semibold text-slate-900 leading-tight; }
+  p { @apply text-slate-600; }
+  label { @apply block text-sm font-semibold text-slate-900 mb-1.5; }
+}
+
+@layer components {
+  /* Form Inputs */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="date"],
+  select {
+    @apply w-full px-3 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded outline-none transition-colors h-[38px] leading-tight;
+  }
+  textarea {
+    @apply w-full px-3 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded outline-none transition-colors;
+  }
+  input:focus,
+  select:focus,
+  textarea:focus {
+    @apply border-[#0284c7] ring-2 ring-[#0284c7]/20;
+  }
+  input:disabled,
+  select:disabled {
+    @apply bg-slate-50 text-slate-400 cursor-not-allowed;
+  }
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-semibold rounded border border-transparent cursor-pointer min-h-[40px] transition-colors no-underline disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply bg-[#0284c7] text-white hover:bg-[#0369a1];
+  }
+  .btn-secondary {
+    @apply bg-white border-slate-300 text-slate-800 hover:bg-slate-50;
+  }
+  .btn-danger {
+    @apply bg-red-700 text-white hover:bg-red-800;
+  }
+
+  /* Alerts */
+  .alert {
+    @apply p-3 rounded text-sm mb-4 border;
+  }
+  .alert-danger {
+    @apply bg-red-50 text-red-700 border-red-200;
+  }
+  .alert-success {
+    @apply bg-green-50 text-green-700 border-green-200;
+  }
+
+  /* Badges */
+  .badge {
+    @apply inline-block px-2 py-0.5 text-xs font-semibold rounded uppercase tracking-wider border;
+  }
+  .badge-admin,
+  .badge-teacher,
+  .badge-accountant,
+  .badge-customercare {
+    @apply bg-slate-100 text-slate-700 border-slate-300;
+  }
+  .badge-active {
+    @apply bg-green-100 text-green-800 border-green-200;
+  }
+  .badge-inactive {
+    @apply bg-slate-100 text-slate-600 border-slate-300;
+  }
+  .badge-student {
+    @apply bg-sky-100 text-sky-800 border-sky-200;
+  }
+  .badge-danger {
+    @apply bg-red-50 text-red-700 border-red-200;
+  }
+
+  /* Cards */
+  .card {
+    @apply bg-white border border-slate-200 rounded p-5 mb-5;
+  }
+  .card-title {
+    @apply text-base font-semibold mb-3 text-slate-900;
+  }
+
+  /* Tables */
+  .table-container {
+    @apply w-full overflow-x-auto bg-white border border-slate-200 rounded;
+  }
+  .data-table {
+    @apply w-full border-collapse text-left text-sm;
+  }
+  .data-table th {
+    @apply bg-slate-50 text-slate-900 font-semibold px-4 py-3 border-b border-slate-300 whitespace-nowrap;
+  }
+  .data-table td {
+    @apply px-4 py-3 border-b border-slate-200 text-slate-900 align-middle;
+  }
+  .data-table tbody tr:hover {
+    @apply bg-slate-50;
+  }
+
+  /* Modals */
+  .modal-overlay {
+    @apply fixed inset-0 bg-slate-900/40 flex items-center justify-center z-50 p-4 overflow-y-auto;
+  }
+  .modal-content {
+    @apply bg-white rounded border border-slate-200 max-w-[440px] w-full max-h-[calc(100vh-2rem)] p-6 shadow-lg overflow-y-auto m-auto;
+  }
+  .modal-content-wide {
+    @apply max-w-[500px];
+  }
+  .modal-header {
+    @apply flex justify-between items-center mb-4;
+  }
+  .modal-title-compact {
+    @apply text-lg font-semibold;
+  }
+  .modal-close-button {
+    @apply border-0 bg-transparent text-slate-400 text-xl cursor-pointer hover:text-slate-600;
+  }
+  .modal-form-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3;
+  }
+  .modal-footer {
+    @apply flex justify-end gap-2 mt-5;
+  }
+
+  /* Toast Notification */
+  .toast {
+    @apply fixed top-4 right-4 z-50 flex items-center justify-between gap-4 p-4 border rounded shadow-lg text-sm max-w-sm w-full;
+  }
+  .toast-success {
+    @apply bg-green-50 border-green-200 text-green-800;
+  }
+  .toast-error {
+    @apply bg-red-50 border-red-200 text-red-800;
+  }
+  .toast button {
+    @apply p-0 border-0 bg-transparent text-inherit text-xl leading-none cursor-pointer;
+  }
+
+  /* Pagination */
+  .pagination {
+    @apply flex items-center justify-between py-3 mt-2 text-sm text-slate-600 gap-3 flex-wrap;
+  }
+
+  /* Teacher Select Combobox */
+  .teacher-select {
+    @apply relative w-full;
+  }
+  .teacher-select input {
+    @apply pr-9 h-[38px];
+  }
+  .teacher-select-options {
+    @apply absolute top-[calc(100%+0.25rem)] left-0 z-30 w-full max-h-60 overflow-y-auto p-1 bg-white border border-slate-300 rounded shadow-lg;
+  }
+  .teacher-select-option,
+  .teacher-select-message {
+    @apply px-3 py-2 rounded text-sm text-slate-700;
+  }
+  .teacher-select-option {
+    @apply cursor-pointer hover:bg-slate-100;
+  }
+  .teacher-select-option.is-active {
+    @apply bg-slate-100;
+  }
+  .teacher-select-option.is-stale {
+    @apply opacity-50 pointer-events-none;
+  }
+
+  /* App Layout Structure */
+  .layout-container {
+    @apply flex min-h-screen bg-slate-50;
+  }
+  .sidebar {
+    @apply w-[220px] bg-white border-r border-slate-200 flex flex-col shrink-0 overflow-hidden whitespace-nowrap transition-all duration-200;
+  }
+  .sidebar.collapsed {
+    @apply w-0 border-r-0;
+  }
+  .sidebar-backdrop {
+    @apply hidden;
+  }
+  .sidebar-toggle-btn {
+    @apply inline-flex items-center justify-center w-8 h-8 bg-transparent border border-slate-200 rounded text-slate-800 cursor-pointer transition-colors hover:bg-sky-50 hover:border-sky-200 hover:text-[#0284c7];
+  }
+  .sidebar-brand {
+    @apply p-5 border-b border-slate-200;
+  }
+  .sidebar-brand-logo {
+    @apply flex items-center;
+  }
+  .sidebar-brand-logo img {
+    @apply block w-auto h-12 object-contain;
+  }
+  .sidebar-brand-subtitle {
+    @apply text-xs text-[#0284c7] mt-0.5;
+  }
+  .sidebar-nav {
+    @apply p-4 flex-1;
+  }
+  .nav-link {
+    @apply flex items-center px-3 py-2.5 text-slate-800 text-sm font-medium rounded mb-0.5 transition-colors no-underline hover:bg-slate-100 hover:text-[#0369a1];
+  }
+  .nav-link.active {
+    @apply bg-[#0284c7] text-white font-semibold hover:text-white hover:bg-[#0369a1];
+  }
+  .sidebar-footer {
+    @apply p-4 border-t border-slate-200 text-xs text-[#0369a1];
+  }
+  .main-wrapper {
+    @apply flex-1 flex flex-col min-w-0 bg-slate-50;
+  }
+  .top-header {
+    @apply min-h-[68px] bg-white border-b border-slate-200 flex items-center justify-between px-6 py-2.5 gap-4;
+  }
+  .header-left {
+    @apply flex items-center gap-3 min-w-0;
+  }
+  .header-greeting,
+  .user-menu-name {
+    @apply flex flex-col min-w-0 leading-tight;
+  }
+  .header-greeting strong {
+    @apply text-sm truncate;
+  }
+  .header-greeting span,
+  .user-menu-name small {
+    @apply text-xs text-slate-500;
+  }
+  .content-area {
+    @apply p-6 flex-1;
+  }
+
+  /* User Profile Dropdown */
+  .user-menu-container {
+    @apply relative;
+  }
+  .user-menu-trigger {
+    @apply flex items-center gap-2.5 px-2.5 py-1.5 bg-white border border-slate-200 rounded cursor-pointer transition-colors text-slate-900 hover:bg-slate-50 hover:border-slate-300;
+  }
+  .user-avatar {
+    @apply w-9 h-9 grid place-items-center shrink-0 rounded-full bg-[#1d4f73] text-white text-sm font-bold;
+  }
+  .user-menu-name {
+    @apply text-left max-w-[160px];
+  }
+  .user-menu-name strong {
+    @apply text-xs truncate;
+  }
+  .user-menu-chevron {
+    @apply text-slate-500 ml-1 text-xs;
+  }
+  .user-menu-dropdown {
+    @apply absolute top-[calc(100%+6px)] right-0 w-80 bg-white border border-slate-200 rounded shadow-xl z-50 overflow-hidden py-1;
+  }
+  .user-menu-profile {
+    @apply p-3.5 flex flex-col gap-0.5;
+  }
+  .user-menu-profile > strong {
+    @apply text-sm;
+  }
+  .user-menu-profile > span {
+    @apply text-xs text-slate-500;
+  }
+  .user-menu-profile dl {
+    @apply mt-2.5 grid gap-1;
+  }
+  .user-menu-profile dl > div {
+    @apply grid grid-cols-[90px_minmax(0,1fr)] gap-2 text-xs;
+  }
+  .user-menu-profile dt {
+    @apply text-slate-500;
+  }
+  .user-menu-profile dd {
+    @apply break-words;
+  }
+  .user-menu-item {
+    @apply w-full flex items-center gap-2 px-4 py-2.5 text-xs text-slate-900 bg-transparent border-0 text-left cursor-pointer transition-colors hover:bg-slate-50;
+  }
+  .user-menu-divider {
+    @apply h-px bg-slate-200 my-1;
+  }
+
+  /* Dashboard KPIs & Layout */
+  .kpi-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5;
+  }
+  .kpi-grid-3 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-5;
+  }
+  .kpi-card {
+    @apply bg-white border border-slate-200 rounded p-4 flex flex-col justify-between;
+  }
+  .kpi-card-top {
+    @apply flex items-center gap-3.5 mb-3;
+  }
+  .kpi-icon-box {
+    @apply w-11 h-11 rounded-lg flex items-center justify-center shrink-0;
+  }
+  .kpi-icon-box.primary { @apply bg-sky-100 text-[#0284c7]; }
+  .kpi-icon-box.success { @apply bg-green-100 text-green-600; }
+  .kpi-icon-box.warning { @apply bg-amber-100 text-amber-600; }
+  .kpi-icon-box.danger  { @apply bg-red-100 text-red-600; }
+  .kpi-icon-box.neutral { @apply bg-slate-100 text-slate-600; }
+
+  .kpi-body {
+    @apply flex flex-col min-w-0;
+  }
+  .kpi-value {
+    @apply text-2xl font-bold text-slate-900 leading-tight;
+  }
+  .kpi-label {
+    @apply text-xs text-slate-500 font-medium mt-0.5 truncate;
+  }
+  .kpi-bottom {
+    @apply flex items-center justify-between mt-2 pt-2 border-t border-slate-100 text-xs gap-2;
+  }
+  .kpi-subtext {
+    @apply text-xs text-slate-500;
+  }
+  .kpi-badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold;
+  }
+  .kpi-badge-warning { @apply bg-amber-100 text-amber-800; }
+  .kpi-badge-danger  { @apply bg-red-100 text-red-800; }
+  .kpi-badge-success { @apply bg-green-100 text-green-800; }
+  .kpi-badge-neutral { @apply bg-slate-100 text-slate-600; }
+
+  .dashboard-grid-2 {
+    @apply grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5;
+  }
+
+  .dashboard-page .kpi-value {
+    font-variant-numeric: tabular-nums;
+  }
+  .dashboard-page .kpi-label {
+    @apply text-sm text-slate-700;
+    white-space: normal;
+    line-height: 1.35;
+  }
+  .dashboard-page .kpi-subtext {
+    @apply text-sm text-slate-600;
+  }
+
+  /* Charts */
+  .chart-box {
+    @apply bg-white border border-slate-200 rounded p-5 flex flex-col mb-5;
+  }
+  .chart-header {
+    @apply flex items-center justify-between mb-4 gap-2 flex-wrap;
+  }
+  .chart-title {
+    @apply text-sm font-semibold text-slate-900 m-0;
+  }
+  .chart-subtitle {
+    @apply text-xs text-slate-500;
+  }
+  .chart-empty {
+    @apply py-10 px-4 text-center text-slate-400 text-sm bg-slate-50 rounded border border-dashed border-slate-200 my-auto;
+  }
+
+  .dashboard-page .chart-title {
+    @apply text-base;
+  }
+  .dashboard-page .chart-subtitle {
+    @apply text-sm text-slate-600;
+  }
+  .dashboard-page .chart-empty {
+    @apply text-base text-slate-600;
+  }
+
+  /* Horizontal Bar Chart */
+  .bar-row {
+    @apply flex items-center gap-3 mb-2.5 text-sm relative;
+  }
+  .bar-label {
+    @apply w-36 shrink-0 text-slate-900 font-medium truncate text-sm;
+  }
+  .bar-track {
+    @apply flex-1 bg-slate-100 h-[18px] rounded overflow-visible relative;
+  }
+  .bar-fill {
+    @apply h-full rounded transition-all duration-300 relative cursor-pointer hover:brightness-90;
+  }
+  .bar-count {
+    @apply w-24 text-right shrink-0 font-semibold text-slate-700 text-sm;
+  }
+
+  /* Tooltip container */
+  .has-tooltip {
+    @apply relative;
+  }
+  .has-tooltip .tooltip-text {
+    @apply invisible opacity-0 absolute bottom-[125%] left-1/2 -translate-x-1/2 bg-slate-900 text-white text-center py-1 px-2 rounded text-xs font-medium whitespace-nowrap z-30 pointer-events-none transition-all duration-150 shadow-md;
+  }
+  .has-tooltip:hover .tooltip-text {
+    @apply visible opacity-100;
+  }
+
+  /* Vertical Column Chart */
+  .column-chart-wrapper {
+    @apply overflow-x-auto pt-5;
+  }
+  .column-chart-content {
+    @apply min-w-full flex items-end gap-2 border-b border-slate-300;
+  }
+  .column-chart-item {
+    @apply flex flex-col items-center flex-1 min-w-[58px] relative;
+  }
+  .column-chart-plot {
+    @apply h-44 w-full flex items-end justify-center;
+  }
+  .column-chart-bar {
+    @apply relative w-8 bg-[#0284c7] rounded-t transition-all duration-300 cursor-pointer hover:brightness-90;
+  }
+  .column-chart-value {
+    @apply absolute bottom-[calc(100%+4px)] left-1/2 -translate-x-1/2 text-sm font-semibold text-slate-700 whitespace-nowrap;
+  }
+  .column-chart-axis {
+    @apply text-sm text-slate-700 mt-2 whitespace-nowrap text-center;
+  }
+
+  .staff-actions {
+    @apply flex justify-end items-center gap-1.5 whitespace-nowrap;
+  }
+}
+
+/* Mobile Media Queries */
+@media (max-width: 760px) {
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 40;
+    height: 100vh;
+    width: 220px;
+    box-shadow: 4px 0 16px rgba(15, 23, 42, 0.08);
+  }
+  .sidebar.collapsed {
+    width: 220px;
+    transform: translateX(-100%);
+  }
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    background: rgba(15, 23, 42, 0.28);
+  }
+  .content-area {
+    padding: 1rem;
+  }
+  .top-header {
+    padding: 0.5rem 1rem;
+  }
+}
+
+@media (max-width: 580px) {
+  .header-greeting,
+  .user-menu-name {
+    display: none;
+  }
+  .kpi-bottom {
+    flex-wrap: wrap;
+  }
+  .bar-label {
+    width: 100px;
+  }
+}

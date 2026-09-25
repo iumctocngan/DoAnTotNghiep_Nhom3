@@ -20,7 +20,7 @@ Hệ thống dùng **RBAC + resource scope** theo nguyên tắc **least privileg
 | Payment | Quản lý | — | Quản lý | — |
 | Dashboard Admin | Xem | — | — | — |
 | Dashboard Teacher | — | Theo lớp phụ trách | — | — |
-| Dashboard kế toán | Xem | — | Xem | — |
+| Dashboard kế toán | — | — | Xem | — |
 | Dashboard CustomerCare | — | — | — | Xem |
 
 **Quy ước:**

@@ -153,17 +153,6 @@ public class AuthenticationService(
             cancellationToken);
     }
 
-    public async Task LogoutAllAsync(
-        string userId,
-        string? ipAddress,
-        CancellationToken cancellationToken = default) {
-        await RevokeAllSessionsAsync(
-            userId,
-            ipAddress,
-            "Logged out from all sessions.",
-            cancellationToken);
-    }
-
     public async Task RevokeAllSessionsAsync(
         string userId,
         string? ipAddress,

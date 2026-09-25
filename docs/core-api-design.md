@@ -177,10 +177,10 @@ Backend sinh `InvoiceNumber`, `PaymentNumber`, `ReceiptNumber`. Chỉ enrollment
 | ------ | ------------------------------ | ----------------- | ------------ |
 | GET    | `/api/dashboard/admin`         | Dashboard Admin   | Admin        |
 | GET    | `/api/dashboard/teacher`       | Dashboard Teacher | Teacher      |
-| GET    | `/api/dashboard/accounting`    | Dashboard kế toán | Admin, Accountant |
+| GET    | `/api/dashboard/accounting`    | Dashboard kế toán | Accountant   |
 | GET    | `/api/dashboard/customer-care` | Dashboard CSKH    | CustomerCare |
 
-Dashboard MVP tính trực tiếp từ dữ liệu nghiệp vụ, không tạo bảng thống kê riêng. Dashboard Admin trả số nhân viên Active, học viên chưa lưu trữ, lớp Active, ghi danh Active và số lớp theo trạng thái. Dashboard Teacher trả dữ liệu của chính giáo viên gồm số lớp Active đang phụ trách, số học viên đang học, số buổi học hôm nay và tối đa 5 buổi học chưa bắt đầu; ngày giờ được tính theo múi giờ Việt Nam. Dashboard kế toán nhận `fromDate` và `toDate` dạng ngày, trả doanh thu và giao dịch trong toàn bộ khoảng ngày, công nợ hiện tại không gồm invoice Draft/Cancelled, doanh thu theo tháng và audit tài chính gần đây. Dashboard CustomerCare trả số học viên chưa lưu trữ, ghi danh Active/Paused, học viên chưa có người giám hộ và số ghi danh theo trạng thái.
+Dashboard MVP tính trực tiếp từ dữ liệu nghiệp vụ, không tạo bảng thống kê riêng. Dashboard Admin trả số nhân viên Active, học viên chưa lưu trữ, lớp Active, ghi danh Active, số lớp theo trạng thái và số ghi danh bắt đầu trong 6 tháng gần đây. Dashboard Teacher trả dữ liệu của chính giáo viên gồm số lớp Active đang phụ trách, số học viên đang học, số buổi học hôm nay, số buổi đã qua nhưng chưa hoàn tất và tối đa 5 buổi học chưa bắt đầu; ngày giờ được tính theo múi giờ Việt Nam. Dashboard kế toán nhận `fromDate` và `toDate` dạng ngày, trả doanh thu và giao dịch trong toàn bộ khoảng ngày, công nợ hiện tại, công nợ quá hạn, doanh thu theo tháng và audit tài chính gần đây; công nợ không gồm invoice Draft/Cancelled. Dashboard CustomerCare trả số học viên chưa lưu trữ, ghi danh Active/Paused, học viên chưa có người giám hộ, tối đa 5 học viên cần bổ sung guardian và số ghi danh theo trạng thái.
 
 Backend vẫn tự ghi audit cho thao tác quan trọng. Dashboard kế toán chỉ trả tối đa 50 audit tài chính gần nhất trong khoảng lọc; API tra cứu audit tổng quát được hoãn sau MVP.
 
