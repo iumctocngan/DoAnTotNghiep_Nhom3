@@ -1,27 +1,43 @@
-import React, { useState } from 'react';
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { teacherApi } from '../../api/teacherApi';
-import { staffApi } from '../../api/staffApi';
-import { useAuth } from '../../context/AuthContext';
-import type { SessionStatus } from '../../types/teacher';
-import { formatDateDisplay } from '../../utils/date';
-import { TeacherSelect } from '../../components/TeacherSelect';
-import { useDebouncedValue } from '../../hooks/useDebouncedValue';
-import { Pagination, PAGE_SIZE } from '../../components/common/Pagination';
+import React, { useState } from "react";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { teacherApi } from "../../api/teacherApi";
+import { staffApi } from "../../api/staffApi";
+import { useAuth } from "../../context/AuthContext";
+import type { SessionStatus } from "../../types/teacher";
+import { formatDateDisplay } from "../../utils/date";
+import { TeacherSelect } from "../../components/TeacherSelect";
+import { useDebouncedValue } from "../../hooks/useDebouncedValue";
+import { Pagination, PAGE_SIZE } from "../../components/common/Pagination";
+import { AttendanceModal } from "../sessions/AttendanceModal";
 
 export const TeacherSchedulePage: React.FC = () => {
   const { user } = useAuth();
-  const [selectedTeacherId, setSelectedTeacherId] = useState<string>(user?.role === 'Teacher' ? user.userId : '');
-  const [teacherSearch, setTeacherSearch] = useState('');
+  const [selectedTeacherId, setSelectedTeacherId] = useState<string>(
+    user?.role === "Teacher" ? user.userId : "",
+  );
+  const [teacherSearch, setTeacherSearch] = useState("");
   const debouncedTeacherSearch = useDebouncedValue(teacherSearch);
-  const [fromDate, setFromDate] = useState<string>('');
-  const [toDate, setToDate] = useState<string>('');
+  const [fromDate, setFromDate] = useState<string>("");
+  const [toDate, setToDate] = useState<string>("");
   const [page, setPage] = useState(1);
+  const [attendanceSessionId, setAttendanceSessionId] = useState<number | null>(
+    null,
+  );
 
-  const { data: teachers, isLoading: isTeachersLoading, isFetching: isTeachersFetching, isError: isTeachersError } = useQuery({
-    queryKey: ['staff', 'teachers', debouncedTeacherSearch],
-    queryFn: () => staffApi.getStaff({ role: 'Teacher', search: debouncedTeacherSearch, pageSize: 100 }),
-    enabled: user?.role === 'Admin',
+  const {
+    data: teachers,
+    isLoading: isTeachersLoading,
+    isFetching: isTeachersFetching,
+    isError: isTeachersError,
+  } = useQuery({
+    queryKey: ["staff", "teachers", debouncedTeacherSearch],
+    queryFn: () =>
+      staffApi.getStaff({
+        role: "Teacher",
+        search: debouncedTeacherSearch,
+        pageSize: 100,
+      }),
+    enabled: user?.role === "Admin",
     placeholderData: keepPreviousData,
   });
 
@@ -31,7 +47,14 @@ export const TeacherSchedulePage: React.FC = () => {
     isError,
     error,
   } = useQuery({
-    queryKey: ['teacher-schedule', selectedTeacherId, fromDate, toDate, page, PAGE_SIZE],
+    queryKey: [
+      "teacher-schedule",
+      selectedTeacherId,
+      fromDate,
+      toDate,
+      page,
+      PAGE_SIZE,
+    ],
     queryFn: () =>
       teacherApi.getSchedule(selectedTeacherId, {
         fromDate: fromDate || undefined,
@@ -64,18 +87,18 @@ export const TeacherSchedulePage: React.FC = () => {
 
       {/* Bộ lọc khoảng ngày */}
       <div className="card grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 p-4 mb-4 items-start">
-        {user?.role === 'Admin' && (
+        {user?.role === "Admin" && (
           <div>
-            <label htmlFor="scheduleTeacherSelect">
-              Giáo viên:
-            </label>
+            <label htmlFor="scheduleTeacherSelect">Giáo viên:</label>
             <TeacherSelect
               id="scheduleTeacherSelect"
               teachers={teachers?.items ?? []}
               value={selectedTeacherId}
               search={teacherSearch}
               isLoading={isTeachersLoading && !teachers}
-              isSearching={isTeachersFetching || teacherSearch !== debouncedTeacherSearch}
+              isSearching={
+                isTeachersFetching || teacherSearch !== debouncedTeacherSearch
+              }
               disabled={isTeachersError}
               onSearchChange={(value) => {
                 setTeacherSearch(value);
@@ -86,7 +109,11 @@ export const TeacherSchedulePage: React.FC = () => {
                 setPage(1);
               }}
             />
-            {isTeachersError && <div className="alert alert-danger mt-2 mb-0" role="alert">Không tải được danh sách giáo viên. Tải lại trang để thử lại.</div>}
+            {isTeachersError && (
+              <div className="alert alert-danger mt-2 mb-0" role="alert">
+                Không tải được danh sách giáo viên. Tải lại trang để thử lại.
+              </div>
+            )}
           </div>
         )}
 
@@ -125,7 +152,7 @@ export const TeacherSchedulePage: React.FC = () => {
 
       {isError && (
         <div className="alert alert-danger">
-          {error?.message || 'Không thể tải lịch giảng dạy.'}
+          {error?.message || "Không thể tải lịch giảng dạy."}
         </div>
       )}
 
@@ -140,33 +167,48 @@ export const TeacherSchedulePage: React.FC = () => {
               <th>Bài học</th>
               <th>Trạng thái</th>
               <th>Ghi chú</th>
+              <th className="text-right">Thao tác</th>
             </tr>
           </thead>
           <tbody>
             {!selectedTeacherId ? (
-              <tr><td colSpan={6} className="text-center py-8 text-slate-500">Chọn giáo viên để xem lịch dạy.</td></tr>
+              <tr>
+                <td colSpan={7} className="text-center py-8 text-slate-500">
+                  Chọn giáo viên để xem lịch dạy.
+                </td>
+              </tr>
             ) : isInvalidDateRange ? (
-              <tr><td colSpan={6} className="text-center py-8 text-red-700">Hãy điều chỉnh khoảng ngày để xem lịch.</td></tr>
+              <tr>
+                <td colSpan={7} className="text-center py-8 text-red-700">
+                  Hãy điều chỉnh khoảng ngày để xem lịch.
+                </td>
+              </tr>
             ) : isLoading ? (
               <tr>
-                <td colSpan={6} className="text-center py-8 text-slate-500">
+                <td colSpan={7} className="text-center py-8 text-slate-500">
                   Đang tải lịch buổi học...
                 </td>
               </tr>
             ) : pagedData?.items && pagedData.items.length > 0 ? (
               pagedData.items.map((session) => (
                 <tr key={session.sessionId}>
-                  <td className="font-semibold">{formatDateDisplay(session.sessionDate)}</td>
+                  <td className="font-semibold">
+                    {formatDateDisplay(session.sessionDate)}
+                  </td>
                   <td>
                     {session.startTime} - {session.endTime}
                   </td>
                   <td>
-                    <span className="font-semibold font-mono">{session.classCode}</span> ({session.className})
+                    <span className="font-semibold font-mono">
+                      {session.classCode}
+                    </span>{" "}
+                    ({session.className})
                   </td>
                   <td>
                     {session.lessonCode ? (
                       <span>
-                        <strong>{session.lessonCode}</strong>: {session.lessonName}
+                        <strong>{session.lessonCode}</strong>:{" "}
+                        {session.lessonName}
                       </span>
                     ) : (
                       <span className="text-slate-400">Chưa gán bài học</span>
@@ -174,13 +216,26 @@ export const TeacherSchedulePage: React.FC = () => {
                   </td>
                   <td>{getSessionStatusBadge(session.status)}</td>
                   <td className="text-xs text-slate-500">
-                    {session.note || '—'}
+                    {session.note || "—"}
+                  </td>
+                  <td className="text-right whitespace-nowrap">
+                    {session.status !== 3 && (
+                      <button
+                        type="button"
+                        className="btn btn-secondary text-xs !py-1 !px-2.5 text-sky-700 font-semibold border-sky-300 hover:bg-sky-50"
+                        onClick={() =>
+                          setAttendanceSessionId(session.sessionId)
+                        }
+                      >
+                        📝 Điểm danh
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={6} className="text-center py-8 text-slate-500">
+                <td colSpan={7} className="text-center py-8 text-slate-500">
                   Không có buổi học nào trong khoảng thời gian này.
                 </td>
               </tr>
@@ -189,7 +244,20 @@ export const TeacherSchedulePage: React.FC = () => {
         </table>
       </div>
 
-      {pagedData && <Pagination totalItems={pagedData.totalItems} page={page} onPageChange={setPage} itemLabel="buổi học" />}
+      {pagedData && (
+        <Pagination
+          totalItems={pagedData.totalItems}
+          page={page}
+          onPageChange={setPage}
+          itemLabel="buổi học"
+        />
+      )}
+      {/* Modal điểm danh */}
+      <AttendanceModal
+        sessionId={attendanceSessionId}
+        isOpen={attendanceSessionId !== null}
+        onClose={() => setAttendanceSessionId(null)}
+      />
     </div>
   );
 };

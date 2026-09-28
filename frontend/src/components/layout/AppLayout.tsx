@@ -81,6 +81,23 @@ export const AppLayout: React.FC = () => {
             Tổng quan
           </NavLink>
 
+          {(user?.role === 'Admin' || user?.role === 'Teacher' || user?.role === 'CustomerCare') && (
+            <NavLink
+              to="/sessions"
+              className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+            >
+              Buổi học & Điểm danh
+            </NavLink>
+          )}
+
+          {(user?.role === 'Admin' || user?.role === 'Accountant' || user?.role === 'CustomerCare') && (
+            <NavLink
+              to="/invoices"
+              className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+            >
+              Học phí & Thu tiền
+            </NavLink>
+          )}
           <NavLink
             to="/curriculum"
             className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}

@@ -10,6 +10,8 @@ import { StaffListPage } from './pages/staff/StaffListPage';
 import { CurriculumPage } from './pages/curriculum/CurriculumPage';
 import { TeacherClassesPage } from './pages/teacher/TeacherClassesPage';
 import { TeacherSchedulePage } from './pages/teacher/TeacherSchedulePage';
+import { SessionListPage } from './pages/sessions/SessionListPage';
+import { InvoiceListPage } from './pages/invoices/InvoiceListPage';
 import { ToastProvider } from './components/common/ToastProvider';
 
 const queryClient = new QueryClient({
@@ -35,6 +37,16 @@ export const App: React.FC = () => {
             <Route element={<ProtectedRoute />}>
               <Route element={<AppLayout />}>
                 <Route path="/" element={<DashboardPage />} />
+
+                {/* Quản lý buổi học & Điểm danh (HuceLongK) */}
+                <Route element={<ProtectedRoute allowedRoles={['Admin', 'Teacher', 'CustomerCare']} />}>
+                  <Route path="/sessions" element={<SessionListPage />} />
+                </Route>
+
+                {/* Quản lý học phí & Phiếu thu (HuceLongK) */}
+                <Route element={<ProtectedRoute allowedRoles={['Admin', 'Accountant', 'CustomerCare']} />}>
+                  <Route path="/invoices" element={<InvoiceListPage />} />
+                </Route>
                 <Route path="/curriculum" element={<CurriculumPage />} />
                 <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
                   <Route path="/staff" element={<StaffListPage />} />
