@@ -133,7 +133,7 @@ export const CreateStaffModal: React.FC<CreateStaffModalProps> = ({
               <input
                 id="email"
                 type="email"
-                placeholder="a.nguyen@cms.edu.vn"
+                placeholder="Nhập email nhân viên"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isSubmitting}
@@ -184,3 +184,4 @@ export const CreateStaffModal: React.FC<CreateStaffModalProps> = ({
     </Modal>
   );
 };
+

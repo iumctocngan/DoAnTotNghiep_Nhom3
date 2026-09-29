@@ -48,7 +48,7 @@ export const LoginPage: React.FC = () => {
         <div className="mb-6 text-center">
           <img
             src="/logo-logic-hub-trong-suot.png"
-            alt="Logo Logic Hub"
+            alt="Logo LOGICHUB"
             className="h-36 w-auto max-w-full object-contain inline-block"
           />
         </div>
@@ -61,7 +61,7 @@ export const LoginPage: React.FC = () => {
             <input
               id="email"
               type="email"
-              placeholder="nhanvien@cms.edu.vn"
+              placeholder="Nhập email tài khoản"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isSubmitting || isLoading}
@@ -94,10 +94,11 @@ export const LoginPage: React.FC = () => {
         </form>
 
         <div className="mt-6 pt-4 border-t border-slate-200 text-xs text-slate-500 text-center">
-          Hệ thống dành riêng cho cán bộ, giáo viên và nhân viên nội bộ Logic Hub.
+          Hệ thống dành riêng cho cán bộ, giáo viên và nhân viên nội bộ LOGICHUB.
         </div>
       </div>
     </div>
   );
 };
+
 

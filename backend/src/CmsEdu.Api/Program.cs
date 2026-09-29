@@ -11,7 +11,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 
-var builder = WebApplication.CreateBuilder(args);
+var khoiPhucAdmin = args.Contains("--khoi-phuc-admin");
+var builder = WebApplication.CreateBuilder(args.Where(thamSo => thamSo != "--khoi-phuc-admin").ToArray());
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -67,6 +68,20 @@ builder.Services.AddAuthorization(options =>
 });
 
 var app = builder.Build();
+
+if (khoiPhucAdmin)
+{
+    try
+    {
+        await KhoiPhucMatKhauAdmin.ThucHienAsync(app.Services, app.Environment.IsDevelopment());
+    }
+    catch (Exception loi)
+    {
+        Console.Error.WriteLine($"Không thể khôi phục: {loi.Message}");
+        Environment.ExitCode = 1;
+    }
+    return;
+}
 
 app.UseExceptionHandler();
 

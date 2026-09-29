@@ -62,8 +62,8 @@ export const AppLayout: React.FC = () => {
     <div className="layout-container">
       <aside className={`sidebar ${isSidebarOpen ? '' : 'collapsed'}`}>
         <div className="sidebar-brand">
-          <Link to="/" className="sidebar-brand-logo" title="Về trang chủ Logic Hub">
-            <img src="/logo-logic-hub-trong-suot.png" alt="Logo Logic Hub" />
+          <Link to="/" className="sidebar-brand-logo" title="Về trang chủ LOGICHUB">
+            <img src="/logo-logic-hub-trong-suot.png" alt="Logo LOGICHUB" />
           </Link>
           <div className="sidebar-brand-subtitle">Hệ thống Quản trị Trung tâm</div>
         </div>
@@ -234,7 +234,7 @@ export const AppLayout: React.FC = () => {
         <main className="content-area">
           <Outlet />
         </main>
-        <footer className="chan-trang">CMS EDU · Hệ thống quản lý trung tâm giáo dục</footer>
+        <footer className="chan-trang">LOGICHUB · Hệ thống quản lý trung tâm giáo dục</footer>
       </div>
 
       <ChangePasswordModal
@@ -254,4 +254,5 @@ export const AppLayout: React.FC = () => {
     </div>
   );
 };
+
 

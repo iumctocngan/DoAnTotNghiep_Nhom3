@@ -9,7 +9,7 @@ export const ProtectedRoute: React.FC<{ allowedRoles?: string[] }> = ({ allowedR
   if (status === 'loading') {
     return (
       <div className="flex h-screen items-center justify-center bg-slate-50 text-slate-500 text-sm">
-        Đang khởi tạo phiên làm việc CMS EDU...
+        Đang khởi tạo phiên làm việc LOGICHUB...
       </div>
     );
   }
@@ -24,3 +24,4 @@ export const ProtectedRoute: React.FC<{ allowedRoles?: string[] }> = ({ allowedR
 
   return <Outlet />;
 };
+

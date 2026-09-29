@@ -1,0 +1,39 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "CmsEdu.Application/1.0.0": {
+        "dependencies": {
+          "CmsEdu.Domain": "1.0.0"
+        },
+        "runtime": {
+          "CmsEdu.Application.dll": {}
+        }
+      },
+      "CmsEdu.Domain/1.0.0": {
+        "runtime": {
+          "CmsEdu.Domain.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "CmsEdu.Application/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "CmsEdu.Domain/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

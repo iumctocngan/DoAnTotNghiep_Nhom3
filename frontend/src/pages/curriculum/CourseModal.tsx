@@ -95,7 +95,7 @@ export const CourseModal: React.FC<CourseModalProps> = ({
             <input
               id="courseName"
               type="text"
-              placeholder="VD: Toán tư duy CMS"
+              placeholder="VD: Toán tư duy LOGICHUB"
               value={name}
               onChange={(e) => setName(e.target.value)}
               disabled={isSubmitting}
@@ -132,3 +132,4 @@ export const CourseModal: React.FC<CourseModalProps> = ({
     </Modal>
   );
 };
+
