@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { sessionApi } from '../../api/sessionApi';
 import { Modal } from '../../components/common/Modal';
@@ -235,7 +236,7 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ sessionId, isO
                         >
                           <td className="text-slate-500">{idx + 1}</td>
                           <td className="font-mono font-medium">{item.studentCode}</td>
-                          <td className="font-semibold text-slate-900">{item.studentFullName}</td>
+                          <td className="font-semibold text-slate-900">{item.studentFullName}<Link className="block text-sky-700 underline text-xs mt-1" to={`/ghi-danh/${item.enrollmentId}/nhan-xet`}>Nhận xét học viên</Link></td>
                           <td className="text-center">
                             <div className="inline-flex rounded border border-slate-300 p-0.5 bg-white">
                               <button

@@ -47,9 +47,9 @@ export const LoginPage: React.FC = () => {
       <div className="w-full max-w-[400px] bg-white border border-slate-200 rounded-md p-8 shadow-sm">
         <div className="mb-6 text-center">
           <img
-            src="/logo.png"
-            alt="CMS Logo"
-            className="h-16 w-auto object-contain inline-block"
+            src="/logo-logic-hub-trong-suot.png"
+            alt="Logo Logic Hub"
+            className="h-36 w-auto max-w-full object-contain inline-block"
           />
         </div>
 
@@ -94,9 +94,10 @@ export const LoginPage: React.FC = () => {
         </form>
 
         <div className="mt-6 pt-4 border-t border-slate-200 text-xs text-slate-500 text-center">
-          Hệ thống dành riêng cho cán bộ, giáo viên và nhân viên nội bộ CMS EDU.
+          Hệ thống dành riêng cho cán bộ, giáo viên và nhân viên nội bộ Logic Hub.
         </div>
       </div>
     </div>
   );
 };
+

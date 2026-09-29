@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link, NavLink, Outlet } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { authApi } from '../../api/authApi';
 import { useAuth } from '../../context/AuthContext';
 import { ChangePasswordModal } from '../../pages/auth/ChangePasswordModal';
@@ -10,6 +10,8 @@ import { useToast } from '../common/ToastProvider';
 
 export const AppLayout: React.FC = () => {
   const { user, logout } = useAuth();
+  const viTri = useLocation();
+  const tenTrang: Record<string, string> = { 'hoc-vien': 'Học viên', 'nguoi-giam-ho': 'Người giám hộ', 'lop-hoc': 'Lớp học', 'ghi-danh': 'Ghi danh', sessions: 'Buổi học & Điểm danh', invoices: 'Học phí & Thu tiền', curriculum: 'Chương trình học', staff: 'Nhân sự', teacher: 'Giảng dạy' };
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isLogoutConfirmationOpen, setIsLogoutConfirmationOpen] = useState(false);
@@ -60,8 +62,8 @@ export const AppLayout: React.FC = () => {
     <div className="layout-container">
       <aside className={`sidebar ${isSidebarOpen ? '' : 'collapsed'}`}>
         <div className="sidebar-brand">
-          <Link to="/" className="sidebar-brand-logo" title="Về trang chủ CMS EDU">
-            <img src="/logo.png" alt="CMS EDU" />
+          <Link to="/" className="sidebar-brand-logo" title="Về trang chủ Logic Hub">
+            <img src="/logo-logic-hub-trong-suot.png" alt="Logo Logic Hub" />
           </Link>
           <div className="sidebar-brand-subtitle">Hệ thống Quản trị Trung tâm</div>
         </div>
@@ -81,6 +83,12 @@ export const AppLayout: React.FC = () => {
             Tổng quan
           </NavLink>
 
+          <div className="nhom-dieu-huong">Học sinh</div>
+          <NavLink to="/hoc-vien" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Hồ sơ học viên</NavLink>
+          {(user?.role === 'Admin' || user?.role === 'CustomerCare') && <NavLink to="/nguoi-giam-ho" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Người giám hộ</NavLink>}
+          {user?.role !== 'Teacher' && <NavLink to="/ghi-danh" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Ghi danh học viên</NavLink>}
+          <div className="nhom-dieu-huong">Vận hành</div>
+          <NavLink to="/lop-hoc" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Quản lý lớp học</NavLink>
           {(user?.role === 'Admin' || user?.role === 'Teacher' || user?.role === 'CustomerCare') && (
             <NavLink
               to="/sessions"
@@ -220,11 +228,13 @@ export const AppLayout: React.FC = () => {
             )}
           </div>
         </header>
+        <nav className="duong-dan-trang" aria-label="Đường dẫn trang"><Link to="/">Trang chủ</Link><span>/</span><span>{tenTrang[viTri.pathname.split('/')[1]] ?? 'Tổng quan'}</span><button type="button" disabled={isLoggingOut} onClick={() => setIsLogoutConfirmationOpen(true)}>Đăng xuất</button></nav>
 
         {/* Content Outlet */}
         <main className="content-area">
           <Outlet />
         </main>
+        <footer className="chan-trang">CMS EDU · Hệ thống quản lý trung tâm giáo dục</footer>
       </div>
 
       <ChangePasswordModal
@@ -244,3 +254,4 @@ export const AppLayout: React.FC = () => {
     </div>
   );
 };
+
