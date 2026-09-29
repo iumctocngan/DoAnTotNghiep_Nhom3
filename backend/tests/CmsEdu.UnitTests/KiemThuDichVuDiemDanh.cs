@@ -196,6 +196,69 @@ public class KiemThuDichVuDiemDanh
             ])));
     }
 
+    [Fact]
+    public async Task TruMotBuoiChoCaCoMatVaVang_KhongTruLapKhiSua()
+    {
+        await using var x = await GiaLapDiemDanh.TaoMoiAsync();
+        var request = new YeuCauLuuDiemDanhBuoiHoc([
+            new(x.GhiDanh1.Id, AttendanceStatus.Present, null),
+            new(x.GhiDanh2.Id, AttendanceStatus.Absent, null)]);
+        var response = await x.DichVu.LuuDiemDanhTheoBuoiHocAsync(x.BuoiHoc.Id, request);
+        Assert.All(response.DanhSachHocVien, h => Assert.Equal(3, h.RemainingSessions));
+        await x.DichVu.LuuDiemDanhTheoBuoiHocAsync(x.BuoiHoc.Id, new([
+            new(x.GhiDanh1.Id, AttendanceStatus.Absent, "Sửa"),
+            new(x.GhiDanh2.Id, AttendanceStatus.Present, null)]));
+        Assert.All(await x.NguCanh.Students.ToListAsync(), h => Assert.Equal(3, h.RemainingSessions));
+        Assert.Equal(2, await x.NguCanh.Attendances.CountAsync());
+    }
+
+    [Fact]
+    public async Task HetBuoi_ChanDiemDanhMoi_NhungChoSuaBuoiCu()
+    {
+        await using var x = await GiaLapDiemDanh.TaoMoiAsync();
+        x.GhiDanh1.Student.RemainingSessions = 1;
+        await x.NguCanh.SaveChangesAsync();
+        var request = new YeuCauLuuDiemDanhBuoiHoc([
+            new(x.GhiDanh1.Id, AttendanceStatus.Present, null),
+            new(x.GhiDanh2.Id, AttendanceStatus.Absent, null)]);
+        await x.DichVu.LuuDiemDanhTheoBuoiHocAsync(x.BuoiHoc.Id, request);
+        await x.DichVu.LuuDiemDanhTheoBuoiHocAsync(x.BuoiHoc.Id, request);
+        Assert.Equal(0, x.GhiDanh1.Student.RemainingSessions);
+        var next = new Session { ClassId = x.LopHoc.Id, Class = x.LopHoc,
+            SessionDate = x.BuoiHoc.SessionDate.AddDays(7), StartTime = new(18, 0), EndTime = new(19, 0) };
+        x.NguCanh.Sessions.Add(next);
+        await x.NguCanh.SaveChangesAsync();
+        var response = await x.DichVu.LayDanhSachDiemDanhTheoBuoiHocAsync(next.Id);
+        Assert.Single(response.DanhSachHocVien);
+        Assert.Contains(response.KhongTheDiemDanh, h => h.FullName == x.GhiDanh1.Student.FullName);
+        await Assert.ThrowsAsync<ConflictException>(() => x.DichVu.LuuDiemDanhTheoBuoiHocAsync(next.Id, request));
+        Assert.Equal(0, x.GhiDanh1.Student.RemainingSessions);
+        Assert.Equal(3, x.GhiDanh2.Student.RemainingSessions);
+        Assert.False(await x.NguCanh.Attendances.AnyAsync(a => a.SessionId == next.Id));
+    }
+
+    [Fact]
+    public async Task BaoLuu_DongBangSoBuoi_ChanCaYeuCauTuTrinhDuyetCu()
+    {
+        await using var x = await GiaLapDiemDanh.TaoMoiAsync();
+        x.GhiDanh1.Status = EnrollmentStatus.Paused;
+        await x.NguCanh.SaveChangesAsync();
+        var response = await x.DichVu.LayDanhSachDiemDanhTheoBuoiHocAsync(x.BuoiHoc.Id);
+        Assert.Single(response.DanhSachHocVien);
+        Assert.Contains(response.KhongTheDiemDanh, h => h.Reason == "Đang bảo lưu");
+        await Assert.ThrowsAsync<ConflictException>(() => x.DichVu.LuuDiemDanhTheoBuoiHocAsync(x.BuoiHoc.Id, new([
+            new(x.GhiDanh1.Id, AttendanceStatus.Present, null), new(x.GhiDanh2.Id, AttendanceStatus.Absent, null)])));
+        await x.DichVu.LuuDiemDanhTheoBuoiHocAsync(x.BuoiHoc.Id, new([new(x.GhiDanh2.Id, AttendanceStatus.Absent, null)]));
+        Assert.Equal(4, x.GhiDanh1.Student.RemainingSessions);
+        Assert.Equal(3, x.GhiDanh2.Student.RemainingSessions);
+        x.GhiDanh1.Status = EnrollmentStatus.Active;
+        await x.NguCanh.SaveChangesAsync();
+        await x.DichVu.LuuDiemDanhTheoBuoiHocAsync(x.BuoiHoc.Id, new([
+            new(x.GhiDanh1.Id, AttendanceStatus.Present, null), new(x.GhiDanh2.Id, AttendanceStatus.Absent, null)]));
+        Assert.Equal(3, x.GhiDanh1.Student.RemainingSessions);
+        Assert.Equal(3, x.GhiDanh2.Student.RemainingSessions);
+    }
+
     private sealed class GiaLapDiemDanh : IAsyncDisposable
     {
         private GiaLapDiemDanh(
@@ -253,8 +316,8 @@ public class KiemThuDichVuDiemDanh
             };
             nguCanh.Sessions.Add(buoiHoc);
 
-            var hocVien1 = new Student { StudentCode = "HV-001", FullName = "Nguyễn Văn A" };
-            var hocVien2 = new Student { StudentCode = "HV-002", FullName = "Trần Thị B" };
+            var hocVien1 = new Student { CourseMonths = 1, RemainingSessions = 4, StudentCode = "HV-001", FullName = "Nguyễn Văn A" };
+            var hocVien2 = new Student { CourseMonths = 1, RemainingSessions = 4, StudentCode = "HV-002", FullName = "Trần Thị B" };
             nguCanh.Students.AddRange(hocVien1, hocVien2);
             await nguCanh.SaveChangesAsync();
 

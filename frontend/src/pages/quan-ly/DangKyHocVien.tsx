@@ -8,6 +8,7 @@ import type { GuardianResponse, PagedResult } from '../../types/student';
 
 export function DangKyHocVien({ dong }: { dong: () => void }) {
   const boNho = useQueryClient();
+  const [soThang, datSoThang] = useState(1);
   const [hoTen, datHoTen] = useState('');
   const [ngaySinh, datNgaySinh] = useState('');
   const [gioiTinh, datGioiTinh] = useState('');
@@ -31,7 +32,7 @@ export function DangKyHocVien({ dong }: { dong: () => void }) {
     datDangLuu(true); datLoi('');
     try {
       await apiClient('/api/students/register', { method: 'POST', body: JSON.stringify({
-        fullName: hoTen.trim(), dateOfBirth: ngaySinh, gender: gioiTinh ? Number(gioiTinh) : null,
+        courseMonths: soThang, fullName: hoTen.trim(), dateOfBirth: ngaySinh, gender: gioiTinh ? Number(gioiTinh) : null,
         learningNote: ghiChu.trim() || null, relationship: quanHe.trim(),
         guardianId: taoMoi ? null : nguoiDaChon!.id,
         nguoiGiamHoMoi: taoMoi ? { fullName: tenNguoiGiamHo.trim(), phone: dienThoai.trim(), email: email.trim() || null, isActive: true } : null,
@@ -49,6 +50,11 @@ export function DangKyHocVien({ dong }: { dong: () => void }) {
           <label>Ngày sinh<input type="date" required value={ngaySinh} onChange={suKien => datNgaySinh(suKien.target.value)} /></label>
           <label>Giới tính<select value={gioiTinh} onChange={suKien => datGioiTinh(suKien.target.value)}><option value="">Chưa cung cấp</option><option value="1">Nam</option><option value="2">Nữ</option><option value="3">Khác</option></select></label>
         </div>
+        <label>Thời hạn khóa học (tháng)
+          <input type="number" min={1} max={120} step={1} required value={soThang || ''} onChange={e => datSoThang(Number(e.target.value))} list="thoi-han-khoa-hoc" />
+          <datalist id="thoi-han-khoa-hoc"><option value="1" /><option value="3" /><option value="6" /><option value="12" /></datalist>
+        </label>
+        <p role="status">Số buổi đăng ký: <strong>{soThang * 4}</strong> buổi (1 tháng = 4 buổi).</p>
         <label>Lưu ý học tập<textarea maxLength={500} value={ghiChu} onChange={suKien => datGhiChu(suKien.target.value)} /></label>
         <h3 className="border-t pt-3">Người giám hộ</h3>
         <div className="flex gap-4 flex-wrap">

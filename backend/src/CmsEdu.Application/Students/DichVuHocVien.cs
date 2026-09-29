@@ -47,7 +47,9 @@ public class DichVuHocVien(IKhoDuLieuHocVien khoDuLieu, ICurrentUser nguoiDungHi
     {
         KiemTraQuyenGhi();
         KiemTraDuLieu(yeuCau);
-        var hocVien = new Student();
+        if (yeuCau.CourseMonths < 1 || yeuCau.CourseMonths > 120)
+            throw new ValidationException("Thời hạn khóa học phải từ 1 đến 120 tháng.");
+        var hocVien = new Student { CourseMonths = yeuCau.CourseMonths, RemainingSessions = checked(yeuCau.CourseMonths * 4) };
         await GanDuLieuAsync(hocVien, yeuCau, maHuy);
         await khoDuLieu.LuuAsync(hocVien, true, nguoiDungHienTai.UserId, maHuy);
         return TaoPhanHoi(hocVien);
@@ -92,5 +94,5 @@ public class DichVuHocVien(IKhoDuLieuHocVien khoDuLieu, ICurrentUser nguoiDungHi
     }
 
     private PhanHoiHocVien TaoPhanHoi(Student hocVien) => new(hocVien.Id, hocVien.StudentCode, hocVien.FullName,
-        hocVien.DateOfBirth, hocVien.Gender, nguoiDungHienTai.Role == UserRole.Accountant ? null : hocVien.LearningNote, hocVien.IsArchived);
+        hocVien.DateOfBirth, hocVien.Gender, nguoiDungHienTai.Role == UserRole.Accountant ? null : hocVien.LearningNote, hocVien.IsArchived, hocVien.CourseMonths, hocVien.RemainingSessions);
 }

@@ -10,6 +10,8 @@ export interface StudentResponse {
   gender?: Gender | null;
   learningNote?: string | null;
   isArchived: boolean;
+  courseMonths: number;
+  remainingSessions: number;
 }
 
 export interface CreateStudentRequest {

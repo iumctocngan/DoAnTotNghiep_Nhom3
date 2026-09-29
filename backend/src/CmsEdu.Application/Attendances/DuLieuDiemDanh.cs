@@ -30,7 +30,8 @@ public sealed record PhanHoiDiemDanhHocVien(
     string? MarkedBy,
     DateTime? MarkedAt,
     string? UpdatedBy,
-    DateTime? UpdatedAt);
+    DateTime? UpdatedAt,
+    int RemainingSessions = 0);
 
 /// <summary>
 /// DTO phản hồi tổng hợp thông tin điểm danh của một buổi học.
@@ -48,4 +49,8 @@ public sealed record PhanHoiDiemDanhBuoiHoc(
     int SoLuongCoMat,
     int SoLuongVangMat,
     int SoLuongChuaDiemDanh,
-    IReadOnlyList<PhanHoiDiemDanhHocVien> DanhSachHocVien);
+    IReadOnlyList<PhanHoiDiemDanhHocVien> DanhSachHocVien)
+{
+    public IReadOnlyList<HocVienKhongTheDiemDanh> KhongTheDiemDanh { get; init; } = [];
+}
+public record HocVienKhongTheDiemDanh(string FullName, string Reason, int RemainingSessions);

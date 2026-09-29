@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 namespace CmsEdu.Api.Controllers;
 
 public record YeuCauDangKyHocVien(string FullName, DateOnly DateOfBirth, Gender? Gender,
-    string? LearningNote, int? GuardianId, YeuCauNguoiGiamHo? NguoiGiamHoMoi, string Relationship);
+    string? LearningNote, int? GuardianId, YeuCauNguoiGiamHo? NguoiGiamHoMoi, string Relationship, int CourseMonths);
 
 [ApiController]
 [Route("api/students/register")]
@@ -24,6 +24,8 @@ public class DangKyHocVienController(AppDbContext duLieu, IDichVuHocVien hocVien
     [HttpPost]
     public async Task<IActionResult> DangKy(YeuCauDangKyHocVien yeuCau, CancellationToken maHuy)
     {
+        if (yeuCau.CourseMonths < 1 || yeuCau.CourseMonths > 120)
+            return BadRequest(new { message = "Thời hạn khóa học phải từ 1 đến 120 tháng." });
         if (yeuCau.GuardianId.HasValue == (yeuCau.NguoiGiamHoMoi is not null))
             return BadRequest(new { message = "Chọn người giám hộ có sẵn hoặc nhập một người giám hộ mới." });
         if (string.IsNullOrWhiteSpace(yeuCau.Relationship) || yeuCau.Relationship.Trim().Length > 50)
@@ -35,7 +37,7 @@ public class DangKyHocVienController(AppDbContext duLieu, IDichVuHocVien hocVien
             (await nguoiGiamHo.LuuAsync(null, yeuCau.NguoiGiamHoMoi!, maHuy)).Id;
         var maHocVien = await SinhMaTuDong.TaoAsync(duLieu, "HS", maHuy);
         var ketQua = await hocVien.TaoHocVienAsync(new YeuCauTaoHocVien(maHocVien, yeuCau.FullName,
-            yeuCau.DateOfBirth, yeuCau.Gender, yeuCau.LearningNote), maHuy);
+            yeuCau.DateOfBirth, yeuCau.Gender, yeuCau.LearningNote, yeuCau.CourseMonths), maHuy);
         await nguoiGiamHo.GanLienKetAsync(ketQua.Id,
             new YeuCauLienKetNguoiGiamHo(maNguoiGiamHo, yeuCau.Relationship, true), maHuy);
         await giaoDich.CommitAsync(maHuy);

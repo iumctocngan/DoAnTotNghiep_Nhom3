@@ -48,6 +48,7 @@ export interface AttendanceItemResponse {
   studentId: number;
   studentCode: string;
   studentFullName: string;
+  remainingSessions: number;
   attendanceId?: number | null;
   status?: AttendanceStatus | null;
   note?: string | null;
@@ -71,6 +72,7 @@ export interface SessionAttendanceResponse {
   soLuongVangMat: number;
   soLuongChuaDiemDanh: number;
   danhSachHocVien: AttendanceItemResponse[];
+  khongTheDiemDanh: { fullName: string; reason: string; remainingSessions: number }[];
 }
 
 export interface SaveAttendanceItem {

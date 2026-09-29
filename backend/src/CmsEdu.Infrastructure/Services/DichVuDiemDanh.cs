@@ -1,3 +1,4 @@
+using System.Data;
 using CmsEdu.Application.Attendances;
 using CmsEdu.Application.Common.Exceptions;
 using CmsEdu.Application.Common.Interfaces;
@@ -27,14 +28,16 @@ public class DichVuDiemDanh(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai)
 
         KiemTraQuyenQuanLyDiemDanh(buoiHoc);
 
-        var danhSachGhiDanhHopLe = await LayDanhSachGhiDanhHopLeAsync(buoiHoc.ClassId, buoiHoc.SessionDate, maHuy);
+        var danhSachGhiDanhHopLe = await LayDanhSachGhiDanhHopLeAsync(buoiHoc.ClassId, buoiHoc.SessionDate, buoiHoc.Id, maHuy);
 
         var danhSachDiemDanhHienCo = await nguCanh.Attendances
             .AsNoTracking()
             .Where(item => item.SessionId == buoiHoc.Id)
             .ToListAsync(maHuy);
 
-        return TaoPhanHoiDiemDanh(buoiHoc, danhSachGhiDanhHopLe, danhSachDiemDanhHienCo);
+        return TaoPhanHoiDiemDanh(buoiHoc, danhSachGhiDanhHopLe, danhSachDiemDanhHienCo) with {
+            KhongTheDiemDanh = await LayHocVienBiChanAsync(buoiHoc, maHuy)
+        };
     }
 
     // [Lưu điểm danh theo lô] Lưu điểm danh đồng thời cho toàn bộ học viên hợp lệ trong transaction
@@ -47,6 +50,9 @@ public class DichVuDiemDanh(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai)
         {
             throw new ValidationException("Danh sách điểm danh không được để trống.");
         }
+
+        await using var tx = nguCanh.Database.IsRelational()
+            ? await nguCanh.Database.BeginTransactionAsync(IsolationLevel.Serializable, maHuy) : null;
 
         var buoiHoc = await nguCanh.Sessions
             .Include(item => item.Class)
@@ -67,7 +73,7 @@ public class DichVuDiemDanh(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai)
 
         KiemTraDanhSachYeuCauHopLe(yeuCau.Items);
 
-        var danhSachGhiDanhHopLe = await LayDanhSachGhiDanhHopLeAsync(buoiHoc.ClassId, buoiHoc.SessionDate, maHuy);
+        var danhSachGhiDanhHopLe = await LayDanhSachGhiDanhHopLeAsync(buoiHoc.ClassId, buoiHoc.SessionDate, buoiHoc.Id, maHuy);
 
         var tapHopHopLe = danhSachGhiDanhHopLe.Select(item => item.Id).ToHashSet();
         var tapHopYeuCau = yeuCau.Items.Select(item => item.EnrollmentId).ToHashSet();
@@ -86,33 +92,29 @@ public class DichVuDiemDanh(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai)
             if (thua.Count > 0)
             {
                 throw new ConflictException(
-                    $"Danh sách điểm danh chứa ghi danh không hợp lệ hoặc không thuộc lớp tại ngày học: {string.Join(", ", thua)}.");
+                    $"Danh sách điểm danh chứa ghi danh không hợp lệ (đang bảo lưu, hết buổi hoặc không thuộc lớp tại ngày học): {string.Join(", ", thua)}.");
             }
         }
 
         var thoiDiemThucHien = DateTime.UtcNow;
         var nguoiThucHien = nguoiDungHienTai.UserId ?? "System";
 
-        // Thực hiện lưu trong Transaction bắt buộc
-        if (nguCanh.Database.IsRelational())
-        {
-            await using var tx = await nguCanh.Database.BeginTransactionAsync(maHuy);
-            await CapNhatDuLieuDiemDanhAsync(buoiHoc.Id, yeuCau.Items, nguoiThucHien, thoiDiemThucHien, maHuy);
-            await nguCanh.SaveChangesAsync(maHuy);
-            await tx.CommitAsync(maHuy);
+        await CapNhatDuLieuDiemDanhAsync(buoiHoc.Id, yeuCau.Items, nguoiThucHien, thoiDiemThucHien, maHuy);
+        try { await nguCanh.SaveChangesAsync(maHuy); }
+        catch (DbUpdateConcurrencyException) {
+            throw new ConflictException("Số buổi vừa thay đổi. Vui lòng tải lại danh sách điểm danh.");
         }
-        else
-        {
-            await CapNhatDuLieuDiemDanhAsync(buoiHoc.Id, yeuCau.Items, nguoiThucHien, thoiDiemThucHien, maHuy);
-            await nguCanh.SaveChangesAsync(maHuy);
-        }
+        if (tx is not null) await tx.CommitAsync(maHuy);
 
         var danhSachDiemDanhMoiNhat = await nguCanh.Attendances
             .AsNoTracking()
             .Where(item => item.SessionId == buoiHoc.Id)
             .ToListAsync(maHuy);
 
-        return TaoPhanHoiDiemDanh(buoiHoc, danhSachGhiDanhHopLe, danhSachDiemDanhMoiNhat);
+        danhSachGhiDanhHopLe = await LayDanhSachGhiDanhHopLeAsync(buoiHoc.ClassId, buoiHoc.SessionDate, buoiHoc.Id, maHuy);
+        return TaoPhanHoiDiemDanh(buoiHoc, danhSachGhiDanhHopLe, danhSachDiemDanhMoiNhat) with {
+            KhongTheDiemDanh = await LayHocVienBiChanAsync(buoiHoc, maHuy)
+        };
     }
 
     // [Helper] Cập nhật hoặc thêm mới các bản ghi điểm danh
@@ -142,6 +144,11 @@ public class DichVuDiemDanh(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai)
             }
             else
             {
+                var hocVien = await nguCanh.Enrollments.Where(e => e.Id == item.EnrollmentId)
+                    .Select(e => e.Student).SingleAsync(maHuy);
+                if (hocVien.RemainingSessions <= 0)
+                    throw new ConflictException($"Học viên {hocVien.FullName} đã hết buổi. Vui lòng gia hạn.");
+                hocVien.RemainingSessions--;
                 var banGhiMoi = new Attendance
                 {
                     SessionId = maBuoiHoc,
@@ -172,6 +179,7 @@ public class DichVuDiemDanh(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai)
     private async Task<List<Enrollment>> LayDanhSachGhiDanhHopLeAsync(
         int maLop,
         DateOnly ngayBuoiHoc,
+        int maBuoiHoc,
         CancellationToken maHuy)
     {
         return await nguCanh.Enrollments
@@ -180,12 +188,24 @@ public class DichVuDiemDanh(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai)
             .Where(item =>
                 item.ClassId == maLop &&
                 item.Status == EnrollmentStatus.Active &&
+                (item.Student.RemainingSessions > 0 || item.Attendances.Any(a => a.SessionId == maBuoiHoc)) &&
                 item.StartDate <= ngayBuoiHoc &&
                 (item.EndDate == null || item.EndDate >= ngayBuoiHoc))
             .OrderBy(item => item.Student.FullName)
             .ThenBy(item => item.Student.StudentCode)
             .ToListAsync(maHuy);
     }
+
+    private Task<List<HocVienKhongTheDiemDanh>> LayHocVienBiChanAsync(Session buoiHoc, CancellationToken maHuy) =>
+        nguCanh.Enrollments.AsNoTracking()
+            .Where(e => e.ClassId == buoiHoc.ClassId && e.StartDate <= buoiHoc.SessionDate &&
+                (e.EndDate == null || e.EndDate >= buoiHoc.SessionDate) &&
+                (e.Status == EnrollmentStatus.Paused || (e.Status == EnrollmentStatus.Active &&
+                    e.Student.RemainingSessions <= 0 && !e.Attendances.Any(a => a.SessionId == buoiHoc.Id))))
+            .OrderBy(e => e.Student.FullName)
+            .Select(e => new HocVienKhongTheDiemDanh(e.Student.FullName,
+                e.Status == EnrollmentStatus.Paused ? "Đang bảo lưu" : "Hết buổi — cần gia hạn",
+                e.Student.RemainingSessions)).ToListAsync(maHuy);
 
     // [Helper] Kiểm tra tính hợp lệ về định dạng và trùng lặp của dữ liệu gửi lên
     private static void KiemTraDanhSachYeuCauHopLe(IReadOnlyList<YeuCauLuuDiemDanhChiTiet> items)
@@ -241,7 +261,8 @@ public class DichVuDiemDanh(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai)
                 diemDanh?.MarkedBy,
                 diemDanh?.MarkedAt,
                 diemDanh?.UpdatedBy,
-                diemDanh?.UpdatedAt);
+                diemDanh?.UpdatedAt,
+                ghiDanh.Student.RemainingSessions);
         }).ToList();
 
         var soLuongCoMat = danhSachHocVien.Count(item => item.Status == AttendanceStatus.Present);

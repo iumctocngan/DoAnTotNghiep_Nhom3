@@ -198,6 +198,7 @@ public class DichVuBuoiHoc(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai) 
             .Where(ghiDanh =>
                 ghiDanh.ClassId == buoiHoc.ClassId &&
                 ghiDanh.Status == EnrollmentStatus.Active &&
+                (ghiDanh.Student.RemainingSessions > 0 || ghiDanh.Attendances.Any(a => a.SessionId == buoiHoc.Id)) &&
                 ghiDanh.StartDate <= buoiHoc.SessionDate &&
                 (ghiDanh.EndDate == null || ghiDanh.EndDate >= buoiHoc.SessionDate))
             .Select(ghiDanh => ghiDanh.Id)

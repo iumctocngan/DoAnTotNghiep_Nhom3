@@ -11,6 +11,11 @@ public class StudentConfiguration : IEntityTypeConfiguration<Student>
         builder.ToTable("Students");
 
         builder.HasKey(s => s.Id);
+        builder.Property(s => s.RemainingSessions).IsConcurrencyToken();
+        builder.ToTable("Students", t => {
+            t.HasCheckConstraint("CK_Students_CourseMonths", "[CourseMonths] >= 0");
+            t.HasCheckConstraint("CK_Students_RemainingSessions", "[RemainingSessions] >= 0");
+        });
 
         builder.Property(s => s.StudentCode)
             .HasMaxLength(50)

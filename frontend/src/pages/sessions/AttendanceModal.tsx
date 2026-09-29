@@ -76,6 +76,8 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ sessionId, isO
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
       queryClient.invalidateQueries({ queryKey: ['sessions', sessionId] });
       queryClient.invalidateQueries({ queryKey: ['teacher-schedule'] });
+      queryClient.invalidateQueries({ queryKey: ['quan-ly'] });
+      queryClient.invalidateQueries({ queryKey: ['students'] });
       onClose();
     },
     onError: (err: unknown) => {
@@ -205,6 +207,11 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ sessionId, isO
               )}
             </div>
 
+            <p className="text-sm">Có mặt hoặc vắng đều sử dụng 1 buổi. Sửa điểm danh đã lưu không trừ thêm buổi.</p>
+            {!!attendanceData.khongTheDiemDanh?.length && <div className="rounded border border-amber-300 bg-amber-50 p-3" role="status">
+              <strong>Không thể điểm danh</strong>
+              <ul>{attendanceData.khongTheDiemDanh.map((item, index) => <li key={index}>{item.fullName}: {item.reason} · còn {item.remainingSessions} buổi</li>)}</ul>
+            </div>}
             {/* Danh sách học viên */}
             <div className="table-container max-h-[360px] overflow-y-auto border border-slate-200 rounded">
               <table className="data-table text-xs">
@@ -214,13 +221,13 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ sessionId, isO
                     <th>Mã HV</th>
                     <th>Họ và tên</th>
                     <th className="text-center w-[180px]">Trạng thái</th>
-                    <th>Ghi chú</th>
+                    <th>Buổi còn lại</th><th>Ghi chú</th>
                   </tr>
                 </thead>
                 <tbody>
                   {attendanceData.danhSachHocVien.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="text-center py-6 text-slate-500">
+                      <td colSpan={6} className="text-center py-6 text-slate-500">
                         Lớp học chưa có học viên nào ghi danh đang hoạt động trong ngày này.
                       </td>
                     </tr>
@@ -266,6 +273,7 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ sessionId, isO
                               </button>
                             </div>
                           </td>
+                          <td>{item.remainingSessions}</td>
                           <td>
                             <input
                               type="text"

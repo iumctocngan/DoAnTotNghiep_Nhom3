@@ -70,7 +70,7 @@ public class KiemThuDichVuBuoiHoc
         var buoiHoc = await boGiaLap.TaoBuoiHocMauAsync();
         boGiaLap.NguCanh.Enrollments.Add(new Enrollment
         {
-            StudentId = 1,
+            Student = new Student { StudentCode = "HV-TEST", FullName = "Học viên", CourseMonths = 1, RemainingSessions = 4 },
             ClassId = boGiaLap.LopHoc.Id,
             StartDate = boGiaLap.NgayBuoiHoc.AddDays(-1),
             Status = EnrollmentStatus.Active
@@ -87,7 +87,7 @@ public class KiemThuDichVuBuoiHoc
         var buoiHoc = await boGiaLap.TaoBuoiHocMauAsync();
         var ghiDanh = new Enrollment
         {
-            StudentId = 1,
+            Student = new Student { StudentCode = "HV-TEST", FullName = "Học viên", CourseMonths = 1, RemainingSessions = 4 },
             ClassId = boGiaLap.LopHoc.Id,
             StartDate = boGiaLap.NgayBuoiHoc.AddDays(-1),
             Status = EnrollmentStatus.Active

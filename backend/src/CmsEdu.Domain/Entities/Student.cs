@@ -11,6 +11,8 @@ public class Student : BaseEntity
     public Gender? Gender { get; set; }
     public string? LearningNote { get; set; }
     public bool IsArchived { get; set; }
+    public int CourseMonths { get; set; }
+    public int RemainingSessions { get; set; }
 
     public ICollection<StudentGuardian> StudentGuardians { get; set; } = new List<StudentGuardian>();
     public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
