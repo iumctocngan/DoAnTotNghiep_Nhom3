@@ -85,7 +85,6 @@ export const AppLayout: React.FC = () => {
 
           <div className="nhom-dieu-huong">Học sinh</div>
           <NavLink to="/hoc-vien" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Hồ sơ học viên</NavLink>
-          {(user?.role === 'Admin' || user?.role === 'CustomerCare') && <NavLink to="/nguoi-giam-ho" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Người giám hộ</NavLink>}
           {user?.role !== 'Teacher' && <NavLink to="/ghi-danh" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Ghi danh học viên</NavLink>}
           <div className="nhom-dieu-huong">Vận hành</div>
           <NavLink to="/lop-hoc" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Quản lý lớp học</NavLink>

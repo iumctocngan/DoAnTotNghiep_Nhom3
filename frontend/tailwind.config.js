@@ -16,6 +16,7 @@ export default {
       '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
     },
     extend: {
+      fontFamily: { sans: ['"Geneva"', '"Segoe UI"', 'Tahoma', 'Verdana', 'sans-serif'] },
       colors: {
         brand: {
           50: '#f0f9ff',

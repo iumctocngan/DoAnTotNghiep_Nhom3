@@ -128,10 +128,10 @@ public sealed class KhoDuLieuNguoiGiamHo(AppDbContext nguCanh) : IKhoDuLieuNguoi
     {
         try
         {
-            await using var giaoDich = await nguCanh.Database.BeginTransactionAsync(IsolationLevel.Serializable, maHuy);
+            await using var giaoDich = nguCanh.Database.CurrentTransaction is null ? await nguCanh.Database.BeginTransactionAsync(IsolationLevel.Serializable, maHuy) : null;
             await thaoTac();
             await nguCanh.SaveChangesAsync(maHuy);
-            await giaoDich.CommitAsync(maHuy);
+            if (giaoDich is not null) await giaoDich.CommitAsync(maHuy);
         }
         catch (DbUpdateException ngoaiLe) when (ngoaiLe.InnerException is SqlException { Number: 2601 or 2627 or 547 or 1205 })
         {

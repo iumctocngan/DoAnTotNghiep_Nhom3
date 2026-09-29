@@ -1,3 +1,4 @@
+using CmsEdu.Infrastructure.Persistence;
 using CmsEdu.Application.Common.Models;
 using CmsEdu.Application.Curriculum;
 using CmsEdu.Domain.Enums;
@@ -9,7 +10,7 @@ namespace CmsEdu.Api.Controllers;
 [ApiController]
 [Route("api/courses")]
 [Authorize]
-public class CoursesController(CurriculumService curriculumService) : ControllerBase
+public class CoursesController(CurriculumService curriculumService, AppDbContext duLieu) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<PagedResult<CourseResponse>>> GetCourses(
@@ -37,6 +38,7 @@ public class CoursesController(CurriculumService curriculumService) : Controller
         CourseRequest request,
         CancellationToken cancellationToken = default)
     {
+        request = request with { Code = await SinhMaTuDong.TaoAsync(duLieu, "KH", cancellationToken) };
         var course = await curriculumService.CreateCourseAsync(request, cancellationToken);
         return CreatedAtAction(nameof(GetCourse), new { id = course.Id }, course);
     }
@@ -48,6 +50,7 @@ public class CoursesController(CurriculumService curriculumService) : Controller
         CourseRequest request,
         CancellationToken cancellationToken = default)
     {
+        request = request with { Code = (await curriculumService.GetCourseAsync(id, cancellationToken)).Code };
         return Ok(await curriculumService.UpdateCourseAsync(id, request, cancellationToken));
     }
 

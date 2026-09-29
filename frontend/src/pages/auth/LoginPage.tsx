@@ -44,7 +44,7 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-      <div className="w-full max-w-[400px] bg-white border border-slate-200 rounded-md p-8 shadow-sm">
+      <div className="w-full max-w-[440px] bg-white border border-slate-200 rounded-md p-8 shadow-sm">
         <div className="mb-6 text-center">
           <img
             src="/logo-logic-hub-trong-suot.png"
@@ -100,5 +100,3 @@ export const LoginPage: React.FC = () => {
     </div>
   );
 };
-
-

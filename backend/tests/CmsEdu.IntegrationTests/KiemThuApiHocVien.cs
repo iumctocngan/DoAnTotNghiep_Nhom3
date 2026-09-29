@@ -93,17 +93,17 @@ public class KiemThuApiHocVien
         var hocVien = (await phanHoiTao.Content.ReadFromJsonAsync<PhanHoiHocVien>())!;
         Assert.NotNull(phanHoiTao.Headers.Location);
         using var duLieuJson = System.Text.Json.JsonDocument.Parse(await phanHoiTao.Content.ReadAsStringAsync());
-        Assert.Equal("HV001", duLieuJson.RootElement.GetProperty("studentCode").GetString());
+        Assert.Equal("HS0001", duLieuJson.RootElement.GetProperty("studentCode").GetString());
         Assert.Equal("Nguyễn An", duLieuJson.RootElement.GetProperty("fullName").GetString());
         Assert.False(duLieuJson.RootElement.GetProperty("isArchived").GetBoolean());
         Assert.Empty((await trinhKhach.GetFromJsonAsync<PagedResult<PhanHoiHocVien>>("/api/students?search=KHONG_TON_TAI"))!.Items);
         Assert.Equal("Nguyễn An", (await trinhKhach.GetFromJsonAsync<PhanHoiHocVien>(phanHoiTao.Headers.Location))!.FullName);
-        var danhSach = await trinhKhach.GetFromJsonAsync<PagedResult<PhanHoiHocVien>>("/api/students?search=HV001&pageSize=1");
+        var danhSach = await trinhKhach.GetFromJsonAsync<PagedResult<PhanHoiHocVien>>("/api/students?search=HS0001&pageSize=1");
         Assert.Single(danhSach!.Items);
         var phanHoiCapNhat = await trinhKhach.PutAsJsonAsync($"/api/students/{hocVien.Id}", new YeuCauCapNhatHocVien("HV001", "Tên mới", new(2018, 1, 2), null, null));
         Assert.Equal(HttpStatusCode.OK, phanHoiCapNhat.StatusCode);
         Assert.Equal("Tên mới", (await trinhKhach.GetFromJsonAsync<PhanHoiHocVien>($"/api/students/{hocVien.Id}"))!.FullName);
-        Assert.Equal(HttpStatusCode.Conflict, (await trinhKhach.PostAsJsonAsync("/api/students", TaoYeuCau())).StatusCode);
+        Assert.Equal("HS0001", (await trinhKhach.GetFromJsonAsync<PhanHoiHocVien>($"/api/students/{hocVien.Id}"))!.StudentCode);
         Assert.Equal(HttpStatusCode.NoContent, (await trinhKhach.PostAsync($"/api/students/{hocVien.Id}/archive", null)).StatusCode);
         Assert.Empty((await trinhKhach.GetFromJsonAsync<PagedResult<PhanHoiHocVien>>("/api/students"))!.Items);
         Assert.Single((await trinhKhach.GetFromJsonAsync<PagedResult<PhanHoiHocVien>>("/api/students?isArchived=true"))!.Items);
@@ -125,7 +125,7 @@ public class KiemThuApiHocVien
         Assert.Equal(HttpStatusCode.NoContent, (await quanTriVien.PostAsync($"{duongDan}/archive", null)).StatusCode);
         Assert.Equal(HttpStatusCode.Conflict, (await quanTriVien.PutAsJsonAsync(duongDan,
             new YeuCauCapNhatHocVien("HV001", "Tên thay đổi", new(2019, 5, 10), null, null))).StatusCode);
-        var daLuuTru = await quanTriVien.GetFromJsonAsync<PagedResult<PhanHoiHocVien>>("/api/students?search=HV001&isArchived=true");
+        var daLuuTru = await quanTriVien.GetFromJsonAsync<PagedResult<PhanHoiHocVien>>("/api/students?search=HS0001&isArchived=true");
         Assert.True(Assert.Single(daLuuTru!.Items).IsArchived);
         Assert.Equal(HttpStatusCode.Forbidden, (await chamSocKhachHang.PostAsync($"{duongDan}/restore", null)).StatusCode);
         Assert.Equal(HttpStatusCode.NoContent, (await quanTriVien.PostAsync($"{duongDan}/restore", null)).StatusCode);

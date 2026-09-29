@@ -1,3 +1,4 @@
+using CmsEdu.Infrastructure.Persistence;
 using CmsEdu.Application.Common.Interfaces;
 using CmsEdu.Application.Common.Models;
 using CmsEdu.Application.Staff;
@@ -10,7 +11,7 @@ namespace CmsEdu.Api.Controllers;
 [ApiController]
 [Route("api/staff")]
 [Authorize(Roles = UserRole.Admin)]
-public class StaffController(IStaffService staffService) : ControllerBase
+public class StaffController(IStaffService staffService, AppDbContext duLieu) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<PagedResult<StaffResponse>>> GetStaff(
@@ -38,6 +39,7 @@ public class StaffController(IStaffService staffService) : ControllerBase
         CreateStaffRequest request,
         CancellationToken cancellationToken)
     {
+        request = request with { EmployeeCode = await SinhMaTuDong.TaoAsync(duLieu, SinhMaTuDong.TienToNhanVien(request.Role), cancellationToken) };
         var staff = await staffService.CreateStaffAsync(request, cancellationToken);
         return CreatedAtAction(nameof(GetStaffById), new { id = staff.Id }, staff);
     }

@@ -33,7 +33,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({
       setObjective(lesson.objective || '');
       setSortOrder(lesson.sortOrder);
     } else {
-      setCode('');
+      setCode('AUTO');
       setName('');
       setObjective('');
       setSortOrder(1);
@@ -90,8 +90,8 @@ export const LessonModal: React.FC<LessonModalProps> = ({
               id="lessonCode"
               type="text"
               placeholder="VD: LES-01"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
+              value={code === 'AUTO' ? 'Hệ thống tự tạo khi lưu' : code}
+              readOnly
               disabled={isSubmitting}
               required
             />

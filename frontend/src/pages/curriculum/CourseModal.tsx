@@ -29,7 +29,7 @@ export const CourseModal: React.FC<CourseModalProps> = ({
       setName(course.name);
       setDescription(course.description || '');
     } else {
-      setCode('');
+      setCode('AUTO');
       setName('');
       setDescription('');
     }
@@ -83,8 +83,8 @@ export const CourseModal: React.FC<CourseModalProps> = ({
               id="courseCode"
               type="text"
               placeholder="VD: TOAN-TU-DUY"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
+              value={code === 'AUTO' ? 'Hệ thống tự tạo khi lưu' : code}
+              readOnly
               disabled={isSubmitting}
               required
             />

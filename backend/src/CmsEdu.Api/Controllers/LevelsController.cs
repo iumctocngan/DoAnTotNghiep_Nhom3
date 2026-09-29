@@ -1,3 +1,4 @@
+using CmsEdu.Infrastructure.Persistence;
 using CmsEdu.Application.Common.Models;
 using CmsEdu.Application.Curriculum;
 using CmsEdu.Domain.Enums;
@@ -9,7 +10,7 @@ namespace CmsEdu.Api.Controllers;
 [ApiController]
 [Route("api/levels")]
 [Authorize]
-public class LevelsController(CurriculumService curriculumService) : ControllerBase
+public class LevelsController(CurriculumService curriculumService, AppDbContext duLieu) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<PagedResult<LevelResponse>>> GetLevels(
@@ -38,6 +39,7 @@ public class LevelsController(CurriculumService curriculumService) : ControllerB
         LevelRequest request,
         CancellationToken cancellationToken = default)
     {
+        request = request with { Code = await SinhMaTuDong.TaoAsync(duLieu, "CD", cancellationToken) };
         var level = await curriculumService.CreateLevelAsync(request, cancellationToken);
         return CreatedAtAction(nameof(GetLevel), new { id = level.Id }, level);
     }
@@ -49,6 +51,7 @@ public class LevelsController(CurriculumService curriculumService) : ControllerB
         LevelRequest request,
         CancellationToken cancellationToken = default)
     {
+        request = request with { Code = (await curriculumService.GetLevelAsync(id, cancellationToken)).Code };
         return Ok(await curriculumService.UpdateLevelAsync(id, request, cancellationToken));
     }
 

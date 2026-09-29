@@ -81,7 +81,7 @@ public class DichVuHocVien(IKhoDuLieuHocVien khoDuLieu, ICurrentUser nguoiDungHi
 
     private async Task GanDuLieuAsync(Student hocVien, YeuCauHocVien yeuCau, CancellationToken maHuy)
     {
-        var maHocVien = yeuCau.StudentCode.Trim();
+        var maHocVien = hocVien.Id == 0 ? yeuCau.StudentCode.Trim() : hocVien.StudentCode;
         if (await khoDuLieu.MaDaTonTaiAsync(maHocVien, hocVien.Id == 0 ? null : hocVien.Id, maHuy))
             throw new ConflictException("Mã học viên đã tồn tại.");
         hocVien.StudentCode = maHocVien;

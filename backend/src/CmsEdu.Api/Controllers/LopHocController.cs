@@ -1,3 +1,4 @@
+using CmsEdu.Infrastructure.Persistence;
 using CmsEdu.Application.Classes;
 using CmsEdu.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -8,7 +9,7 @@ namespace CmsEdu.Api.Controllers;
 [ApiController]
 [Route("api/classes")]
 [Authorize]
-public class LopHocController(DichVuLopHoc dichVu) : ControllerBase
+public class LopHocController(DichVuLopHoc dichVu, AppDbContext duLieu) : ControllerBase
 {
     [HttpGet]
     [Authorize(Roles = $"{UserRole.Admin},{UserRole.Teacher},{UserRole.Accountant},{UserRole.CustomerCare}")]
@@ -24,6 +25,7 @@ public class LopHocController(DichVuLopHoc dichVu) : ControllerBase
     [Authorize(Roles = UserRole.Admin)]
     public async Task<ActionResult<ThongTinLopHoc>> Tao(YeuCauLopHoc yeuCau, CancellationToken maHuy)
     {
+        yeuCau = yeuCau with { MaLop = await SinhMaTuDong.TaoAsync(duLieu, "LH", maHuy) };
         var lop = await dichVu.Tao(yeuCau, maHuy);
         return CreatedAtAction(nameof(ChiTiet), new { id = lop.Id }, lop);
     }

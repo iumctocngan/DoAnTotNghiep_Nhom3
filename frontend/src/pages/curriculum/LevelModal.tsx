@@ -31,7 +31,7 @@ export const LevelModal: React.FC<LevelModalProps> = ({
       setName(level.name);
       setSortOrder(level.sortOrder);
     } else {
-      setCode('');
+      setCode('AUTO');
       setName('');
       setSortOrder(1);
     }
@@ -86,8 +86,8 @@ export const LevelModal: React.FC<LevelModalProps> = ({
               id="levelCode"
               type="text"
               placeholder="VD: LV-01"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
+              value={code === 'AUTO' ? 'Hệ thống tự tạo khi lưu' : code}
+              readOnly
               disabled={isSubmitting}
               required
             />

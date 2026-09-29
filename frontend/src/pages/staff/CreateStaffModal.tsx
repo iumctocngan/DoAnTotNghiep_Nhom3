@@ -15,7 +15,7 @@ export const CreateStaffModal: React.FC<CreateStaffModalProps> = ({
   onClose,
   onSuccess,
 }) => {
-  const [employeeCode, setEmployeeCode] = useState('');
+
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -26,7 +26,7 @@ export const CreateStaffModal: React.FC<CreateStaffModalProps> = ({
 
   useEffect(() => {
     if (!isOpen) {
-      setEmployeeCode('');
+
       setFullName('');
       setEmail('');
       setPhoneNumber('');
@@ -42,7 +42,7 @@ export const CreateStaffModal: React.FC<CreateStaffModalProps> = ({
     e.preventDefault();
     setError(null);
 
-    if (!employeeCode.trim() || !fullName.trim() || !email.trim() || !temporaryPassword) {
+    if (!fullName.trim() || !email.trim() || !temporaryPassword) {
       setError('Vui lòng điền đầy đủ các trường bắt buộc.');
       return;
     }
@@ -60,7 +60,7 @@ export const CreateStaffModal: React.FC<CreateStaffModalProps> = ({
     setIsSubmitting(true);
     try {
       const payload: CreateStaffRequest = {
-        employeeCode: employeeCode.trim().toUpperCase(),
+        employeeCode: 'AUTO',
         fullName: fullName.trim(),
         email: email.trim(),
         phoneNumber: phoneNumber.trim() || null,
@@ -87,16 +87,8 @@ export const CreateStaffModal: React.FC<CreateStaffModalProps> = ({
         <form onSubmit={handleSubmit}>
           <div className="modal-form-grid">
             <div>
-              <label htmlFor="code">Mã nhân viên *</label>
-              <input
-                id="code"
-                type="text"
-                placeholder="VD: NV001"
-                value={employeeCode}
-                onChange={(e) => setEmployeeCode(e.target.value)}
-                disabled={isSubmitting}
-                required
-              />
+              <label htmlFor="code">Mã nhân viên</label>
+              <input id="code" type="text" readOnly value={`${({ Teacher: 'GV', CustomerCare: 'CSKH', Accountant: 'KT', Admin: 'QT' })[role]} — hệ thống tự tạo`} />
             </div>
             <div>
               <label htmlFor="role">Vai trò *</label>
@@ -184,4 +176,3 @@ export const CreateStaffModal: React.FC<CreateStaffModalProps> = ({
     </Modal>
   );
 };
-

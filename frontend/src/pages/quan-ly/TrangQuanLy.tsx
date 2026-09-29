@@ -1,3 +1,4 @@
+import { DangKyHocVien } from './DangKyHocVien';
 import { useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -43,6 +44,7 @@ export function TrangQuanLy({ phanHe }: { phanHe: PhanHe }) {
   const tuKhoaCham = useDebouncedValue(tuKhoa, 300);
   const [trang, datTrang] = useState(1);
   const [luuTru, datLuuTru] = useState(false);
+  const [moDangKy, datMoDangKy] = useState(false);
   const [lenh, datLenh] = useState<LenhDuLieu | null>(null);
   const quanTri = nguoiDung?.role === 'Admin';
   const chamSoc = nguoiDung?.role === 'CustomerCare';
@@ -64,9 +66,9 @@ export function TrangQuanLy({ phanHe }: { phanHe: PhanHe }) {
   } });
   const luaChon = (ten: string, nhan: string, ma = 'id'): [string | number, string][] => (danhMuc.data?.[ten] ?? []).map(dong => [dong[ma] as string | number, `${dong[nhan]} (#${dong[ma]})`]);
   const cacTruong: Record<PhanHe, TruongNhap[]> = {
-    'hoc-vien': [{ ...truong('studentCode', 'Mã học viên'), toiDa: 50 }, truong('fullName', 'Họ tên'), truong('dateOfBirth', 'Ngày sinh', 'date'), { ...chon('gender', 'Giới tính', [[1, 'Nam'], [2, 'Nữ'], [3, 'Khác']]), khongBatBuoc: true }, { ...truong('learningNote', 'Lưu ý học tập', 'textarea', true), toiDa: 500 }],
+    'hoc-vien': [{ ...truong('studentCode', 'Mã học viên', 'ma-tu-dong'), toiDa: 50 }, truong('fullName', 'Họ tên'), truong('dateOfBirth', 'Ngày sinh', 'date'), { ...chon('gender', 'Giới tính', [[1, 'Nam'], [2, 'Nữ'], [3, 'Khác']]), khongBatBuoc: true }, { ...truong('learningNote', 'Lưu ý học tập', 'textarea', true), toiDa: 500 }],
     'nguoi-giam-ho': [truong('fullName', 'Họ tên'), { ...truong('phone', 'Điện thoại', 'tel'), toiDa: 20 }, truong('email', 'Email', 'email', true), chon('isActive', 'Đang hoạt động', coKhong, 'boolean')],
-    'lop-hoc': [truong('maLop', 'Mã lớp'), truong('tenLop', 'Tên lớp'), chon('capDoId', 'Cấp độ', luaChon('capDo', 'name')), chon('giaoVienId', 'Giáo viên', luaChon('giaoVien', 'fullName'), 'text'), truong('siSoToiDa', 'Sĩ số tối đa', 'number'), truong('ngayBatDau', 'Ngày bắt đầu', 'date'), truong('ngayKetThuc', 'Ngày kết thúc', 'date', true), chon('thu', 'Ngày học', [[0, 'Chủ nhật'], [1, 'Thứ hai'], [2, 'Thứ ba'], [3, 'Thứ tư'], [4, 'Thứ năm'], [5, 'Thứ sáu'], [6, 'Thứ bảy']]), truong('gioBatDau', 'Giờ bắt đầu', 'time'), truong('gioKetThuc', 'Giờ kết thúc', 'time'), chon('trangThai', 'Trạng thái', trangThaiLop)],
+    'lop-hoc': [truong('maLop', 'Mã lớp', 'ma-tu-dong'), truong('tenLop', 'Tên lớp'), chon('capDoId', 'Cấp độ', luaChon('capDo', 'name')), chon('giaoVienId', 'Giáo viên', luaChon('giaoVien', 'fullName'), 'text'), truong('siSoToiDa', 'Sĩ số tối đa', 'number'), truong('ngayBatDau', 'Ngày bắt đầu', 'date'), truong('ngayKetThuc', 'Ngày kết thúc', 'date', true), chon('thu', 'Ngày học', [[0, 'Chủ nhật'], [1, 'Thứ hai'], [2, 'Thứ ba'], [3, 'Thứ tư'], [4, 'Thứ năm'], [5, 'Thứ sáu'], [6, 'Thứ bảy']]), truong('gioBatDau', 'Giờ bắt đầu', 'time'), truong('gioKetThuc', 'Giờ kết thúc', 'time'), chon('trangThai', 'Trạng thái', trangThaiLop)],
     'ghi-danh': [chon('hocVienId', 'Học viên', luaChon('hocVien', 'fullName')), chon('lopId', 'Lớp học', luaChon('lopHoc', 'tenLop')), truong('ngayBatDau', 'Ngày bắt đầu', 'date')],
     'lien-ket': [chon('guardianId', 'Người giám hộ', luaChon('nguoiGiamHo', 'fullName')), truong('relationship', 'Quan hệ với học viên'), chon('isPrimary', 'Liên hệ chính', coKhong, 'boolean')],
     'nhan-xet': [truong('maBuoiHoc', 'Mã buổi học (tùy chọn)', 'number', true), { ...truong('noiDung', 'Nội dung nhận xét', 'textarea'), toiDa: 1000 }],
@@ -93,7 +95,7 @@ export function TrangQuanLy({ phanHe }: { phanHe: PhanHe }) {
       <div className="thanh-cong-cu">
         {phanHe !== 'nhan-xet' && <input aria-label="Tìm kiếm" type="text" placeholder="Nhập từ khóa tìm kiếm…" value={tuKhoa} onChange={suKien => { datTuKhoa(suKien.target.value); datTrang(1); }} />}
         {phanHe === 'hoc-vien' && <label className="flex items-center gap-2 m-0"><input type="checkbox" checked={luuTru} onChange={suKien => { datLuuTru(suKien.target.checked); datTrang(1); }} />Đã lưu trữ</label>}
-        {duocTao && <button className="btn btn-primary" disabled={danhMuc.isFetching || danhMuc.isError} onClick={() => datLenh({ tieuDe: 'Thêm mới', duongDan, phuongThuc: 'POST', truong: cacTruong[phanHe], duLieu: { isActive: true, isPrimary: false, trangThai: 1, ...(thamSo.get('hocVienId') ? { hocVienId: Number(thamSo.get('hocVienId')) } : {}) } })}>+ Thêm mới</button>}
+        {duocTao && <button className="btn btn-primary" disabled={danhMuc.isFetching || danhMuc.isError} onClick={() => phanHe === 'hoc-vien' ? datMoDangKy(true) : datLenh({ tieuDe: 'Thêm mới', duongDan, phuongThuc: 'POST', truong: cacTruong[phanHe], duLieu: { isActive: true, isPrimary: false, trangThai: 1, ...(thamSo.get('hocVienId') ? { hocVienId: Number(thamSo.get('hocVienId')) } : {}) } })}>+ Thêm mới</button>}
         <button className="btn btn-secondary" onClick={() => { void duLieu.refetch(); void danhMuc.refetch(); }}>Tải lại</button>
       </div>
       {(duLieu.isError || danhMuc.isError) && <div role="alert" className="alert alert-danger">{(duLieu.error ?? danhMuc.error as Error)?.message ?? 'Không tải được dữ liệu.'}</div>}
@@ -115,6 +117,7 @@ export function TrangQuanLy({ phanHe }: { phanHe: PhanHe }) {
         {!duLieu.isFetching && !duLieu.isError && cacDong.length === 0 && <tr><td colSpan={thongTin.cot.length + 2} className="text-center">Không có dữ liệu phù hợp.</td></tr>}
       </tbody></table></div>
       <Pagination totalItems={tongSo} page={trang} onPageChange={datTrang} itemLabel="bản ghi" />
+      {moDangKy && <DangKyHocVien dong={() => datMoDangKy(false)} />}
       {lenh && <BieuMauDuLieu lenh={lenh} dong={() => datLenh(null)} daLuu={async () => { await boNho.invalidateQueries(); }} />}
     </div>
   </section>;

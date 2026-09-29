@@ -49,6 +49,7 @@ public class DichVuLopHoc(IKhoDuLieuLopHoc kho, ICurrentUser nguoiDung)
         {
             KiemTraQuyen(UserRole.Admin);
             var lop = await Tim(id, maHuy);
+            yeuCau = yeuCau with { MaLop = lop.ClassCode };
             await KiemTra(yeuCau, id, maHuy);
             var siSo = await kho.DemSiSoAsync(id, maHuy);
             if (yeuCau.SiSoToiDa < siSo)

@@ -8,6 +8,9 @@
 @tailwind utilities;
 
 @layer base {
+  html, body, button, input, select, textarea {
+    font-family: 'Geneva', 'Segoe UI', Tahoma, Verdana, sans-serif;
+  }
   body {
     @apply bg-slate-50 text-slate-900 antialiased font-sans;
   }

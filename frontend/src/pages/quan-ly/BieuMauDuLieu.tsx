@@ -15,7 +15,7 @@ export function BieuMauDuLieu({ lenh, dong, daLuu }: { lenh: LenhDuLieu; dong: (
     const duLieu: BanGhi = {};
     for (const truong of lenh.truong ?? []) {
       const giaTriNhap = giaTri[truong.ten];
-      duLieu[truong.ten] = giaTriNhap === '' || giaTriNhap === undefined ? null
+      duLieu[truong.ten] = truong.loai === 'ma-tu-dong' ? (giaTriNhap || 'AUTO') : giaTriNhap === '' || giaTriNhap === undefined ? null
         : truong.loai === 'number' ? Number(giaTriNhap)
         : truong.loai === 'boolean' ? String(giaTriNhap) === 'true'
         : truong.loai === 'time' && String(giaTriNhap).length === 5 ? `${giaTriNhap}:00` : giaTriNhap;
@@ -31,7 +31,7 @@ export function BieuMauDuLieu({ lenh, dong, daLuu }: { lenh: LenhDuLieu; dong: (
       {loi && <div role="alert" className="alert alert-danger">{loi}</div>}
       {!lenh.truong?.length && <p>Xác nhận thực hiện thao tác này?</p>}
       {lenh.truong?.map(truong => <label key={truong.ten} className="block mb-3">{truong.nhan}
-        {truong.tuyChon ? <select required={!truong.khongBatBuoc} value={String(giaTri[truong.ten] ?? '')} onChange={suKien => datGiaTri({ ...giaTri, [truong.ten]: suKien.target.value })}>
+        {truong.loai === 'ma-tu-dong' ? <input type="text" readOnly value={String(giaTri[truong.ten] ?? 'Hệ thống tự tạo khi lưu')} /> : truong.tuyChon ? <select required={!truong.khongBatBuoc} value={String(giaTri[truong.ten] ?? '')} onChange={suKien => datGiaTri({ ...giaTri, [truong.ten]: suKien.target.value })}>
           <option value="">— Chọn —</option>
           {giaTri[truong.ten] != null && giaTri[truong.ten] !== '' && !truong.tuyChon.some(([ma]) => String(ma) === String(giaTri[truong.ten])) && <option value={String(giaTri[truong.ten])}>Giá trị hiện tại: {String(giaTri[truong.ten])}</option>}
           {truong.tuyChon.map(([ma, nhan]) => <option key={String(ma)} value={String(ma)}>{nhan}</option>)}

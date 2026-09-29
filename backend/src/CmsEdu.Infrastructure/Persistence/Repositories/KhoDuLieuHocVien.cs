@@ -31,14 +31,14 @@ public class KhoDuLieuHocVien(AppDbContext nguCanh) : IKhoDuLieuHocVien
 
     public async Task LuuAsync(Student hocVien, bool laTaoMoi, string? maNguoiDung, CancellationToken maHuy)
     {
-        await using var giaoDich = await nguCanh.Database.BeginTransactionAsync(maHuy);
+        await using var giaoDich = nguCanh.Database.CurrentTransaction is null ? await nguCanh.Database.BeginTransactionAsync(maHuy) : null;
         if (laTaoMoi) nguCanh.Students.Add(hocVien);
         try
         {
             await nguCanh.SaveChangesAsync(maHuy);
             GhiNhatKy(hocVien.Id, laTaoMoi ? "Student.Create" : "Student.Update", maNguoiDung);
             await nguCanh.SaveChangesAsync(maHuy);
-            await giaoDich.CommitAsync(maHuy);
+            if (giaoDich is not null) await giaoDich.CommitAsync(maHuy);
         }
         catch (DbUpdateException ngoaiLe) when (ngoaiLe.InnerException is SqlException { Number: 2601 or 2627 })
         {

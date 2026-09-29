@@ -28,3 +28,14 @@ Các màn hình sử dụng `apiClient` hiện có để gửi token và làm m�
 9. Kiểm tra tìm kiếm, phân trang, trạng thái rỗng/lỗi và menu thu gọn trên màn hình nhỏ.
 
 `npm run build` kiểm tra TypeScript và tạo bản production. Cần backend, cơ sở dữ liệu và phiên đăng nhập hợp lệ để kiểm chứng đầy đủ các thao tác ghi dữ liệu.
+
+
+## Đăng ký học viên và mã tự động
+
+- Menu trái rộng 264px; người giám hộ được quản lý từ hồ sơ học viên thay vì mục menu riêng.
+- Chọn Học viên → Thêm mới để nhập học viên cùng người giám hộ. Có thể tìm theo tên, điện thoại, email và chọn lại cùng một người cho nhiều học viên.
+- API `POST /api/students/register` lưu học viên, người giám hộ mới (nếu có) và liên kết chính trong một giao dịch. Lỗi ở bất kỳ bước nào sẽ hoàn tác cả đăng ký.
+- Mã do SQL Server cấp: HS0001 (học viên), LH0001 (lớp), GV001 (giáo viên), CSKH001 (chăm sóc khách hàng), KT001 (kế toán), QT001 (quản trị), KH001 (khóa học), CD001 (cấp độ), BH001 (bài học).
+- Mã cũ không đổi. Số mới bắt đầu sau số lớn nhất đã có của từng tiền tố. Mã có thể nhảy số nếu thao tác thất bại; không tái sử dụng số đã cấp. Đổi vai trò nhân viên không đổi mã định danh đã cấp.
+- Dừng backend bằng Ctrl+C rồi chạy lại `dotnet run --project backend/src/CmsEdu.Api --launch-profile http` tại thư mục gốc dự án. Chế độ Development tự chạy migration `ThemMaTuDong`. Sau đó tải lại frontend.
+- Đã kiểm tra build frontend, 69 kiểm thử đơn vị và 18 kiểm thử tích hợp trên SQL Server với cơ sở dữ liệu kiểm thử riêng.

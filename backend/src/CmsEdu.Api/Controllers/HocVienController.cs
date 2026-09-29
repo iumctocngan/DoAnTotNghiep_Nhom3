@@ -1,3 +1,4 @@
+using CmsEdu.Infrastructure.Persistence;
 using CmsEdu.Api.ExceptionHandling;
 using CmsEdu.Application.Common.Interfaces;
 using CmsEdu.Application.Common.Models;
@@ -11,7 +12,7 @@ namespace CmsEdu.Api.Controllers;
 [Route("api/students")]
 [Authorize]
 [BoLocKiemTraHocVien]
-public class HocVienController(IDichVuHocVien dichVuHocVien) : ControllerBase
+public class HocVienController(IDichVuHocVien dichVuHocVien, AppDbContext duLieu) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<PagedResult<PhanHoiHocVien>>> LayDanhSachHocVien(
@@ -27,6 +28,7 @@ public class HocVienController(IDichVuHocVien dichVuHocVien) : ControllerBase
     [Authorize(Roles = $"{UserRole.Admin},{UserRole.CustomerCare}")]
     public async Task<ActionResult<PhanHoiHocVien>> TaoHocVien(YeuCauTaoHocVien yeuCau, CancellationToken maHuy)
     {
+        yeuCau = yeuCau with { StudentCode = await SinhMaTuDong.TaoAsync(duLieu, "HS", maHuy) };
         var hocVien = await dichVuHocVien.TaoHocVienAsync(yeuCau, maHuy);
         return CreatedAtAction(nameof(LayHocVien), new { id = hocVien.Id }, hocVien);
     }
