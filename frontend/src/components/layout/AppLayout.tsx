@@ -5,6 +5,7 @@ import { authApi } from '../../api/authApi';
 import { useAuth } from '../../context/AuthContext';
 import { ChangePasswordModal } from '../../pages/auth/ChangePasswordModal';
 import { getRoleLabel } from '../../utils/role';
+import { MaterialIcon } from '../common/MaterialIcon';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { useToast } from '../common/ToastProvider';
 
@@ -162,7 +163,7 @@ export const AppLayout: React.FC = () => {
               aria-label="Đóng mở thanh điều hướng"
               aria-expanded={isSidebarOpen}
             >
-              ☰
+              <MaterialIcon name="menu" />
             </button>
             <div className="header-greeting">
               <strong>Chào mừng trở lại</strong>
@@ -184,7 +185,7 @@ export const AppLayout: React.FC = () => {
                 <strong>{profile?.fullName}</strong>
                 <small>{roleLabel}</small>
               </span>
-              <span className="user-menu-chevron" aria-hidden="true">⌄</span>
+              <span className="user-menu-chevron" aria-hidden="true"><MaterialIcon name="expand_more" /></span>
             </button>
 
             {isUserMenuOpen && (

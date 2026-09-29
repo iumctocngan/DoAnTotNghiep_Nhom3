@@ -1,3 +1,4 @@
+import { MaterialIcon } from '../../components/common/MaterialIcon';
 import React, { useState } from 'react';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { curriculumApi } from '../../api/curriculumApi';
@@ -203,7 +204,7 @@ export const CurriculumPage: React.FC = () => {
                   setIsCourseModalOpen(true);
                 }}
               >
-                + Thêm Khóa học
+                <MaterialIcon name="add" /> Thêm Khóa học
               </button>
             )}
           </div>
@@ -252,7 +253,7 @@ export const CurriculumPage: React.FC = () => {
                   <th>Tên khóa học</th>
                   <th>Mô tả</th>
                   <th>Trạng thái</th>
-                  <th className="text-right">Hành động</th>
+                  <th className="text-center">Hành động</th>
                 </tr>
               </thead>
               <tbody>
@@ -277,7 +278,7 @@ export const CurriculumPage: React.FC = () => {
                           <span className="badge badge-inactive">Ngừng áp dụng</span>
                         )}
                       </td>
-                      <td className="text-right whitespace-nowrap">
+                      <td className="text-center whitespace-nowrap">
                         <button
                           type="button"
                           className="btn btn-primary px-2.5 py-1 text-xs mr-1"
@@ -288,7 +289,7 @@ export const CurriculumPage: React.FC = () => {
                             setLessonPage(1);
                           }}
                         >
-                          Xem cấp độ →
+                          Xem cấp độ <MaterialIcon name="arrow_forward" />
                         </button>
 
                         {isAdmin && (
@@ -350,7 +351,7 @@ export const CurriculumPage: React.FC = () => {
               className="btn btn-secondary text-xs"
               onClick={() => setSelectedCourse(null)}
             >
-              ← Quay lại danh sách Khóa học
+              <MaterialIcon name="arrow_back" /> Quay lại danh sách Khóa học
             </button>
           </div>
 
@@ -367,7 +368,7 @@ export const CurriculumPage: React.FC = () => {
                 disabled={!selectedCourse.isActive}
                 title={!selectedCourse.isActive ? 'Không thể thêm cấp độ vào khóa học đã ngừng áp dụng' : ''}
               >
-                + Thêm Cấp độ mới
+                <MaterialIcon name="add" /> Thêm Cấp độ mới
               </button>
             )}
           </div>
@@ -386,7 +387,7 @@ export const CurriculumPage: React.FC = () => {
                   <th>Mã cấp độ</th>
                   <th>Tên cấp độ</th>
                   <th>Trạng thái</th>
-                  <th className="text-right">Hành động</th>
+                  <th className="text-center">Hành động</th>
                 </tr>
               </thead>
               <tbody>
@@ -399,7 +400,7 @@ export const CurriculumPage: React.FC = () => {
                 ) : levelsData?.items && levelsData.items.length > 0 ? (
                   levelsData.items.map((level) => (
                     <tr key={level.id}>
-                      <td className="font-semibold">#{level.sortOrder}</td>
+                      <td className="font-semibold">{level.sortOrder}</td>
                       <td className="font-mono font-semibold">{level.code}</td>
                       <td className="font-medium">{level.name}</td>
                       <td>
@@ -409,13 +410,13 @@ export const CurriculumPage: React.FC = () => {
                           <span className="badge badge-inactive">Ngừng áp dụng</span>
                         )}
                       </td>
-                      <td className="text-right whitespace-nowrap">
+                      <td className="text-center whitespace-nowrap">
                         <button
                           type="button"
                           className="btn btn-primary px-2.5 py-1 text-xs mr-1"
                           onClick={() => { setSelectedLevel(level); setLessonPage(1); }}
                         >
-                          Xem bài học →
+                          Xem bài học <MaterialIcon name="arrow_forward" />
                         </button>
 
                         {isAdmin && (
@@ -467,7 +468,7 @@ export const CurriculumPage: React.FC = () => {
           <div className="card bg-sky-50 border-sky-200 flex justify-between items-center px-4 py-3 mb-4">
             <div>
               <span className="text-xs uppercase text-slate-400 font-semibold">
-                Khóa {selectedCourse.name} → Cấp độ:
+                Khóa {selectedCourse.name} <MaterialIcon name="arrow_forward" /> Cấp độ:
               </span>
               <h2 className="text-lg font-bold text-primary">
                 {selectedLevel.name} ({selectedLevel.code})
@@ -479,7 +480,7 @@ export const CurriculumPage: React.FC = () => {
               className="btn btn-secondary text-xs"
               onClick={() => setSelectedLevel(null)}
             >
-              ← Quay lại danh sách Cấp độ
+              <MaterialIcon name="arrow_back" /> Quay lại danh sách Cấp độ
             </button>
           </div>
 
@@ -496,7 +497,7 @@ export const CurriculumPage: React.FC = () => {
                 disabled={!selectedLevel.isActive || !selectedCourse.isActive}
                 title={!selectedLevel.isActive ? 'Không thể thêm bài học vào cấp độ đã ngừng áp dụng' : ''}
               >
-                + Thêm Bài học mới
+                <MaterialIcon name="add" /> Thêm Bài học mới
               </button>
             )}
           </div>
@@ -516,7 +517,7 @@ export const CurriculumPage: React.FC = () => {
                   <th>Tên bài học</th>
                   <th>Mục tiêu bài học</th>
                   <th>Trạng thái</th>
-                  {isAdmin && <th className="text-right">Hành động</th>}
+                  {isAdmin && <th className="text-center">Hành động</th>}
                 </tr>
               </thead>
               <tbody>
@@ -529,7 +530,7 @@ export const CurriculumPage: React.FC = () => {
                 ) : lessonsData?.items && lessonsData.items.length > 0 ? (
                   lessonsData.items.map((lesson) => (
                     <tr key={lesson.id}>
-                      <td className="font-semibold">#{lesson.sortOrder}</td>
+                      <td className="font-semibold">{lesson.sortOrder}</td>
                       <td className="font-mono font-semibold">{lesson.code}</td>
                       <td className="font-medium">{lesson.name}</td>
                       <td className="text-slate-500 text-xs">
@@ -543,7 +544,7 @@ export const CurriculumPage: React.FC = () => {
                         )}
                       </td>
                       {isAdmin && (
-                        <td className="text-right whitespace-nowrap">
+                        <td className="text-center whitespace-nowrap">
                           <button
                             type="button"
                             className="btn btn-secondary px-2 py-1 text-xs mr-1"

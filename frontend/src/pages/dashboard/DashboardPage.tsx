@@ -17,6 +17,7 @@ import {
   formatTimeDisplay,
 } from '../../utils/date';
 import { getRoleLabel } from '../../utils/role';
+import { MaterialIcon } from '../../components/common/MaterialIcon';
 
 const compactNumber = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 });
 const percentNumber = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 });
@@ -26,69 +27,6 @@ const auditActionLabels: Record<string, string> = {
   CREATE_PAYMENT: 'Tạo thanh toán',
   CANCEL_PAYMENT: 'Hủy thanh toán',
 };
-
-const IconUsers = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-    <circle cx="9" cy="7" r="4" />
-    <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-  </svg>
-);
-
-const IconAcademicCap = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="m22 10-10 5L2 10l10-5 10 5Z" />
-    <path d="M6 12v5c3 2 9 2 12 0v-5M22 10v6" />
-  </svg>
-);
-
-const IconBookOpen = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-  </svg>
-);
-
-const IconCalendar = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="4" width="18" height="18" rx="2" />
-    <path d="M16 2v4M8 2v4M3 10h18" />
-  </svg>
-);
-
-const IconAlertCircle = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10" />
-    <path d="M12 8v4M12 16h.01" />
-  </svg>
-);
-
-const IconClipboard = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="5" y="4" width="14" height="18" rx="2" />
-    <path d="M9 4V2h6v2M9 12h6M9 16h6" />
-  </svg>
-);
-
-const IconClock = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10" />
-    <path d="M12 6v6l4 2" />
-  </svg>
-);
-
-const IconCurrencyDollar = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-  </svg>
-);
-
-const IconReceipt = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M4 2h16v20l-4-2-4 2-4-2-4 2V2Z" />
-    <path d="M8 7h8M8 11h8M8 15h5" />
-  </svg>
-);
 
 function formatCompactCurrency(amount: number): string {
   const format = (value: number) => compactNumber.format(value);
@@ -187,13 +125,11 @@ interface HorizontalBarItem {
 
 interface HorizontalBarChartProps {
   title: string;
-  subtitle?: string;
   items: HorizontalBarItem[];
 }
 
 const HorizontalBarChart: React.FC<HorizontalBarChartProps> = ({
   title,
-  subtitle,
   items,
 }) => {
   const total = items.reduce((acc, curr) => acc + curr.count, 0);
@@ -202,7 +138,6 @@ const HorizontalBarChart: React.FC<HorizontalBarChartProps> = ({
     <div className="chart-box">
       <div className="chart-header">
         <h3 className="chart-title">{title}</h3>
-        {subtitle && <span className="chart-subtitle">{subtitle}</span>}
       </div>
 
       {total === 0 ? (
@@ -255,14 +190,12 @@ interface VerticalColumnItem {
 
 interface VerticalColumnChartProps {
   title: string;
-  subtitle?: string;
   items: VerticalColumnItem[];
   emptyText?: string;
 }
 
 const VerticalColumnChart: React.FC<VerticalColumnChartProps> = ({
   title,
-  subtitle,
   items,
   emptyText = 'Chưa có dữ liệu thống kê theo tháng.',
 }) => {
@@ -272,7 +205,6 @@ const VerticalColumnChart: React.FC<VerticalColumnChartProps> = ({
     <div className="chart-box">
       <div className="chart-header">
         <h3 className="chart-title">{title}</h3>
-        {subtitle && <span className="chart-subtitle">{subtitle}</span>}
       </div>
 
       {items.length === 0 || maxValue === 0 ? (
@@ -354,28 +286,28 @@ const AdminDashboardView: React.FC = () => {
     <div>
       <div className="kpi-grid">
         <KpiCard
-          icon={<IconUsers />}
+          icon={<MaterialIcon name="group" />}
           iconType="primary"
           value={data.activeStaffCount}
           label="Nhân viên đang làm việc"
           subtext="Tài khoản đang hoạt động"
         />
         <KpiCard
-          icon={<IconAcademicCap />}
+          icon={<MaterialIcon name="school" />}
           iconType="primary"
           value={data.unarchivedStudentCount}
           label="Học viên chưa lưu trữ"
           subtext="Hồ sơ chưa lưu trữ"
         />
         <KpiCard
-          icon={<IconBookOpen />}
+          icon={<MaterialIcon name="menu_book" />}
           iconType="primary"
           value={data.activeClassCount}
           label="Lớp đang mở"
           subtext="Lớp học đang diễn ra"
         />
         <KpiCard
-          icon={<IconClipboard />}
+          icon={<MaterialIcon name="assignment" />}
           iconType="primary"
           value={data.activeEnrollmentCount}
           label="Ghi danh đang học"
@@ -385,12 +317,10 @@ const AdminDashboardView: React.FC = () => {
       <div className="dashboard-grid-2">
         <HorizontalBarChart
           title="Lớp theo trạng thái"
-          subtitle="Tỉ lệ phân bổ các lớp học trong hệ thống"
           items={classesChartItems}
         />
         <VerticalColumnChart
           title="Ghi danh 6 tháng"
-          subtitle="Số lượt học viên bắt đầu ghi danh 6 tháng gần nhất"
           items={enrollmentChartItems}
         />
       </div>
@@ -415,21 +345,21 @@ const TeacherDashboardView: React.FC = () => {
     <div>
       <div className="kpi-grid">
         <KpiCard
-          icon={<IconBookOpen />}
+          icon={<MaterialIcon name="menu_book" />}
           iconType="primary"
           value={data.assignedClassCount}
           label="Lớp đang phụ trách"
           subtext="Lớp giáo viên được phân công"
         />
         <KpiCard
-          icon={<IconAcademicCap />}
+          icon={<MaterialIcon name="school" />}
           iconType="primary"
           value={data.activeStudentCount}
           label="Học viên của bạn"
           subtext="Học sinh đang theo học các lớp"
         />
         <KpiCard
-          icon={<IconClock />}
+          icon={<MaterialIcon name="schedule" />}
           iconType={pendingCount > 0 ? 'warning' : 'neutral'}
           value={pendingCount}
           label="Buổi cần hoàn tất"
@@ -438,7 +368,7 @@ const TeacherDashboardView: React.FC = () => {
           badgeType="warning"
         />
         <KpiCard
-          icon={<IconCalendar />}
+          icon={<MaterialIcon name="calendar_month" />}
           iconType="primary"
           value={data.todaySessionCount}
           label="Buổi dạy hôm nay"
@@ -449,13 +379,12 @@ const TeacherDashboardView: React.FC = () => {
         <div className="chart-header">
           <div>
             <h3 className="chart-title">Lịch dạy sắp tới</h3>
-            <span className="chart-subtitle">Danh sách 5 buổi học tiếp theo theo phân công</span>
           </div>
           <Link
             to="/teacher/schedule"
             className="text-sm text-[#0284c7] hover:underline font-medium"
           >
-            Xem toàn bộ lịch dạy →
+            Xem toàn bộ lịch dạy <MaterialIcon name="arrow_forward" />
           </Link>
         </div>
 
@@ -539,28 +468,28 @@ const CustomerCareDashboardView: React.FC = () => {
     <div>
       <div className="kpi-grid">
         <KpiCard
-          icon={<IconAcademicCap />}
+          icon={<MaterialIcon name="school" />}
           iconType="primary"
           value={data.unarchivedStudentCount}
           label="Học viên chưa lưu trữ"
           subtext="Hồ sơ học sinh đang quản lý"
         />
         <KpiCard
-          icon={<IconClipboard />}
+          icon={<MaterialIcon name="assignment" />}
           iconType="primary"
           value={data.activeEnrollmentCount}
           label="Ghi danh đang học"
           subtext="Lượt ghi danh còn hiệu lực"
         />
         <KpiCard
-          icon={<IconClock />}
+          icon={<MaterialIcon name="schedule" />}
           iconType="warning"
           value={data.pausedEnrollmentCount}
           label="Bảo lưu"
           subtext="Ghi danh tạm ngừng lớp"
         />
         <KpiCard
-          icon={<IconAlertCircle />}
+          icon={<MaterialIcon name="error" />}
           iconType={noGuardianCount > 0 ? 'danger' : 'neutral'}
           value={noGuardianCount}
           label="Thiếu thông tin PH"
@@ -572,14 +501,12 @@ const CustomerCareDashboardView: React.FC = () => {
       <div className="dashboard-grid-2">
         <HorizontalBarChart
           title="Trạng thái ghi danh"
-          subtitle="Tỉ lệ phân bổ ghi danh theo từng trạng thái"
           items={enrollmentBarItems}
         />
         <div className="chart-box">
           <div className="chart-header">
             <div>
               <h3 className="chart-title">Học viên thiếu thông tin phụ huynh</h3>
-              <span className="chart-subtitle">Khu vực cần xử lý hồ sơ thông tin người giám hộ</span>
             </div>
             {noGuardianCount > 0 && (
               <span className="kpi-badge kpi-badge-danger">
@@ -750,21 +677,21 @@ const AccountingDashboardView: React.FC = () => {
         <>
           <div className="kpi-grid kpi-grid-3">
             <KpiCard
-              icon={<IconCurrencyDollar />}
+              icon={<MaterialIcon name="payments" />}
               iconType="success"
               value={formatCurrency(data.revenue)}
               label="Doanh thu đã thu"
               subtext={periodText}
             />
             <KpiCard
-              icon={<IconReceipt />}
+              icon={<MaterialIcon name="receipt_long" />}
               iconType="warning"
               value={formatCurrency(data.currentDebt)}
               label="Công nợ hiện tại"
               subtext="Toàn bộ thời gian, không theo kỳ lọc"
             />
             <KpiCard
-              icon={<IconAlertCircle />}
+              icon={<MaterialIcon name="error" />}
               iconType={data.overdueDebt > 0 ? 'danger' : 'neutral'}
               value={formatCurrency(data.overdueDebt)}
               label="Công nợ quá hạn"
@@ -776,7 +703,6 @@ const AccountingDashboardView: React.FC = () => {
           <div className="dashboard-grid-2">
             <VerticalColumnChart
               title="Doanh thu theo tháng"
-              subtitle="Phát sinh doanh thu thực nhận theo từng tháng"
               items={revenueMonthlyItems}
               emptyText="Chưa có phát sinh doanh thu trong kỳ lọc."
             />
@@ -784,7 +710,6 @@ const AccountingDashboardView: React.FC = () => {
               <div className="chart-header">
                 <div>
                   <h3 className="chart-title">Giao dịch gần đây</h3>
-                  <span className="chart-subtitle">10 phiếu thu và thanh toán mới nhất</span>
                 </div>
               </div>
 
@@ -798,7 +723,7 @@ const AccountingDashboardView: React.FC = () => {
                         <th>Ngày</th>
                         <th>Mã phiếu thu</th>
                         <th>Học viên</th>
-                        <th className="text-right">Số tiền</th>
+                        <th className="text-center">Số tiền</th>
                         <th className="text-center">Trạng thái</th>
                       </tr>
                     </thead>
@@ -812,7 +737,7 @@ const AccountingDashboardView: React.FC = () => {
                             {tx.receiptNumber || tx.paymentNumber}
                           </td>
                           <td className="font-medium">{tx.studentName}</td>
-                          <td className="text-right font-semibold text-slate-900">
+                          <td className="text-center font-semibold text-slate-900">
                             {formatCurrency(tx.amount)}
                           </td>
                           <td className="text-center">
@@ -832,7 +757,6 @@ const AccountingDashboardView: React.FC = () => {
             <div className="chart-header">
               <div>
                 <h3 className="chart-title">Nhật ký tài chính</h3>
-                <span className="chart-subtitle">Lịch sử kiểm toán và thao tác hóa đơn / thanh toán</span>
               </div>
             </div>
 
@@ -861,7 +785,7 @@ const AccountingDashboardView: React.FC = () => {
                           <span className="badge badge-inactive">{auditActionLabels[log.action] ?? log.action}</span>
                         </td>
                         <td className="font-mono">
-                          {log.entityType === 'Invoice' ? 'Hóa đơn' : 'Thanh toán'} #{log.entityId}
+                          {log.entityType === 'Invoice' ? 'Hóa đơn' : 'Thanh toán'}
                         </td>
                         <td className="text-sm text-slate-600">{log.description}</td>
                       </tr>

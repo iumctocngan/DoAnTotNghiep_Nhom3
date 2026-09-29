@@ -30,10 +30,10 @@ export function BieuMauDuLieu({ lenh, dong, daLuu }: { lenh: LenhDuLieu; dong: (
     <form onSubmit={luu}>
       {loi && <div role="alert" className="alert alert-danger">{loi}</div>}
       {!lenh.truong?.length && <p>Xác nhận thực hiện thao tác này?</p>}
-      {lenh.truong?.map(truong => <label key={truong.ten} className="block mb-3">{truong.nhan}
-        {truong.loai === 'ma-tu-dong' ? <input type="text" readOnly value={String(giaTri[truong.ten] ?? 'Hệ thống tự tạo khi lưu')} /> : truong.tuyChon ? <select required={!truong.khongBatBuoc} value={String(giaTri[truong.ten] ?? '')} onChange={suKien => datGiaTri({ ...giaTri, [truong.ten]: suKien.target.value })}>
+      {lenh.truong?.filter(truong => truong.loai !== 'ma-tu-dong').map(truong => <label key={truong.ten} className="block mb-3">{truong.nhan}
+        {truong.tuyChon ? <select required={!truong.khongBatBuoc} value={String(giaTri[truong.ten] ?? '')} onChange={suKien => datGiaTri({ ...giaTri, [truong.ten]: suKien.target.value })}>
           <option value="">— Chọn —</option>
-          {giaTri[truong.ten] != null && giaTri[truong.ten] !== '' && !truong.tuyChon.some(([ma]) => String(ma) === String(giaTri[truong.ten])) && <option value={String(giaTri[truong.ten])}>Giá trị hiện tại: {String(giaTri[truong.ten])}</option>}
+          {giaTri[truong.ten] != null && giaTri[truong.ten] !== '' && !truong.tuyChon.some(([ma]) => String(ma) === String(giaTri[truong.ten])) && <option value={String(giaTri[truong.ten])}>Lựa chọn hiện tại (không còn trong danh sách)</option>}
           {truong.tuyChon.map(([ma, nhan]) => <option key={String(ma)} value={String(ma)}>{nhan}</option>)}
         </select> : truong.loai === 'textarea' ? <textarea required={!truong.khongBatBuoc} maxLength={truong.toiDa ?? 2000} rows={4} value={String(giaTri[truong.ten] ?? '')} onChange={suKien => datGiaTri({ ...giaTri, [truong.ten]: suKien.target.value })} />
         : <input type={truong.loai ?? 'text'} required={!truong.khongBatBuoc} min={truong.loai === 'number' ? 1 : undefined} maxLength={truong.toiDa ?? 100} value={String(giaTri[truong.ten] ?? '')} onChange={suKien => datGiaTri({ ...giaTri, [truong.ten]: suKien.target.value })} />}

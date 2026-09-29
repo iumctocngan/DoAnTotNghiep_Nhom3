@@ -168,7 +168,7 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                   const student = studentsData?.items.find((s) => s.id === enr.hocVienId);
                   return (
                     <option key={enr.id} value={enr.id}>
-                      {student ? `${student.fullName} (${student.studentCode})` : `Học viên #${enr.hocVienId}`} - Ghi danh #{enr.id}
+                      {student ? `${student.fullName} (${student.studentCode})` : 'Học viên chưa có thông tin'}
                     </option>
                   );
                 })}

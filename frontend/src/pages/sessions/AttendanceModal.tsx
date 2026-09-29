@@ -1,3 +1,4 @@
+import { MaterialIcon } from '../../components/common/MaterialIcon';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -177,10 +178,10 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ sessionId, isO
                   Sĩ số: <strong>{total}</strong>
                 </span>
                 <span className="text-emerald-700 font-semibold">
-                  ✓ Có mặt: {presentCount}
+                  <MaterialIcon name="check" /> Có mặt: {presentCount}
                 </span>
                 <span className="text-red-700 font-semibold">
-                  ✗ Vắng: {absentCount}
+                  <MaterialIcon name="close" /> Vắng: {absentCount}
                 </span>
               </div>
 
@@ -191,14 +192,14 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ sessionId, isO
                     className="btn btn-secondary text-xs !py-1 !px-2.5 text-emerald-700 border-emerald-300 hover:bg-emerald-50"
                     onClick={() => setStatusAll(1)}
                   >
-                    ✓ Tất cả có mặt
+                    <MaterialIcon name="check" /> Tất cả có mặt
                   </button>
                   <button
                     type="button"
                     className="btn btn-secondary text-xs !py-1 !px-2.5 text-red-700 border-red-300 hover:bg-red-50"
                     onClick={() => setStatusAll(2)}
                   >
-                    ✗ Tất cả vắng
+                    <MaterialIcon name="close" /> Tất cả vắng
                   </button>
                 </div>
               )}
@@ -206,7 +207,7 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ sessionId, isO
 
             {/* Danh sách học viên */}
             <div className="table-container max-h-[360px] overflow-y-auto border border-slate-200 rounded">
-              <table className="table-custom text-xs">
+              <table className="data-table text-xs">
                 <thead className="sticky top-0 bg-slate-100 z-10">
                   <tr>
                     <th>STT</th>

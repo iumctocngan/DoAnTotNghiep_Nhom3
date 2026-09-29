@@ -1,3 +1,4 @@
+import { MaterialIcon } from '../../components/common/MaterialIcon';
 import React, { useState } from 'react';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { sessionApi } from '../../api/sessionApi';
@@ -99,19 +100,16 @@ export const SessionListPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="sessions-page space-y-5">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-slate-900">Quản lý Buổi học & Điểm danh</h1>
-          <p className="text-sm text-slate-600">
-            Theo dõi kế hoạch giảng dạy, buổi học theo lớp và thực hiện điểm danh học viên.
-          </p>
         </div>
 
         {isAdmin && (
           <button type="button" className="btn btn-primary" onClick={handleCreate}>
-            + Thêm buổi học mới
+            <MaterialIcon name="add" /> Thêm buổi học mới
           </button>
         )}
       </div>
@@ -190,7 +188,13 @@ export const SessionListPage: React.FC = () => {
           </div>
         ) : (
           <div className="table-container">
-            <table className="table-custom">
+            <table className="data-table sessions-table">
+              <colgroup>
+                <col style={{ width: '17%' }} /><col />
+                <col style={{ width: '112px' }} /><col style={{ width: '128px' }} />
+                <col style={{ width: '132px' }} /><col style={{ width: '10%' }} />
+                <col style={{ width: '272px' }} />
+              </colgroup>
               <thead>
                 <tr>
                   <th>Lớp học</th>
@@ -199,7 +203,7 @@ export const SessionListPage: React.FC = () => {
                   <th>Thời gian</th>
                   <th>Trạng thái</th>
                   <th>Ghi chú</th>
-                  <th className="text-right">Thao tác</th>
+                  <th className="text-center">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
@@ -219,8 +223,8 @@ export const SessionListPage: React.FC = () => {
                         <span className="text-xs text-slate-400 italic">Chưa gắn bài</span>
                       )}
                     </td>
-                    <td className="font-medium">{formatDateDisplay(s.sessionDate)}</td>
-                    <td className="text-sm">
+                    <td className="font-medium whitespace-nowrap">{formatDateDisplay(s.sessionDate)}</td>
+                    <td className="text-sm whitespace-nowrap">
                       {formatTimeDisplay(s.startTime)} - {formatTimeDisplay(s.endTime)}
                     </td>
                     <td>
@@ -228,18 +232,18 @@ export const SessionListPage: React.FC = () => {
                       {s.status === 2 && <span className="badge badge-active">Hoàn tất</span>}
                       {s.status === 3 && <span className="badge badge-danger">Đã hủy</span>}
                     </td>
-                    <td className="text-xs text-slate-500 max-w-[180px] truncate" title={s.note || ''}>
+                    <td className="text-xs text-slate-500 session-note" title={s.note || ''}>
                       {s.note || '—'}
                     </td>
-                    <td className="text-right whitespace-nowrap">
-                      <div className="inline-flex items-center gap-1.5">
+                    <td>
+                      <div className="session-actions">
                         {canAttendance && s.status !== 3 && (
                           <button
                             type="button"
                             className="btn btn-secondary text-xs !py-1 !px-2.5 text-sky-700 font-semibold border-sky-300 hover:bg-sky-50"
                             onClick={() => setAttendanceSessionId(s.id)}
                           >
-                            📝 Điểm danh
+                            <MaterialIcon name="edit_note" /> Điểm danh
                           </button>
                         )}
 
@@ -255,7 +259,7 @@ export const SessionListPage: React.FC = () => {
                               })
                             }
                           >
-                            ✓ Hoàn tất
+                            <MaterialIcon name="check" /> Hoàn tất
                           </button>
                         )}
 
@@ -266,7 +270,7 @@ export const SessionListPage: React.FC = () => {
                               className="btn btn-secondary text-xs !py-1 !px-2"
                               onClick={() => handleEdit(s)}
                             >
-                              Sửa
+                              <MaterialIcon name="edit" /> Sửa
                             </button>
                             <button
                               type="button"
@@ -280,7 +284,7 @@ export const SessionListPage: React.FC = () => {
                                 })
                               }
                             >
-                              Hủy
+                              <MaterialIcon name="cancel" /> Hủy
                             </button>
                           </>
                         )}

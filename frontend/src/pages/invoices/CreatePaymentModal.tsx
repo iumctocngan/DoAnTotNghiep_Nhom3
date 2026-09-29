@@ -169,8 +169,8 @@ export const CreatePaymentModal: React.FC<CreatePaymentModalProps> = ({
             onChange={(e) => setMethod(Number(e.target.value) as PaymentMethod)}
             disabled={mutation.isPending}
           >
-            <option value="1">💵 Tiền mặt (Cash)</option>
-            <option value="2">🏦 Chuyển khoản ngân hàng (Bank Transfer)</option>
+            <option value="1">Tiền mặt (Cash)</option>
+            <option value="2">Chuyển khoản ngân hàng (Bank Transfer)</option>
           </select>
         </div>
 

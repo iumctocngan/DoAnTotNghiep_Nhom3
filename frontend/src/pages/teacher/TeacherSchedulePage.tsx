@@ -1,3 +1,4 @@
+import { MaterialIcon } from '../../components/common/MaterialIcon';
 import React, { useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { teacherApi } from "../../api/teacherApi";
@@ -167,7 +168,7 @@ export const TeacherSchedulePage: React.FC = () => {
               <th>Bài học</th>
               <th>Trạng thái</th>
               <th>Ghi chú</th>
-              <th className="text-right">Thao tác</th>
+              <th className="text-center">Thao tác</th>
             </tr>
           </thead>
           <tbody>
@@ -218,7 +219,7 @@ export const TeacherSchedulePage: React.FC = () => {
                   <td className="text-xs text-slate-500">
                     {session.note || "—"}
                   </td>
-                  <td className="text-right whitespace-nowrap">
+                  <td className="text-center whitespace-nowrap">
                     {session.status !== 3 && (
                       <button
                         type="button"
@@ -227,7 +228,7 @@ export const TeacherSchedulePage: React.FC = () => {
                           setAttendanceSessionId(session.sessionId)
                         }
                       >
-                        📝 Điểm danh
+                        <MaterialIcon name="edit_note" /> Điểm danh
                       </button>
                     )}
                   </td>

@@ -80,18 +80,6 @@ export const LevelModal: React.FC<LevelModalProps> = ({
         {error && <div className="alert alert-danger">{error}</div>}
 
         <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label htmlFor="levelCode">Mã cấp độ *</label>
-            <input
-              id="levelCode"
-              type="text"
-              placeholder="VD: LV-01"
-              value={code === 'AUTO' ? 'Hệ thống tự tạo khi lưu' : code}
-              readOnly
-              disabled={isSubmitting}
-              required
-            />
-          </div>
 
           <div className="mb-3">
             <label htmlFor="levelName">Tên cấp độ *</label>

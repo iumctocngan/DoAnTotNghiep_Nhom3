@@ -1,3 +1,4 @@
+import { MaterialIcon } from '../../components/common/MaterialIcon';
 import React, { useState } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -116,9 +117,6 @@ export const InvoiceListPage: React.FC = () => {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-slate-900">Quản lý Học phí & Thu tiền</h1>
-          <p className="text-sm text-slate-600">
-            Theo dõi hóa đơn học phí, ghi nhận thanh toán phiếu thu và quản lý công nợ học sinh.
-          </p>
         </div>
 
         {canManageInvoice && (
@@ -143,7 +141,7 @@ export const InvoiceListPage: React.FC = () => {
           }`}
           onClick={() => setActiveTab('invoices')}
         >
-          📄 Danh sách Hóa đơn
+          <MaterialIcon name="description" /> Danh sách Hóa đơn
         </button>}
         <button
           type="button"
@@ -154,7 +152,7 @@ export const InvoiceListPage: React.FC = () => {
           }`}
           onClick={() => setActiveTab('payments')}
         >
-          💳 Phiếu thu / Thanh toán
+          <MaterialIcon name="credit_card" /> Phiếu thu / Thanh toán
         </button>
         <button
           type="button"
@@ -165,7 +163,7 @@ export const InvoiceListPage: React.FC = () => {
           }`}
           onClick={() => setActiveTab('debtors')}
         >
-          ⚠️ Học sinh còn nợ (Công nợ)
+          <MaterialIcon name="warning" /> Học sinh còn nợ (Công nợ)
         </button>
       </div>
 
@@ -215,7 +213,7 @@ export const InvoiceListPage: React.FC = () => {
               </div>
             ) : (
               <div className="table-container">
-                <table className="table-custom">
+                <table className="data-table">
                   <thead>
                     <tr>
                       <th>Số HĐ</th>
@@ -226,7 +224,7 @@ export const InvoiceListPage: React.FC = () => {
                       <th>Đã nộp</th>
                       <th>Còn nợ</th>
                       <th>Trạng thái</th>
-                      <th className="text-right">Thao tác</th>
+                      <th className="text-center">Thao tác</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -238,7 +236,7 @@ export const InvoiceListPage: React.FC = () => {
                           <div className="text-xs font-mono text-slate-500">{inv.maHocVien}</div>
                         </td>
                         <td className="text-xs">
-                          {formatDateDisplay(inv.ngayBatDauKy)} → {formatDateDisplay(inv.ngayKetThucKy)}
+                          {formatDateDisplay(inv.ngayBatDauKy)} <MaterialIcon name="arrow_forward" /> {formatDateDisplay(inv.ngayKetThucKy)}
                         </td>
                         <td className="text-xs font-medium">{formatDateDisplay(inv.ngayDenHan)}</td>
                         <td className="font-semibold">{formatCurrency(inv.soTienPhaiTra)}</td>
@@ -247,7 +245,7 @@ export const InvoiceListPage: React.FC = () => {
                           {formatCurrency(inv.conNo)}
                         </td>
                         <td>{renderInvoiceBadge(inv.trangThai)}</td>
-                        <td className="text-right whitespace-nowrap">
+                        <td className="text-center whitespace-nowrap">
                           <div className="inline-flex items-center gap-1.5">
                             {canManageInvoice && inv.trangThai !== 2 && inv.conNo > 0 && (
                               <button
@@ -255,7 +253,7 @@ export const InvoiceListPage: React.FC = () => {
                                 className="btn btn-secondary text-xs !py-1 !px-2.5 text-emerald-700 font-semibold border-emerald-300 hover:bg-emerald-50"
                                 onClick={() => setSelectedInvoiceForPayment(inv)}
                               >
-                                💵 Thu tiền
+                                <MaterialIcon name="payments" /> Thu tiền
                               </button>
                             )}
 
@@ -331,7 +329,7 @@ export const InvoiceListPage: React.FC = () => {
             </div>
           ) : (
             <div className="table-container">
-              <table className="table-custom">
+              <table className="data-table">
                 <thead>
                   <tr>
                     <th>Số phiếu thu</th>
@@ -342,7 +340,7 @@ export const InvoiceListPage: React.FC = () => {
                     <th>Thời gian thu</th>
                     <th>Trạng thái</th>
                     <th>Người lập</th>
-                    <th className="text-right">Thao tác</th>
+                    <th className="text-center">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -354,9 +352,9 @@ export const InvoiceListPage: React.FC = () => {
                       <td className="font-bold text-emerald-700">{formatCurrency(p.amount)}</td>
                       <td>
                         {p.method === 1 ? (
-                          <span className="badge badge-teacher">💵 Tiền mặt</span>
+                          <span className="badge badge-teacher"><MaterialIcon name="payments" /> Tiền mặt</span>
                         ) : (
-                          <span className="badge badge-admin">🏦 Chuyển khoản</span>
+                          <span className="badge badge-admin"><MaterialIcon name="account_balance" /> Chuyển khoản</span>
                         )}
                       </td>
                       <td className="text-xs text-slate-700">{formatDateTimeDisplay(p.paidAt)}</td>
@@ -368,7 +366,7 @@ export const InvoiceListPage: React.FC = () => {
                         )}
                       </td>
                       <td className="text-xs text-slate-500">{p.createdBy}</td>
-                      <td className="text-right whitespace-nowrap">
+                      <td className="text-center whitespace-nowrap">
                         {canManageInvoice && p.status === 1 && (
                           <button
                             type="button"
@@ -434,12 +432,12 @@ export const InvoiceListPage: React.FC = () => {
             </div>
           ) : !pagedDebtors || pagedDebtors.items.length === 0 ? (
             <div className="p-8 text-center text-slate-500">
-              <p className="font-medium text-emerald-700 mb-1">🎉 Tuyệt vời! Không có học sinh nào nợ học phí.</p>
+              <p className="font-medium text-emerald-700 mb-1"><MaterialIcon name="celebration" /> Tuyệt vời! Không có học sinh nào nợ học phí.</p>
               <p className="text-sm">Toàn bộ học viên đã thanh toán đủ học phí.</p>
             </div>
           ) : (
             <div className="table-container">
-              <table className="table-custom">
+              <table className="data-table">
                 <thead>
                   <tr>
                     <th>Mã HV</th>
@@ -447,7 +445,7 @@ export const InvoiceListPage: React.FC = () => {
                     <th>Số tiền còn nợ</th>
                     <th>Số hóa đơn chưa trả</th>
                     <th>Cảnh báo quá hạn</th>
-                    <th className="text-right">Thao tác</th>
+                    <th className="text-center">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -459,17 +457,17 @@ export const InvoiceListPage: React.FC = () => {
                       <td className="font-medium">{d.soHoaDonChuaTra} hóa đơn</td>
                       <td>
                         {d.coHoaDonQuaHan ? (
-                          <span className="badge badge-danger">⚠️ Có hóa đơn quá hạn</span>
+                          <span className="badge badge-danger"><MaterialIcon name="warning" /> Có hóa đơn quá hạn</span>
                         ) : (
                           <span className="badge badge-admin">Chưa đến hạn</span>
                         )}
                       </td>
-                      <td className="text-right whitespace-nowrap">
+                      <td className="text-center whitespace-nowrap">
                         <Link
                           to={`/students/${d.studentId}`}
                           className="btn btn-secondary text-xs !py-1 !px-2.5"
                         >
-                          Chi tiết học viên →
+                          Chi tiết học viên <MaterialIcon name="arrow_forward" />
                         </Link>
                       </td>
                     </tr>

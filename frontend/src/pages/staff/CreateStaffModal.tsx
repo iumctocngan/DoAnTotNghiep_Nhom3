@@ -87,10 +87,6 @@ export const CreateStaffModal: React.FC<CreateStaffModalProps> = ({
         <form onSubmit={handleSubmit}>
           <div className="modal-form-grid">
             <div>
-              <label htmlFor="code">Mã nhân viên</label>
-              <input id="code" type="text" readOnly value={`${({ Teacher: 'GV', CustomerCare: 'CSKH', Accountant: 'KT', Admin: 'QT' })[role]} — hệ thống tự tạo`} />
-            </div>
-            <div>
               <label htmlFor="role">Vai trò *</label>
               <select
                 id="role"

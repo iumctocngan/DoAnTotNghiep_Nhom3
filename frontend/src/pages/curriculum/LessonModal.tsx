@@ -84,18 +84,6 @@ export const LessonModal: React.FC<LessonModalProps> = ({
         {error && <div className="alert alert-danger">{error}</div>}
 
         <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label htmlFor="lessonCode">Mã bài học *</label>
-            <input
-              id="lessonCode"
-              type="text"
-              placeholder="VD: LES-01"
-              value={code === 'AUTO' ? 'Hệ thống tự tạo khi lưu' : code}
-              readOnly
-              disabled={isSubmitting}
-              required
-            />
-          </div>
 
           <div className="mb-3">
             <label htmlFor="lessonName">Tên bài học *</label>

@@ -1,3 +1,4 @@
+import { MaterialIcon } from '../../components/common/MaterialIcon';
 import { DangKyHocVien } from './DangKyHocVien';
 import { useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
@@ -64,7 +65,7 @@ export function TrangQuanLy({ phanHe }: { phanHe: PhanHe }) {
     }
     return ketQua;
   } });
-  const luaChon = (ten: string, nhan: string, ma = 'id'): [string | number, string][] => (danhMuc.data?.[ten] ?? []).map(dong => [dong[ma] as string | number, `${dong[nhan]} (#${dong[ma]})`]);
+  const luaChon = (ten: string, nhan: string, ma = 'id'): [string | number, string][] => (danhMuc.data?.[ten] ?? []).map(dong => [dong[ma] as string | number, String(dong[nhan] ?? 'Chưa có tên')]);
   const cacTruong: Record<PhanHe, TruongNhap[]> = {
     'hoc-vien': [{ ...truong('studentCode', 'Mã học viên', 'ma-tu-dong'), toiDa: 50 }, truong('fullName', 'Họ tên'), truong('dateOfBirth', 'Ngày sinh', 'date'), { ...chon('gender', 'Giới tính', [[1, 'Nam'], [2, 'Nữ'], [3, 'Khác']]), khongBatBuoc: true }, { ...truong('learningNote', 'Lưu ý học tập', 'textarea', true), toiDa: 500 }],
     'nguoi-giam-ho': [truong('fullName', 'Họ tên'), { ...truong('phone', 'Điện thoại', 'tel'), toiDa: 20 }, truong('email', 'Email', 'email', true), chon('isActive', 'Đang hoạt động', coKhong, 'boolean')],
@@ -81,7 +82,7 @@ export function TrangQuanLy({ phanHe }: { phanHe: PhanHe }) {
   function hienThi(dong: BanGhi, ten: string) {
     const giaTri = dong[ten];
     if (ten === 'trangThai') return (phanHe === 'lop-hoc' ? trangThaiLop : trangThaiGhiDanh).find(([ma]) => ma === giaTri)?.[1] ?? giaTri;
-    if (ten === 'hocVienId' || ten === 'lopId') { const nhom = ten === 'hocVienId' ? 'hocVien' : 'lopHoc'; const doiTuong = danhMuc.data?.[nhom]?.find(muc => muc.id === giaTri); return doiTuong?.[ten === 'hocVienId' ? 'fullName' : 'tenLop'] ?? `#${giaTri}`; }
+    if (ten === 'hocVienId' || ten === 'lopId') { const nhom = ten === 'hocVienId' ? 'hocVien' : 'lopHoc'; const doiTuong = danhMuc.data?.[nhom]?.find(muc => muc.id === giaTri); return doiTuong?.[ten === 'hocVienId' ? 'fullName' : 'tenLop'] ?? 'Chưa có thông tin'; }
     if (typeof giaTri === 'boolean') return giaTri ? 'Có' : 'Không';
     if (giaTri && (ten.startsWith('ngay') || ten === 'dateOfBirth')) return new Date(String(giaTri)).toLocaleDateString('vi-VN');
     return giaTri ?? '—';
@@ -90,18 +91,18 @@ export function TrangQuanLy({ phanHe }: { phanHe: PhanHe }) {
     datLenh({ tieuDe, duongDan: phanHe === 'nhan-xet' ? `/api/remarks/${dong.id}` : `${duongDan}/${dong.id ?? dong.guardianId}${duoi}`, phuongThuc, truong: truongNhap, duLieu: dong });
   }
   return <section className="khung-quan-ly">
-    <div className="tieu-de-khung"><h1>{thongTin.tieuDe}{id ? ` #${id}` : ''}</h1></div>
+    <div className="tieu-de-khung"><h1>{thongTin.tieuDe}</h1></div>
     <div className="noi-dung-khung">
       <div className="thanh-cong-cu">
         {phanHe !== 'nhan-xet' && <input aria-label="Tìm kiếm" type="text" placeholder="Nhập từ khóa tìm kiếm…" value={tuKhoa} onChange={suKien => { datTuKhoa(suKien.target.value); datTrang(1); }} />}
         {phanHe === 'hoc-vien' && <label className="flex items-center gap-2 m-0"><input type="checkbox" checked={luuTru} onChange={suKien => { datLuuTru(suKien.target.checked); datTrang(1); }} />Đã lưu trữ</label>}
-        {duocTao && <button className="btn btn-primary" disabled={danhMuc.isFetching || danhMuc.isError} onClick={() => phanHe === 'hoc-vien' ? datMoDangKy(true) : datLenh({ tieuDe: 'Thêm mới', duongDan, phuongThuc: 'POST', truong: cacTruong[phanHe], duLieu: { isActive: true, isPrimary: false, trangThai: 1, ...(thamSo.get('hocVienId') ? { hocVienId: Number(thamSo.get('hocVienId')) } : {}) } })}>+ Thêm mới</button>}
+        {duocTao && <button className="btn btn-primary" disabled={danhMuc.isFetching || danhMuc.isError} onClick={() => phanHe === 'hoc-vien' ? datMoDangKy(true) : datLenh({ tieuDe: 'Thêm mới', duongDan, phuongThuc: 'POST', truong: cacTruong[phanHe], duLieu: { isActive: true, isPrimary: false, trangThai: 1, ...(thamSo.get('hocVienId') ? { hocVienId: Number(thamSo.get('hocVienId')) } : {}) } })}><MaterialIcon name="add" /> Thêm mới</button>}
         <button className="btn btn-secondary" onClick={() => { void duLieu.refetch(); void danhMuc.refetch(); }}>Tải lại</button>
       </div>
       {(duLieu.isError || danhMuc.isError) && <div role="alert" className="alert alert-danger">{(duLieu.error ?? danhMuc.error as Error)?.message ?? 'Không tải được dữ liệu.'}</div>}
       {duLieu.isFetching && <p role="status">Đang tải dữ liệu…</p>}
-      <div className="table-container"><table className="data-table"><thead><tr><th>#</th>{thongTin.cot.map(([ten, nhan]) => <th key={ten}>{nhan}</th>)}<th>Thao tác</th></tr></thead><tbody>
-        {cacDong.map(dong => <tr key={String(dong.id ?? dong.guardianId)}><td>{dong.id ?? dong.guardianId}</td>{thongTin.cot.map(([ten]) => <td key={ten}>{hienThi(dong, ten)}</td>)}<td><div className="cac-thao-tac">
+      <div className="table-container"><table className="data-table"><thead><tr>{thongTin.cot.map(([ten, nhan]) => <th key={ten}>{nhan}</th>)}<th>Thao tác</th></tr></thead><tbody>
+        {cacDong.map(dong => <tr key={String(dong.id ?? dong.guardianId)}>{thongTin.cot.map(([ten]) => <td key={ten}>{hienThi(dong, ten)}</td>)}<td><div className="cac-thao-tac">
           {duocSua && (phanHe !== 'nhan-xet' || quanTri || dong.nguoiTao === nguoiDung?.userId) && <button className="btn btn-secondary" onClick={() => thaoTac('Cập nhật', '', dong, phanHe === 'lien-ket' ? cacTruong[phanHe].slice(1) : phanHe === 'nhan-xet' ? [{ ...truong('noiDung', 'Nội dung nhận xét', 'textarea'), toiDa: 1000 }] : cacTruong[phanHe], 'PUT')}>Sửa</button>}
           {phanHe === 'hoc-vien' && <><Link className="btn btn-secondary" to={`/hoc-vien/${dong.id}/nguoi-giam-ho`}>Người giám hộ</Link>{!giaoVien && <Link className="btn btn-secondary" to={`/ghi-danh?hocVienId=${dong.id}`}>Ghi danh</Link>}{quanTri && <button className="btn btn-secondary" onClick={() => thaoTac(luuTru ? 'Khôi phục học viên' : 'Lưu trữ học viên', luuTru ? '/restore' : '/archive', dong)}>{luuTru ? 'Khôi phục' : 'Lưu trữ'}</button>}</>}
           {phanHe === 'lop-hoc' && !giaoVien && <Link className="btn btn-secondary" to={`/ghi-danh?lopId=${dong.id}`}>Ghi danh</Link>}
@@ -109,12 +110,12 @@ export function TrangQuanLy({ phanHe }: { phanHe: PhanHe }) {
           {phanHe === 'lien-ket' && duocSua && <><button className="btn btn-secondary" disabled={!!dong.isPrimary} onClick={() => thaoTac('Đặt liên hệ chính', '/primary', dong, undefined, 'PUT')}>Đặt chính</button><button className="btn btn-danger" onClick={() => thaoTac('Gỡ liên kết người giám hộ', '', dong, undefined, 'DELETE')}>Gỡ liên kết</button></>}
           {phanHe === 'ghi-danh' && <>
             {(quanTri || chamSoc) && <Link className="btn btn-secondary" to={`/ghi-danh/${dong.id}/nhan-xet`}>Nhận xét</Link>}
-            {duocTao && dong.trangThai === 1 && <button className="btn btn-secondary" onClick={() => thaoTac('Bảo lưu ghi danh', '/pause', dong, [truong('lyDo', 'Lý do', 'textarea'), truong('ngayDuKienTroLai', 'Ngày dự kiến trở lại', 'date')])}>Bảo lưu</button>}
+            {duocTao && dong.trangThai === 1 && <button className="btn btn-warning" onClick={() => thaoTac('Bảo lưu ghi danh', '/pause', dong, [truong('lyDo', 'Lý do', 'textarea'), truong('ngayDuKienTroLai', 'Ngày dự kiến trở lại', 'date')])}>Bảo lưu</button>}
             {duocTao && dong.trangThai === 2 && <button className="btn btn-secondary" onClick={() => thaoTac('Trở lại học', '/resume', dong)}>Trở lại</button>}
-            {duocTao && [1, 2].includes(Number(dong.trangThai)) && <>{quanTri && <button className="btn btn-secondary" onClick={() => thaoTac('Hoàn thành ghi danh', '/complete', dong, [truong('lyDo', 'Lý do', 'textarea'), truong('ngayKetThuc', 'Ngày kết thúc', 'date')])}>Hoàn thành</button>}<button className="btn btn-danger" onClick={() => thaoTac('Nghỉ học', '/withdraw', dong, [truong('lyDo', 'Lý do', 'textarea'), truong('ngayKetThuc', 'Ngày kết thúc', 'date')])}>Nghỉ học</button></>}
+            {duocTao && [1, 2].includes(Number(dong.trangThai)) && <>{quanTri && <button className="btn btn-success" onClick={() => thaoTac('Hoàn thành ghi danh', '/complete', dong, [truong('lyDo', 'Lý do', 'textarea'), truong('ngayKetThuc', 'Ngày kết thúc', 'date')])}>Hoàn thành</button>}<button className="btn btn-danger" onClick={() => thaoTac('Nghỉ học', '/withdraw', dong, [truong('lyDo', 'Lý do', 'textarea'), truong('ngayKetThuc', 'Ngày kết thúc', 'date')])}>Nghỉ học</button></>}
           </>}
         </div></td></tr>)}
-        {!duLieu.isFetching && !duLieu.isError && cacDong.length === 0 && <tr><td colSpan={thongTin.cot.length + 2} className="text-center">Không có dữ liệu phù hợp.</td></tr>}
+        {!duLieu.isFetching && !duLieu.isError && cacDong.length === 0 && <tr><td colSpan={thongTin.cot.length + 1} className="text-center">Không có dữ liệu phù hợp.</td></tr>}
       </tbody></table></div>
       <Pagination totalItems={tongSo} page={trang} onPageChange={datTrang} itemLabel="bản ghi" />
       {moDangKy && <DangKyHocVien dong={() => datMoDangKy(false)} />}

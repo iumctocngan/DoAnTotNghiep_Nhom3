@@ -1,3 +1,4 @@
+import { MaterialIcon } from './MaterialIcon';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 type ToastType = 'success' | 'error';
@@ -40,7 +41,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             aria-label="Đóng thông báo"
             onClick={() => setToast(null)}
           >
-            ×
+            <MaterialIcon name="close" />
           </button>
         </div>
       )}

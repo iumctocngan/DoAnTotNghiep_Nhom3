@@ -44,7 +44,6 @@ export function DangKyHocVien({ dong }: { dong: () => void }) {
     <form onSubmit={luu}>
       <fieldset disabled={dangLuu} className="space-y-3">
         {loi && <div role="alert" className="alert alert-danger">{loi}</div>}
-        <p>Mã học viên được hệ thống tạo tự động: HS0001, HS0002…</p>
         <label>Họ tên học viên<input type="text" required maxLength={100} value={hoTen} onChange={suKien => datHoTen(suKien.target.value)} /></label>
         <div className="modal-form-grid">
           <label>Ngày sinh<input type="date" required value={ngaySinh} onChange={suKien => datNgaySinh(suKien.target.value)} /></label>
@@ -52,7 +51,6 @@ export function DangKyHocVien({ dong }: { dong: () => void }) {
         </div>
         <label>Lưu ý học tập<textarea maxLength={500} value={ghiChu} onChange={suKien => datGhiChu(suKien.target.value)} /></label>
         <h3 className="border-t pt-3">Người giám hộ</h3>
-        <p className="text-sm">Một người giám hộ có thể liên kết với nhiều học viên.</p>
         <div className="flex gap-4 flex-wrap">
           <label><input type="radio" name="loaiNguoiGiamHo" checked={!taoMoi} onChange={() => datTaoMoi(false)} /> Chọn người có sẵn</label>
           <label><input type="radio" name="loaiNguoiGiamHo" checked={taoMoi} onChange={() => datTaoMoi(true)} /> Tạo người mới</label>

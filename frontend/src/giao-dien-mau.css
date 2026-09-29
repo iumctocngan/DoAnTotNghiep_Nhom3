@@ -49,3 +49,59 @@ input[type=text], input[type=email], input[type=password], input[type=date], sel
   .noi-dung-khung { padding: 14px; }
   .thanh-cong-cu .btn { flex-grow: 1; }
 }
+
+/* Cùng kiểu chữ và độ đậm với nội dung bảng, kể cả mục đang chọn. */
+.sidebar-nav, .nav-link, .nav-link.active, .nhom-dieu-huong,
+.top-header, .header-greeting strong, .user-menu-name strong,
+.duong-dan-trang, .duong-dan-trang button {
+  font-family: inherit;
+  font-weight: 400;
+}
+
+/* SVG chính thức của Google, không phụ thuộc font hoặc ligature. */
+.material-icon {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+.user-menu-chevron { display: inline-flex; }
+
+/* Icon nội tuyến đồng bộ ở nút, thông báo và nhãn trạng thái. */
+.material-icon { vertical-align: middle; }
+.btn { gap: 6px; }
+.btn .material-icon, .badge .material-icon,
+p > .material-icon, button > .material-icon,
+a > .material-icon, span > .material-icon {
+  font-size: 20px; width: 20px; height: 20px;
+}
+.sessions-page .sessions-table { table-layout: fixed; min-width: 1200px; }
+.sessions-table th, .sessions-table td { padding: 16px 14px; text-align: center; }
+.sessions-table td { vertical-align: top; overflow-wrap: anywhere; }
+.sessions-table td > div > .text-xs { margin-top: 5px; }
+.sessions-table .badge { white-space: nowrap; text-transform: none; letter-spacing: normal; }
+.session-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; align-items: center; }
+.session-actions .btn { justify-content: center; white-space: nowrap; min-height: 34px; }
+.session-note { white-space: normal; }
+.sessions-page .table-container { border: 0; }
+
+/* Tiêu đề dùng cùng font và nét chữ với nội dung bảng. */
+.content-area h1, .content-area h2, .content-area h3,
+[role="dialog"] h2, [role="dialog"] h3 {
+  font-family: inherit;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+}
+.content-area h1 button { font: inherit; }
+.btn-warning { background: #facc15; border-color: #eab308; color: #422006; }
+.btn-warning:hover { background: #eab308; border-color: #ca8a04; }
+.btn-success { background: #15803d; border-color: #15803d; color: white; }
+.btn-success:hover { background: #166534; border-color: #166534; }
+
+/* Căn giữa tiêu đề, nội dung và thao tác trong bảng. */
+.content-area h1, .content-area h2, .content-area h3,
+[role="dialog"] h2, [role="dialog"] h3,
+.data-table th, .data-table td { text-align: center; }
+.data-table .staff-actions, .data-table .cac-thao-tac { justify-content: center; }

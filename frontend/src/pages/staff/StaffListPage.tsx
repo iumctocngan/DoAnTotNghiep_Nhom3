@@ -1,3 +1,4 @@
+import { MaterialIcon } from '../../components/common/MaterialIcon';
 import React, { useState } from 'react';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { staffApi } from '../../api/staffApi';
@@ -112,7 +113,7 @@ export const StaffListPage: React.FC = () => {
           className="btn btn-primary"
           onClick={() => setIsCreateOpen(true)}
         >
-          + Thêm nhân viên
+          <MaterialIcon name="add" /> Thêm nhân viên
         </button>
       </div>
 
@@ -186,7 +187,7 @@ export const StaffListPage: React.FC = () => {
               <th>Số điện thoại</th>
               <th>Vai trò</th>
               <th>Trạng thái</th>
-              <th className="text-right">Hành động</th>
+              <th className="text-center">Hành động</th>
             </tr>
           </thead>
           <tbody>

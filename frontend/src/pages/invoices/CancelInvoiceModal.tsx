@@ -1,3 +1,4 @@
+import { MaterialIcon } from '../../components/common/MaterialIcon';
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoiceApi } from '../../api/invoiceApi';
@@ -66,7 +67,7 @@ export const CancelInvoiceModal: React.FC<CancelInvoiceModalProps> = ({
         {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
 
         <div className="bg-amber-50 p-3 rounded border border-amber-200 text-xs text-amber-900">
-          ⚠️ Hóa đơn sẽ được chuyển sang trạng thái <strong>Đã hủy</strong> và được ghi vết trong
+          <MaterialIcon name="warning" /> Hóa đơn sẽ được chuyển sang trạng thái <strong>Đã hủy</strong> và được ghi vết trong
           nhật ký kiểm toán hệ thống. Dữ liệu sẽ không bị xóa vật lý.
         </div>
 

@@ -1,3 +1,4 @@
+import { MaterialIcon } from '../../components/common/MaterialIcon';
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoiceApi } from '../../api/invoiceApi';
@@ -64,7 +65,7 @@ export const CancelPaymentModal: React.FC<CancelPaymentModalProps> = ({
         {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
 
         <div className="bg-amber-50 p-3 rounded border border-amber-200 text-xs text-amber-900">
-          ⚠️ Khi hủy phiếu thu, số tiền thanh toán này sẽ được trừ khỏi tổng đã nộp của hóa đơn{' '}
+          <MaterialIcon name="warning" /> Khi hủy phiếu thu, số tiền thanh toán này sẽ được trừ khỏi tổng đã nộp của hóa đơn{' '}
           <strong>{payment.invoiceNumber}</strong>, và công nợ của học viên sẽ tăng trở lại tương ứng.
         </div>
 

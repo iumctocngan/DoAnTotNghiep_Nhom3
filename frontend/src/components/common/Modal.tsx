@@ -1,3 +1,4 @@
+import { MaterialIcon } from './MaterialIcon';
 import type { ReactNode } from 'react';
 
 interface ModalProps {
@@ -31,7 +32,7 @@ export function Modal({ title, titleClassName, onClose, children, closeDisabled 
             onClick={onClose}
             disabled={closeDisabled}
           >
-            ×
+            <MaterialIcon name="close" />
           </button>
         </div>
         {children}
