@@ -17,7 +17,7 @@ public class TeacherService(ITeacherRepository repository, ICurrentUser currentU
         ValidateAccess(teacherId);
         ValidatePaging(page, pageSize);
         if (status is not null && !Enum.IsDefined(status.Value))
-            throw new ValidationException("Class status is invalid.");
+            throw new ValidationException("Trạng thái lớp học không hợp lệ.");
 
         await EnsureTeacherExistsAsync(teacherId, cancellationToken);
         return await repository.GetClassesAsync(teacherId, status, page, pageSize, cancellationToken);
@@ -34,7 +34,7 @@ public class TeacherService(ITeacherRepository repository, ICurrentUser currentU
         ValidateAccess(teacherId);
         ValidatePaging(page, pageSize);
         if (fromDate is not null && toDate is not null && fromDate > toDate)
-            throw new ValidationException("From date must not be after to date.");
+            throw new ValidationException("Từ ngày không được lớn hơn đến ngày.");
 
         await EnsureTeacherExistsAsync(teacherId, cancellationToken);
         return await repository.GetScheduleAsync(teacherId, fromDate, toDate, page, pageSize, cancellationToken);
@@ -49,18 +49,18 @@ public class TeacherService(ITeacherRepository repository, ICurrentUser currentU
         if (currentUser.Role == UserRole.Teacher && currentUser.UserId == teacherId)
             return;
 
-        throw new ForbiddenAccessException("You cannot view another teacher's assignments.");
+        throw new ForbiddenAccessException("Bạn không có quyền xem thông tin phân công của giảng viên khác.");
     }
 
     private async Task EnsureTeacherExistsAsync(string teacherId, CancellationToken cancellationToken)
     {
         if (!await repository.ExistsAsync(teacherId, cancellationToken))
-            throw new NotFoundException("Teacher account was not found.");
+            throw new NotFoundException("Không tìm thấy tài khoản giảng viên.");
     }
 
     private static void ValidatePaging(int page, int pageSize)
     {
         if (page < 1 || pageSize < 1 || pageSize > 100 || (long)(page - 1) * pageSize > int.MaxValue)
-            throw new ValidationException("Page must be at least 1 and pageSize must be between 1 and 100.");
+            throw new ValidationException("Trang phải từ 1 trở lên và kích thước trang phải từ 1 đến 100.");
     }
 }

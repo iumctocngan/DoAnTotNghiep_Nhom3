@@ -47,7 +47,7 @@ public class CurriculumRepository(AppDbContext dbContext) : ICurriculumRepositor
     {
         return SaveAsync(
             course, userId, action, description,
-            "Course code already exists.", cancellationToken);
+            "Mã khóa học đã tồn tại.", cancellationToken);
     }
 
     public async Task<PagedResult<Level>> GetLevelsAsync(
@@ -91,7 +91,7 @@ public class CurriculumRepository(AppDbContext dbContext) : ICurriculumRepositor
     {
         return SaveAsync(
             level, userId, action, description,
-            "Level code or sort order already exists in this course.", cancellationToken);
+            "Mã cấp độ hoặc thứ tự cấp độ đã tồn tại trong khóa học này.", cancellationToken);
     }
 
     public async Task<PagedResult<Lesson>> GetLessonsAsync(
@@ -135,7 +135,7 @@ public class CurriculumRepository(AppDbContext dbContext) : ICurriculumRepositor
     {
         return SaveAsync(
             lesson, userId, action, description,
-            "Lesson code or sort order already exists in this level.", cancellationToken);
+            "Mã bài học hoặc thứ tự bài học đã tồn tại trong cấp độ này.", cancellationToken);
     }
 
     private async Task SaveAsync<TEntity>(

@@ -17,8 +17,8 @@ public class AuthenticationService(
     IAccessTokenGenerator accessTokenGenerator,
     AppDbContext dbContext,
     IOptions<JwtOptions> options) : IAuthenticationService {
-    private const string InvalidCredentialsMessage = "Email or password is invalid.";
-    private const string InvalidRefreshTokenMessage = "Refresh token is invalid or expired.";
+    private const string InvalidCredentialsMessage = "Email hoặc mật khẩu không chính xác.";
+    private const string InvalidRefreshTokenMessage = "Phiên đăng nhập không hợp lệ hoặc đã hết hạn.";
     private readonly JwtOptions _options = options.Value;
 
     public async Task<AuthenticationResult> LoginAsync(
@@ -114,7 +114,7 @@ public class AuthenticationService(
                 storedToken.FamilyId,
                 now,
                 ipAddress,
-                "Refresh token reuse detected.",
+                "Phát hiện sử dụng lại Refresh Token.",
                 cancellationToken);
             await transaction.CommitAsync(cancellationToken);
             throw new UnauthorizedAccessException(InvalidRefreshTokenMessage);
@@ -149,7 +149,7 @@ public class AuthenticationService(
             storedToken.FamilyId,
             DateTime.UtcNow,
             ipAddress,
-            "Logged out.",
+            "Đã đăng xuất.",
             cancellationToken);
     }
 
@@ -172,12 +172,12 @@ public class AuthenticationService(
         string? ipAddress,
         CancellationToken cancellationToken = default) {
         if (string.IsNullOrEmpty(request.CurrentPassword) || string.IsNullOrEmpty(request.NewPassword)) {
-            throw new ValidationException("Current password and new password are required.");
+            throw new ValidationException("Vui lòng nhập đầy đủ mật khẩu hiện tại và mật khẩu mới.");
         }
 
         var user = await userManager.FindByIdAsync(userId);
         if (user is null || user.EmploymentStatus != EmploymentStatus.Active) {
-            throw new UnauthorizedAccessException("The account is unavailable.");
+            throw new UnauthorizedAccessException("Tài khoản không khả dụng hoặc đã ngừng hoạt động.");
         }
 
         await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
@@ -187,14 +187,14 @@ public class AuthenticationService(
                 string.Join(" ", result.Errors.Select(error => error.Description)));
         }
 
-        await RevokeAllSessionsAsync(userId, ipAddress, "Password changed.", cancellationToken);
+        await RevokeAllSessionsAsync(userId, ipAddress, "Đã đổi mật khẩu.", cancellationToken);
         await transaction.CommitAsync(cancellationToken);
     }
 
     private async Task<string> GetSingleRoleAsync(ApplicationUser user) {
         var roles = await userManager.GetRolesAsync(user);
         if (roles.Count != 1 || !UserRole.AllRoles.Contains(roles[0])) {
-            throw new UnauthorizedAccessException("The account does not have one valid role.");
+            throw new UnauthorizedAccessException("Tài khoản chưa được gán vai trò hợp lệ.");
         }
 
         return roles[0];

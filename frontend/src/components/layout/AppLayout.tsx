@@ -210,20 +210,6 @@ export const AppLayout: React.FC = () => {
                   Đổi mật khẩu
                 </button>
 
-                <div className="user-menu-divider" />
-
-                <button
-                  type="button"
-                  className="user-menu-item"
-                  onClick={() => {
-                    setIsUserMenuOpen(false);
-                    setIsLogoutConfirmationOpen(true);
-                  }}
-                  disabled={isLoggingOut}
-                >
-                  Đăng xuất
-                </button>
-
               </div>
             )}
           </div>

@@ -26,7 +26,7 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
     public async Task<CourseResponse> GetCourseAsync(int id, CancellationToken cancellationToken = default)
     {
         var course = await repository.GetCourseAsync(id, cancellationToken)
-            ?? throw new NotFoundException("Course was not found.");
+            ?? throw new NotFoundException("Không tìm thấy khóa học.");
         return ToResponse(course);
     }
 
@@ -61,7 +61,7 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
     {
         var data = Validate(request);
         var course = await repository.GetCourseAsync(id, cancellationToken)
-            ?? throw new NotFoundException("Course was not found.");
+            ?? throw new NotFoundException("Không tìm thấy khóa học.");
 
         course.Code = data.Code;
         course.Name = data.Name;
@@ -80,7 +80,7 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
     public async Task DeactivateCourseAsync(int id, CancellationToken cancellationToken = default)
     {
         var course = await repository.GetCourseAsync(id, cancellationToken)
-            ?? throw new NotFoundException("Course was not found.");
+            ?? throw new NotFoundException("Không tìm thấy khóa học.");
         if (!course.IsActive)
             return;
 
@@ -101,10 +101,10 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
         int pageSize,
         CancellationToken cancellationToken = default)
     {
-        ValidateId(courseId, "Course id");
+        ValidateId(courseId, "Mã ID khóa học");
         ValidatePaging(page, pageSize);
         if (await repository.GetCourseAsync(courseId, cancellationToken) is null)
-            throw new NotFoundException("Course was not found.");
+            throw new NotFoundException("Không tìm thấy khóa học.");
 
         var result = await repository.GetLevelsAsync(
             courseId, search?.Trim(), isActive, page, pageSize, cancellationToken);
@@ -118,7 +118,7 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
     public async Task<LevelResponse> GetLevelAsync(int id, CancellationToken cancellationToken = default)
     {
         var level = await repository.GetLevelAsync(id, cancellationToken)
-            ?? throw new NotFoundException("Level was not found.");
+            ?? throw new NotFoundException("Không tìm thấy cấp độ.");
         return ToResponse(level);
     }
 
@@ -155,9 +155,9 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
     {
         var data = Validate(request);
         var level = await repository.GetLevelAsync(id, cancellationToken)
-            ?? throw new NotFoundException("Level was not found.");
+            ?? throw new NotFoundException("Không tìm thấy cấp độ.");
         if (level.CourseId != request.CourseId)
-            throw new ConflictException("Level cannot be moved to another course.");
+            throw new ConflictException("Không thể chuyển cấp độ sang khóa học khác.");
 
         await EnsureActiveCourseAsync(request.CourseId, cancellationToken);
 
@@ -178,7 +178,7 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
     public async Task DeactivateLevelAsync(int id, CancellationToken cancellationToken = default)
     {
         var level = await repository.GetLevelAsync(id, cancellationToken)
-            ?? throw new NotFoundException("Level was not found.");
+            ?? throw new NotFoundException("Không tìm thấy cấp độ.");
         if (!level.IsActive)
             return;
 
@@ -199,10 +199,10 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
         int pageSize,
         CancellationToken cancellationToken = default)
     {
-        ValidateId(levelId, "Level id");
+        ValidateId(levelId, "Mã ID cấp độ");
         ValidatePaging(page, pageSize);
         if (await repository.GetLevelAsync(levelId, cancellationToken) is null)
-            throw new NotFoundException("Level was not found.");
+            throw new NotFoundException("Không tìm thấy cấp độ.");
 
         var result = await repository.GetLessonsAsync(
             levelId, search?.Trim(), isActive, page, pageSize, cancellationToken);
@@ -216,7 +216,7 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
     public async Task<LessonResponse> GetLessonAsync(int id, CancellationToken cancellationToken = default)
     {
         var lesson = await repository.GetLessonAsync(id, cancellationToken)
-            ?? throw new NotFoundException("Lesson was not found.");
+            ?? throw new NotFoundException("Không tìm thấy bài học.");
         return ToResponse(lesson);
     }
 
@@ -254,9 +254,9 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
     {
         var data = Validate(request);
         var lesson = await repository.GetLessonAsync(id, cancellationToken)
-            ?? throw new NotFoundException("Lesson was not found.");
+            ?? throw new NotFoundException("Không tìm thấy bài học.");
         if (lesson.LevelId != request.LevelId)
-            throw new ConflictException("Lesson cannot be moved to another level.");
+            throw new ConflictException("Không thể chuyển bài học sang cấp độ khác.");
 
         await EnsureActiveLevelAsync(request.LevelId, cancellationToken);
 
@@ -278,7 +278,7 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
     public async Task DeactivateLessonAsync(int id, CancellationToken cancellationToken = default)
     {
         var lesson = await repository.GetLessonAsync(id, cancellationToken)
-            ?? throw new NotFoundException("Lesson was not found.");
+            ?? throw new NotFoundException("Không tìm thấy bài học.");
         if (!lesson.IsActive)
             return;
 
@@ -298,11 +298,11 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
         var description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
 
         if (string.IsNullOrWhiteSpace(code) || code.Length > 50)
-            throw new ValidationException("Course code is required and must not exceed 50 characters.");
+            throw new ValidationException("Mã khóa học là bắt buộc và không được vượt quá 50 ký tự.");
         if (string.IsNullOrWhiteSpace(name) || name.Length > 100)
-            throw new ValidationException("Course name is required and must not exceed 100 characters.");
+            throw new ValidationException("Tên khóa học là bắt buộc và không được vượt quá 100 ký tự.");
         if (description?.Length > 500)
-            throw new ValidationException("Course description must not exceed 500 characters.");
+            throw new ValidationException("Mô tả khóa học không được vượt quá 500 ký tự.");
         return (code, name, description);
     }
 
@@ -311,13 +311,13 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
         var code = request.Code?.Trim().ToUpperInvariant();
         var name = request.Name?.Trim();
 
-        ValidateId(request.CourseId, "Course id");
+        ValidateId(request.CourseId, "Mã ID khóa học");
         if (string.IsNullOrWhiteSpace(code) || code.Length > 50)
-            throw new ValidationException("Level code is required and must not exceed 50 characters.");
+            throw new ValidationException("Mã cấp độ là bắt buộc và không được vượt quá 50 ký tự.");
         if (string.IsNullOrWhiteSpace(name) || name.Length > 100)
-            throw new ValidationException("Level name is required and must not exceed 100 characters.");
+            throw new ValidationException("Tên cấp độ là bắt buộc và không được vượt quá 100 ký tự.");
         if (request.SortOrder < 1)
-            throw new ValidationException("Level sort order must be at least 1.");
+            throw new ValidationException("Thứ tự cấp độ phải từ 1 trở lên.");
 
         return (code, name);
     }
@@ -328,15 +328,15 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
         var name = request.Name?.Trim();
         var objective = string.IsNullOrWhiteSpace(request.Objective) ? null : request.Objective.Trim();
 
-        ValidateId(request.LevelId, "Level id");
+        ValidateId(request.LevelId, "Mã ID cấp độ");
         if (string.IsNullOrWhiteSpace(code) || code.Length > 50)
-            throw new ValidationException("Lesson code is required and must not exceed 50 characters.");
+            throw new ValidationException("Mã bài học là bắt buộc và không được vượt quá 50 ký tự.");
         if (string.IsNullOrWhiteSpace(name) || name.Length > 100)
-            throw new ValidationException("Lesson name is required and must not exceed 100 characters.");
+            throw new ValidationException("Tên bài học là bắt buộc và không được vượt quá 100 ký tự.");
         if (objective?.Length > 500)
-            throw new ValidationException("Lesson objective must not exceed 500 characters.");
+            throw new ValidationException("Mục tiêu bài học không được vượt quá 500 ký tự.");
         if (request.SortOrder < 1)
-            throw new ValidationException("Lesson sort order must be at least 1.");
+            throw new ValidationException("Thứ tự bài học phải từ 1 trở lên.");
 
         return (code, name, objective);
     }
@@ -344,17 +344,17 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
     private async Task EnsureActiveCourseAsync(int courseId, CancellationToken cancellationToken)
     {
         var course = await repository.GetCourseAsync(courseId, cancellationToken)
-            ?? throw new NotFoundException("Course was not found.");
+            ?? throw new NotFoundException("Không tìm thấy khóa học.");
         if (!course.IsActive)
-            throw new ConflictException("Cannot use an inactive course.");
+            throw new ConflictException("Không thể sử dụng khóa học đã ngừng hoạt động.");
     }
 
     private async Task EnsureActiveLevelAsync(int levelId, CancellationToken cancellationToken)
     {
         var level = await repository.GetLevelAsync(levelId, cancellationToken)
-            ?? throw new NotFoundException("Level was not found.");
+            ?? throw new NotFoundException("Không tìm thấy cấp độ.");
         if (!level.IsActive)
-            throw new ConflictException("Cannot use an inactive level.");
+            throw new ConflictException("Không thể sử dụng cấp độ đã ngừng hoạt động.");
 
         await EnsureActiveCourseAsync(level.CourseId, cancellationToken);
     }
@@ -386,12 +386,12 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
     private static void ValidateId(int id, string name)
     {
         if (id < 1)
-            throw new ValidationException($"{name} must be at least 1.");
+            throw new ValidationException($"{name} phải từ 1 trở lên.");
     }
 
     private static void ValidatePaging(int page, int pageSize)
     {
         if (page < 1 || pageSize < 1 || pageSize > 100 || (long)(page - 1) * pageSize > int.MaxValue)
-            throw new ValidationException("Page must be at least 1 and pageSize must be between 1 and 100.");
+            throw new ValidationException("Trang phải từ 1 trở lên và kích thước trang phải từ 1 đến 100.");
     }
 }

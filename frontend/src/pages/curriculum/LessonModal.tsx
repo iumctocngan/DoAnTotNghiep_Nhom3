@@ -102,7 +102,8 @@ export const LessonModal: React.FC<LessonModalProps> = ({
             <label htmlFor="lessonObjective">Mục tiêu bài học</label>
             <textarea
               id="lessonObjective"
-              rows={2}
+              rows={4}
+              className="min-h-[100px]"
               placeholder="Mục tiêu kiến thức, kỹ năng đạt được..."
               value={objective}
               onChange={(e) => setObjective(e.target.value)}

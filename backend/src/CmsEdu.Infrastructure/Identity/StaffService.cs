@@ -28,9 +28,9 @@ public class StaffService(
     {
         ValidatePaging(page, pageSize);
         if (role is not null && !UserRole.AllRoles.Contains(role))
-            throw new ValidationException("Role is invalid.");
+            throw new ValidationException("Vai trò không hợp lệ.");
         if (status is not null && !Enum.IsDefined(status.Value))
-            throw new ValidationException("Status is invalid.");
+            throw new ValidationException("Trạng thái không hợp lệ.");
 
         var query = from user in dbContext.Users.AsNoTracking()
                     join userRole in dbContext.UserRoles.AsNoTracking() on user.Id equals userRole.UserId
@@ -86,7 +86,7 @@ public class StaffService(
                           role.Name!,
                           user.EmploymentStatus))
             .SingleOrDefaultAsync(cancellationToken)
-            ?? throw new NotFoundException("Staff account was not found.");
+            ?? throw new NotFoundException("Không tìm thấy tài khoản nhân viên.");
     }
 
     public async Task<StaffResponse> CreateStaffAsync(
@@ -99,22 +99,22 @@ public class StaffService(
         var phoneNumber = string.IsNullOrWhiteSpace(request.PhoneNumber) ? null : request.PhoneNumber.Trim();
 
         if (string.IsNullOrWhiteSpace(employeeCode) || employeeCode.Length > 50)
-            throw new ValidationException("Employee code is required and must not exceed 50 characters.");
+            throw new ValidationException("Mã nhân viên là bắt buộc và không được vượt quá 50 ký tự.");
         if (string.IsNullOrWhiteSpace(fullName) || fullName.Length > 100)
-            throw new ValidationException("Full name is required and must not exceed 100 characters.");
+            throw new ValidationException("Họ và tên là bắt buộc và không được vượt quá 100 ký tự.");
         if (string.IsNullOrWhiteSpace(email))
-            throw new ValidationException("Email is required.");
+            throw new ValidationException("Email là bắt buộc.");
         if (phoneNumber?.Length > 20)
-            throw new ValidationException("Phone number must not exceed 20 characters.");
+            throw new ValidationException("Số điện thoại không được vượt quá 20 ký tự.");
         if (!UserRole.AllRoles.Contains(request.Role))
-            throw new ValidationException("Role is invalid.");
+            throw new ValidationException("Vai trò không hợp lệ.");
         if (string.IsNullOrEmpty(request.TemporaryPassword))
-            throw new ValidationException("Temporary password is required.");
+            throw new ValidationException("Mật khẩu tạm thời là bắt buộc.");
 
         if (await dbContext.Users.AnyAsync(user => user.EmployeeCode == employeeCode, cancellationToken))
-            throw new ConflictException("Employee code already exists.");
+            throw new ConflictException("Mã nhân viên đã tồn tại.");
         if (await userManager.FindByEmailAsync(email) is not null)
-            throw new ConflictException("Email already exists.");
+            throw new ConflictException("Email đã tồn tại.");
 
         var user = new ApplicationUser
         {
@@ -143,7 +143,7 @@ public class StaffService(
         catch (DbUpdateException exception) when
             (exception.InnerException is SqlException { Number: 2601 or 2627 })
         {
-            throw new ConflictException("Employee code or email already exists.");
+            throw new ConflictException("Mã nhân viên hoặc email đã tồn tại.");
         }
 
         return new StaffResponse(
@@ -166,17 +166,17 @@ public class StaffService(
         var phoneNumber = string.IsNullOrWhiteSpace(request.PhoneNumber) ? null : request.PhoneNumber.Trim();
 
         if (string.IsNullOrWhiteSpace(fullName) || fullName.Length > 100)
-            throw new ValidationException("Full name is required and must not exceed 100 characters.");
+            throw new ValidationException("Họ và tên là bắt buộc và không được vượt quá 100 ký tự.");
         if (string.IsNullOrWhiteSpace(email))
-            throw new ValidationException("Email is required.");
+            throw new ValidationException("Email là bắt buộc.");
         if (phoneNumber?.Length > 20)
-            throw new ValidationException("Phone number must not exceed 20 characters.");
+            throw new ValidationException("Số điện thoại không được vượt quá 20 ký tự.");
 
         var user = await userManager.FindByIdAsync(id)
-            ?? throw new NotFoundException("Staff account was not found.");
+            ?? throw new NotFoundException("Không tìm thấy tài khoản nhân viên.");
         var emailOwner = await userManager.FindByEmailAsync(email);
         if (emailOwner is not null && emailOwner.Id != id)
-            throw new ConflictException("Email already exists.");
+            throw new ConflictException("Email đã tồn tại.");
 
         var emailChanged = !string.Equals(user.Email, email, StringComparison.OrdinalIgnoreCase);
         user.FullName = fullName;
@@ -191,13 +191,13 @@ public class StaffService(
             EnsureSucceeded(await userManager.UpdateAsync(user));
             if (emailChanged)
                 await authenticationService.RevokeAllSessionsAsync(
-                    id, null, "Staff email changed.", cancellationToken);
+                    id, null, "Email nhân viên đã thay đổi.", cancellationToken);
             await transaction.CommitAsync(cancellationToken);
         }
         catch (DbUpdateException exception) when
             (exception.InnerException is SqlException { Number: 2601 or 2627 })
         {
-            throw new ConflictException("Email already exists.");
+            throw new ConflictException("Email đã tồn tại.");
         }
 
         return await GetStaffByIdAsync(id, cancellationToken);
@@ -209,21 +209,21 @@ public class StaffService(
         CancellationToken cancellationToken = default)
     {
         if (!UserRole.AllRoles.Contains(request.Role))
-            throw new ValidationException("Role is invalid.");
+            throw new ValidationException("Vai trò không hợp lệ.");
         if (id == currentUser.UserId)
-            throw new ForbiddenAccessException("Admin cannot change their own role.");
+            throw new ForbiddenAccessException("Quản trị viên không được phép tự thay đổi vai trò của chính mình.");
 
         await using var transaction = await dbContext.Database.BeginTransactionAsync(
             IsolationLevel.Serializable,
             cancellationToken);
         var user = await userManager.FindByIdAsync(id)
-            ?? throw new NotFoundException("Staff account was not found.");
+            ?? throw new NotFoundException("Không tìm thấy tài khoản nhân viên.");
         if (user.EmploymentStatus != EmploymentStatus.Inactive)
-            throw new ConflictException("Deactivate the staff account before changing its role.");
+            throw new ConflictException("Vui lòng ngừng hoạt động tài khoản nhân viên trước khi thay đổi vai trò.");
 
         var roles = await userManager.GetRolesAsync(user);
         if (roles.Count != 1 || !UserRole.AllRoles.Contains(roles[0]))
-            throw new ConflictException("Staff account must have exactly one valid role.");
+            throw new ConflictException("Tài khoản nhân viên phải có đúng một vai trò hợp lệ.");
 
         var currentRole = roles[0];
         if (currentRole == request.Role)
@@ -231,7 +231,7 @@ public class StaffService(
         if (currentRole == UserRole.Teacher && await dbContext.Classes.AnyAsync(
                 item => item.MainTeacherUserId == id && item.Status == ClassStatus.Active,
                 cancellationToken))
-            throw new ConflictException("Teacher is still responsible for an active class.");
+            throw new ConflictException("Giảng viên vẫn đang phụ trách lớp học đang hoạt động.");
 
         EnsureSucceeded(await userManager.RemoveFromRoleAsync(user, currentRole));
         EnsureSucceeded(await userManager.AddToRoleAsync(user, request.Role));
@@ -239,7 +239,7 @@ public class StaffService(
         AddAudit(user.Id, "Staff.RoleChanged", $"Changed staff role from {currentRole} to {request.Role}.");
         await dbContext.SaveChangesAsync(cancellationToken);
         await authenticationService.RevokeAllSessionsAsync(
-            id, null, "Staff role changed.", cancellationToken);
+            id, null, "Vai trò nhân viên đã thay đổi.", cancellationToken);
         await transaction.CommitAsync(cancellationToken);
     }
 
@@ -249,16 +249,16 @@ public class StaffService(
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(request.NewPassword))
-            throw new ValidationException("New password is required.");
+            throw new ValidationException("Mật khẩu mới là bắt buộc.");
 
         var user = await userManager.FindByIdAsync(id)
-            ?? throw new NotFoundException("Staff account was not found.");
+            ?? throw new NotFoundException("Không tìm thấy tài khoản nhân viên.");
 
         await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
         var resetToken = await userManager.GeneratePasswordResetTokenAsync(user);
         EnsureSucceeded(await userManager.ResetPasswordAsync(user, resetToken, request.NewPassword));
         await authenticationService.RevokeAllSessionsAsync(
-            id, null, "Staff password reset.", cancellationToken);
+            id, null, "Đặt lại mật khẩu nhân viên.", cancellationToken);
 
         AddAudit(user.Id, "Staff.PasswordReset", $"Reset password for staff account {user.EmployeeCode}.");
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -273,13 +273,13 @@ public class StaffService(
             IsolationLevel.Serializable,
             cancellationToken);
         var user = await userManager.FindByIdAsync(id)
-            ?? throw new NotFoundException("Staff account was not found.");
+            ?? throw new NotFoundException("Không tìm thấy tài khoản nhân viên.");
         if (user.EmploymentStatus == EmploymentStatus.Active)
             return;
 
         var roles = await userManager.GetRolesAsync(user);
         if (roles.Count != 1 || !UserRole.AllRoles.Contains(roles[0]))
-            throw new ConflictException("Staff account must have exactly one valid role.");
+            throw new ConflictException("Tài khoản nhân viên phải có đúng một vai trò hợp lệ.");
 
         user.EmploymentStatus = EmploymentStatus.Active;
         EnsureSucceeded(await userManager.UpdateAsync(user));
@@ -293,32 +293,32 @@ public class StaffService(
         CancellationToken cancellationToken = default)
     {
         if (id == currentUser.UserId)
-            throw new ForbiddenAccessException("Admin cannot deactivate their own account.");
+            throw new ForbiddenAccessException("Quản trị viên không được phép tự ngừng hoạt động tài khoản của chính mình.");
 
         await using var transaction = await dbContext.Database.BeginTransactionAsync(
             IsolationLevel.Serializable,
             cancellationToken);
         var user = await userManager.FindByIdAsync(id)
-            ?? throw new NotFoundException("Staff account was not found.");
+            ?? throw new NotFoundException("Không tìm thấy tài khoản nhân viên.");
         if (user.EmploymentStatus == EmploymentStatus.Inactive)
             return;
 
         var roles = await userManager.GetRolesAsync(user);
         if (roles.Count != 1 || !UserRole.AllRoles.Contains(roles[0]))
-            throw new ConflictException("Staff account must have exactly one valid role.");
+            throw new ConflictException("Tài khoản nhân viên phải có đúng một vai trò hợp lệ.");
 
         var role = roles[0];
         if (role == UserRole.Admin && !await HasAnotherActiveAdminAsync(id, cancellationToken))
-            throw new ConflictException("The system must keep at least one active Admin.");
+            throw new ConflictException("Hệ thống phải duy trì ít nhất một Quản trị viên đang hoạt động.");
         if (role == UserRole.Teacher && await dbContext.Classes.AnyAsync(
                 item => item.MainTeacherUserId == id && item.Status == ClassStatus.Active,
                 cancellationToken))
-            throw new ConflictException("Teacher is still responsible for an active class.");
+            throw new ConflictException("Giảng viên vẫn đang phụ trách lớp học đang hoạt động.");
 
         user.EmploymentStatus = EmploymentStatus.Inactive;
         EnsureSucceeded(await userManager.UpdateAsync(user));
         await authenticationService.RevokeAllSessionsAsync(
-            id, null, "Staff account deactivated.", cancellationToken);
+            id, null, "Tài khoản nhân viên đã bị ngừng hoạt động.", cancellationToken);
         AddAudit(user.Id, "Staff.Deactivated", $"Deactivated staff account {user.EmployeeCode}.");
         await dbContext.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
@@ -351,7 +351,7 @@ public class StaffService(
     private static void ValidatePaging(int page, int pageSize)
     {
         if (page < 1 || pageSize < 1 || pageSize > 100)
-            throw new ValidationException("Page must be at least 1 and pageSize must be between 1 and 100.");
+            throw new ValidationException("Trang phải từ 1 trở lên và kích thước trang phải từ 1 đến 100.");
     }
 
     private static void EnsureSucceeded(IdentityResult result)
@@ -360,9 +360,9 @@ public class StaffService(
             return;
 
         if (result.Errors.Any(error => error.Code is "DuplicateEmail" or "DuplicateUserName"))
-            throw new ConflictException("Email already exists.");
+            throw new ConflictException("Email đã tồn tại.");
         if (result.Errors.Any(error => error.Code == "ConcurrencyFailure"))
-            throw new ConflictException("Staff account was changed by another request.");
+            throw new ConflictException("Tài khoản nhân viên đã bị thay đổi bởi một yêu cầu khác.");
 
         throw new ValidationException(string.Join(" ", result.Errors.Select(error => error.Description)));
     }

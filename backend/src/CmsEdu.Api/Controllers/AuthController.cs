@@ -33,7 +33,7 @@ public class AuthController(
     {
         if (!Request.Cookies.TryGetValue(RefreshTokenCookieName, out var refreshToken))
         {
-            throw new UnauthorizedAccessException("Refresh token is invalid or expired.");
+            throw new UnauthorizedAccessException("Phiên đăng nhập không hợp lệ hoặc đã hết hạn.");
         }
 
         try

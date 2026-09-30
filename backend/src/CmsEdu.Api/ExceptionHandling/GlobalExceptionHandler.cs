@@ -13,12 +13,12 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
     {
         var (status, title) = exception switch
         {
-            UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Authentication failed"),
-            ForbiddenAccessException => (StatusCodes.Status403Forbidden, "Access forbidden"),
-            NotFoundException => (StatusCodes.Status404NotFound, "Resource not found"),
-            ConflictException => (StatusCodes.Status409Conflict, "Conflict"),
-            ValidationException => (StatusCodes.Status400BadRequest, "Validation failed"),
-            _ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred")
+            UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Xác thực thất bại"),
+            ForbiddenAccessException => (StatusCodes.Status403Forbidden, "Không có quyền truy cập"),
+            NotFoundException => (StatusCodes.Status404NotFound, "Không tìm thấy dữ liệu"),
+            ConflictException => (StatusCodes.Status409Conflict, "Xung đột dữ liệu"),
+            ValidationException => (StatusCodes.Status400BadRequest, "Dữ liệu không hợp lệ"),
+            _ => (StatusCodes.Status500InternalServerError, "Lỗi máy chủ nội bộ")
         };
 
         if (status == StatusCodes.Status500InternalServerError)
@@ -32,7 +32,7 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
             Status = status,
             Title = title,
             Detail = status == StatusCodes.Status500InternalServerError
-                ? "The server could not process the request."
+                ? "Đã xảy ra lỗi không mong muốn trên máy chủ."
                 : exception.Message,
             Instance = httpContext.Request.Path
         }, cancellationToken);

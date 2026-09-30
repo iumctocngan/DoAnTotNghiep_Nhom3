@@ -302,7 +302,7 @@ public class RoleDashboardService(AppDbContext dbContext, ICurrentUser currentUs
     private void EnsureRole(params string[] roles)
     {
         if (!currentUser.IsAuthenticated)
-            throw new UnauthorizedAccessException();
+            throw new UnauthorizedAccessException("Chưa xác thực người dùng.");
         if (!roles.Contains(currentUser.Role) || string.IsNullOrWhiteSpace(currentUser.UserId))
             throw new ForbiddenAccessException("Bạn không có quyền xem dashboard này.");
     }

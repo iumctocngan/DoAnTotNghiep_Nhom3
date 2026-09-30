@@ -95,7 +95,7 @@ export const LevelModal: React.FC<LevelModalProps> = ({
           </div>
 
           <div className="mb-5">
-            <label htmlFor="sortOrder">Thứ tự hiển thị (Sort Order) *</label>
+            <label htmlFor="sortOrder">Thứ tự cấp độ *</label>
             <input
               id="sortOrder"
               type="number"
