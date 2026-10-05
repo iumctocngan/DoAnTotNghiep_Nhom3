@@ -1,6 +1,5 @@
 import { apiClient } from './apiClient';
 import type {
-  AccountingDashboardFilter,
   AccountingDashboardResponse,
   AdminDashboardResponse,
   CustomerCareDashboardResponse,
@@ -20,9 +19,7 @@ export const dashboardApi = {
     return apiClient<CustomerCareDashboardResponse>('/api/dashboard/customer-care');
   },
 
-  getAccountingDashboard(filter?: AccountingDashboardFilter): Promise<AccountingDashboardResponse> {
-    return apiClient<AccountingDashboardResponse>('/api/dashboard/accounting', {
-      params: filter as Record<string, unknown>,
-    });
+  getAccountingDashboard(): Promise<AccountingDashboardResponse> {
+    return apiClient<AccountingDashboardResponse>('/api/dashboard/accounting');
   },
 };

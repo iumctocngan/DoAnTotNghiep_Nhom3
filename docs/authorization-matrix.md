@@ -28,8 +28,21 @@ Hệ thống dùng **RBAC + resource scope** theo nguyên tắc **least privileg
 - **Quản lý:** được thực hiện các thao tác nghiệp vụ đã có của nhóm chức năng.
 - **Xem:** chỉ có quyền đọc.
 - **Lớp phụ trách:** chỉ truy cập lớp hiện do Teacher phụ trách và dữ liệu thuộc lớp đó.
-- **Giới hạn dữ liệu:** được xem bản ghi nhưng một số trường nhạy cảm bị ẩn.
+- **Giới hạn dữ liệu:** được xem bản ghi nhưng một số trường nhạy cảm bị ẩn (chi tiết bên dưới).
 - **—:** không có quyền.
 - **401:** chưa đăng nhập hoặc token không hợp lệ. **403:** đã đăng nhập nhưng không đủ quyền hoặc ngoài phạm vi dữ liệu.
+
+### Chi tiết phạm vi & giới hạn dữ liệu (Data Scope):
+
+1. **Giới hạn dữ liệu của Kế toán (Accountant - Field-level):**
+   - **Học viên:** Bị ẩn trường LearningNote (Lưu ý học tập) trả về null.
+   - **Ghi danh:** Bị ẩn trường PauseReason (Lý do bảo lưu) và EndReason (Lý do kết thúc) trả về null.
+   - **Nhận xét:** Hoàn toàn không có quyền xem nhận xét sư phạm của học viên.
+   - **Người giám hộ:** Chỉ xem người giám hộ đã liên kết với học viên để đối soát thu tiền.
+
+2. **Phạm vi "Lớp phụ trách" của Giáo viên (Teacher - Row-level):**
+   - **Lớp & Lịch dạy:** Chỉ truy cập các lớp có MainTeacherUserId == currentUser.UserId.
+   - **Học viên & Người giám hộ:** Chỉ thấy học viên (và phụ huynh) có ghi danh vào lớp do mình phụ trách.
+   - **Buổi học, Điểm danh, Nhận xét:** Chỉ thực hiện trên các buổi học thuộc lớp mình phụ trách.
 
 Quyền không được ghi trong ma trận mặc định bị từ chối theo nguyên tắc **least privilege**.

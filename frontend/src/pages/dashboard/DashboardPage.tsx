@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -21,12 +21,6 @@ import { MaterialIcon } from '../../components/common/MaterialIcon';
 
 const compactNumber = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 });
 const percentNumber = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 });
-const auditActionLabels: Record<string, string> = {
-  CREATE_INVOICE: 'Tạo hóa đơn',
-  CANCEL_INVOICE: 'Hủy hóa đơn',
-  CREATE_PAYMENT: 'Tạo thanh toán',
-  CANCEL_PAYMENT: 'Hủy thanh toán',
-};
 
 function formatCompactCurrency(amount: number): string {
   const format = (value: number) => compactNumber.format(value);
@@ -40,11 +34,6 @@ function formatCompactCurrency(amount: number): string {
     return format(amount / 1_000) + ' nghìn';
   }
   return String(amount);
-}
-
-function getMonthIndex(date: string): number {
-  const [year, month] = date.slice(0, 7).split('-').map(Number);
-  return year * 12 + month - 1;
 }
 
 const FriendlyErrorView: React.FC<{ error: unknown; title?: string }> = ({ error, title }) => {
@@ -547,129 +536,22 @@ const CustomerCareDashboardView: React.FC = () => {
 
 const AccountingDashboardView: React.FC = () => {
   const { user } = useAuth();
-  const [fromDateInput, setFromDateInput] = useState('');
-  const [toDateInput, setToDateInput] = useState('');
-  const [appliedFrom, setAppliedFrom] = useState<string | undefined>(undefined);
-  const [appliedTo, setAppliedTo] = useState<string | undefined>(undefined);
-  const [inputWarning, setInputWarning] = useState<string | null>(null);
-
-  const handleFilter = (e: React.FormEvent) => {
-    e.preventDefault();
-    setInputWarning(null);
-
-    if (fromDateInput && toDateInput && fromDateInput > toDateInput) {
-      setInputWarning('Từ ngày không được sau Đến ngày.');
-      return;
-    }
-
-    setAppliedFrom(fromDateInput || undefined);
-    setAppliedTo(toDateInput || undefined);
-  };
-
-  const handleReset = () => {
-    setFromDateInput('');
-    setToDateInput('');
-    setAppliedFrom(undefined);
-    setAppliedTo(undefined);
-    setInputWarning(null);
-  };
 
   const { data, isLoading, isError, error } = useQuery<AccountingDashboardResponse>({
-    queryKey: ['dashboard', 'accounting', user?.userId, appliedFrom, appliedTo],
-    queryFn: () => dashboardApi.getAccountingDashboard({ fromDate: appliedFrom, toDate: appliedTo }),
+    queryKey: ['dashboard', 'accounting', user?.userId],
+    queryFn: () => dashboardApi.getAccountingDashboard(),
   });
-  const periodText = data?.fromDate && data.toDate
-    ? `Từ ${formatDateDisplay(data.fromDate)} đến ${formatDateDisplay(data.toDate)}`
-    : data?.fromDate
-      ? `Từ ${formatDateDisplay(data.fromDate)} đến nay`
-      : data?.toDate
-        ? `Đến ${formatDateDisplay(data.toDate)}`
-        : 'Toàn bộ thời gian';
 
   const revenueByMonth = data?.revenueByMonth ?? [];
-  const revenueMap = new Map(revenueByMonth.map((item) => [
-    item.year * 12 + item.month - 1,
-    item.amount,
-  ]));
-  const firstDataMonth = revenueByMonth.length
-    ? revenueByMonth[0].year * 12 + revenueByMonth[0].month - 1
-    : undefined;
-  const lastDataMonth = revenueByMonth.length
-    ? revenueByMonth[revenueByMonth.length - 1].year * 12 + revenueByMonth[revenueByMonth.length - 1].month - 1
-    : undefined;
-  const currentMonth = new Date().getFullYear() * 12 + new Date().getMonth();
-  const firstMonth = appliedFrom ? getMonthIndex(appliedFrom) : firstDataMonth;
-  const lastMonth = appliedTo
-    ? getMonthIndex(appliedTo)
-    : appliedFrom
-      ? currentMonth
-      : lastDataMonth;
-  const revenueMonthlyItems: VerticalColumnItem[] = Array.from(
-    { length: firstMonth !== undefined && lastMonth !== undefined && lastMonth >= firstMonth
-      ? lastMonth - firstMonth + 1
-      : 0 },
-    (_, index) => {
-      const monthIndex = firstMonth + index;
-      const month = monthIndex % 12 + 1;
-      const year = Math.floor(monthIndex / 12);
-      const amount = revenueMap.get(monthIndex) ?? 0;
-      return {
-        label: `${String(month).padStart(2, '0')}/${year}`,
-        value: amount,
-        formattedValue: formatCompactCurrency(amount),
-        tooltipText: `Tháng ${month}/${year}: ${formatCurrency(amount)}`,
-      };
-    },
-  );
+  const revenueMonthlyItems: VerticalColumnItem[] = revenueByMonth.map((item) => ({
+    label: `${String(item.month).padStart(2, '0')}/${item.year}`,
+    value: item.amount,
+    formattedValue: formatCompactCurrency(item.amount),
+    tooltipText: `Tháng ${item.month}/${item.year}: ${formatCurrency(item.amount)}`,
+  }));
 
   return (
     <div>
-      <div className="card mb-5 p-4 sm:p-5">
-        <form onSubmit={handleFilter} className="flex gap-3 items-end flex-wrap">
-          <div>
-            <label htmlFor="accFromDate" className="text-sm font-medium text-slate-600 mb-1">
-              Từ ngày:
-            </label>
-            <input
-              id="accFromDate"
-              type="date"
-              value={fromDateInput}
-              onChange={(e) => setFromDateInput(e.target.value)}
-              className="w-[150px]"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="accToDate" className="text-sm font-medium text-slate-600 mb-1">
-              Đến ngày:
-            </label>
-            <input
-              id="accToDate"
-              type="date"
-              value={toDateInput}
-              onChange={(e) => setToDateInput(e.target.value)}
-              className="w-[150px]"
-            />
-          </div>
-
-          <button type="submit" className="btn btn-primary px-4 py-2">
-            Lọc dữ liệu
-          </button>
-
-          {(appliedFrom || appliedTo || fromDateInput || toDateInput) && (
-            <button type="button" className="btn btn-secondary px-4 py-2" onClick={handleReset}>
-              Đặt lại
-            </button>
-          )}
-        </form>
-
-        {inputWarning && (
-          <div className="alert alert-danger mt-3 mb-0">
-            {inputWarning}
-          </div>
-        )}
-      </div>
-
       {isLoading && <DashboardLoading cardCount={3} />}
       {isError && <FriendlyErrorView error={error} title="Bảng điều khiển Kế toán" />}
 
@@ -681,21 +563,21 @@ const AccountingDashboardView: React.FC = () => {
               iconType="success"
               value={formatCurrency(data.revenue)}
               label="Doanh thu đã thu"
-              subtext={periodText}
+              subtext="Toàn bộ thời gian"
             />
             <KpiCard
               icon={<MaterialIcon name="receipt_long" />}
               iconType="warning"
               value={formatCurrency(data.currentDebt)}
               label="Công nợ hiện tại"
-              subtext="Toàn bộ thời gian, không theo kỳ lọc"
+              subtext="Tổng nợ tích lũy"
             />
             <KpiCard
               icon={<MaterialIcon name="error" />}
               iconType={data.overdueDebt > 0 ? 'danger' : 'neutral'}
               value={formatCurrency(data.overdueDebt)}
               label="Công nợ quá hạn"
-              subtext="Toàn bộ thời gian, không theo kỳ lọc"
+              subtext="Hóa đơn quá hạn thanh toán"
               badgeText={data.overdueDebt > 0 ? 'Cần đôn đốc' : undefined}
               badgeType="danger"
             />
@@ -704,7 +586,7 @@ const AccountingDashboardView: React.FC = () => {
             <VerticalColumnChart
               title="Doanh thu theo tháng"
               items={revenueMonthlyItems}
-              emptyText="Chưa có phát sinh doanh thu trong kỳ lọc."
+              emptyText="Chưa có phát sinh doanh thu."
             />
             <div className="chart-box">
               <div className="chart-header">
@@ -714,7 +596,7 @@ const AccountingDashboardView: React.FC = () => {
               </div>
 
               {data.transactions.length === 0 ? (
-                <div className="chart-empty">Không có giao dịch nào phát sinh trong kỳ lọc.</div>
+                <div className="chart-empty">Không có giao dịch nào phát sinh.</div>
               ) : (
                 <div className="table-container max-h-[280px] overflow-y-auto">
                   <table className="data-table">
@@ -752,48 +634,6 @@ const AccountingDashboardView: React.FC = () => {
                 </div>
               )}
             </div>
-          </div>
-          <div className="card">
-            <div className="chart-header">
-              <div>
-                <h3 className="chart-title">Nhật ký tài chính</h3>
-              </div>
-            </div>
-
-            {data.auditLogs.length === 0 ? (
-              <div className="chart-empty">Không có nhật ký kiểm toán tài chính nào trong kỳ lọc.</div>
-            ) : (
-              <div className="table-container">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th className="w-[140px]">Thời gian</th>
-                      <th className="w-[120px]">Mã người thực hiện</th>
-                      <th className="w-[120px]">Hành động</th>
-                      <th className="w-[160px]">Đối tượng</th>
-                      <th>Chi tiết diễn giải</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.auditLogs.slice(0, 15).map((log) => (
-                      <tr key={log.id}>
-                        <td className="whitespace-nowrap">
-                          {formatDateTimeDisplay(log.occurredAt)}
-                        </td>
-                        <td className="font-mono">{log.userId || 'Hệ thống'}</td>
-                        <td>
-                          <span className="badge badge-inactive">{auditActionLabels[log.action] ?? log.action}</span>
-                        </td>
-                        <td className="font-mono">
-                          {log.entityType === 'Invoice' ? 'Hóa đơn' : 'Thanh toán'}
-                        </td>
-                        <td className="text-sm text-slate-600">{log.description}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
           </div>
         </>
       )}

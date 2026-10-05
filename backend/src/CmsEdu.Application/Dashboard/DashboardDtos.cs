@@ -51,23 +51,11 @@ public record AccountingTransactionResponse(
     string Status,
     string? Note);
 
-public record AccountingAuditLogResponse(
-    int Id,
-    string? UserId,
-    string Action,
-    string EntityType,
-    string EntityId,
-    string Description,
-    DateTimeOffset OccurredAt);
-
 public record MonthlyRevenueResponse(int Year, int Month, decimal Amount);
 
 public record AccountingDashboardResponse(
     decimal Revenue,
     decimal CurrentDebt,
     decimal OverdueDebt,
-    DateOnly? FromDate,
-    DateOnly? ToDate,
     IReadOnlyList<MonthlyRevenueResponse> RevenueByMonth,
-    IReadOnlyList<AccountingTransactionResponse> Transactions,
-    IReadOnlyList<AccountingAuditLogResponse> AuditLogs);
+    IReadOnlyList<AccountingTransactionResponse> Transactions);

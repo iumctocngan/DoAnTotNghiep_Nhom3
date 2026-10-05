@@ -14,7 +14,5 @@ public interface IRoleDashboardService
         CancellationToken cancellationToken = default);
 
     Task<AccountingDashboardResponse> GetAccountingDashboardAsync(
-        DateOnly? fromDate,
-        DateOnly? toDate,
         CancellationToken cancellationToken = default);
 }

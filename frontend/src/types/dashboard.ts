@@ -76,28 +76,10 @@ export interface AccountingTransactionResponse {
   note: string | null;
 }
 
-export interface AccountingAuditLogResponse {
-  id: number;
-  userId: string | null;
-  action: string;
-  entityType: string;
-  entityId: string;
-  description: string;
-  occurredAt: string;
-}
-
 export interface AccountingDashboardResponse {
   revenue: number;
   currentDebt: number;
   overdueDebt: number;
-  fromDate: string | null;
-  toDate: string | null;
   revenueByMonth: MonthlyRevenueResponse[];
   transactions: AccountingTransactionResponse[];
-  auditLogs: AccountingAuditLogResponse[];
-}
-
-export interface AccountingDashboardFilter {
-  fromDate?: string;
-  toDate?: string;
 }

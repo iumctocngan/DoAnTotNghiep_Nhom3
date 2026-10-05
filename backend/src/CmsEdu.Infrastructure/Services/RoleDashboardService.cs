@@ -170,22 +170,11 @@ public class RoleDashboardService(AppDbContext dbContext, ICurrentUser currentUs
     }
 
     public async Task<AccountingDashboardResponse> GetAccountingDashboardAsync(
-        DateOnly? fromDate,
-        DateOnly? toDate,
         CancellationToken cancellationToken = default)
     {
         EnsureRole(UserRole.Accountant);
 
-        if (fromDate.HasValue && toDate.HasValue && fromDate > toDate)
-            throw new ValidationException("fromDate không được sau toDate.");
-
-        var fromUtc = fromDate.HasValue ? StartOfDayUtc(fromDate.Value) : (DateTime?)null;
-        var toUtc = toDate.HasValue ? StartOfDayUtc(toDate.Value.AddDays(1)) : (DateTime?)null;
         var paymentQuery = dbContext.Payments.AsNoTracking().AsQueryable();
-        if (fromUtc.HasValue)
-            paymentQuery = paymentQuery.Where(item => item.PaidAt >= fromUtc.Value);
-        if (toUtc.HasValue)
-            paymentQuery = paymentQuery.Where(item => item.PaidAt < toUtc.Value);
 
         var confirmedPayments = paymentQuery
             .Where(item => item.Status == PaymentStatus.Confirmed);
@@ -265,38 +254,13 @@ public class RoleDashboardService(AppDbContext dbContext, ICurrentUser currentUs
                 item.Status.ToString(),
                 item.Note))
             .ToList();
-        var auditLogs = await dbContext.AuditLogs
-            .AsNoTracking()
-            .Where(item => item.EntityType == "Invoice" || item.EntityType == "Payment")
-            .Where(item => !fromUtc.HasValue || item.OccurredAt >= fromUtc.Value)
-            .Where(item => !toUtc.HasValue || item.OccurredAt < toUtc.Value)
-            .OrderByDescending(item => item.OccurredAt)
-            .ThenByDescending(item => item.Id)
-            .Take(50)
-            .Select(item => new AccountingAuditLogResponse(
-                item.Id,
-                item.UserId,
-                item.Action,
-                item.EntityType,
-                item.EntityId,
-                item.Description,
-                new DateTimeOffset(DateTime.SpecifyKind(item.OccurredAt, DateTimeKind.Utc))))
-            .ToListAsync(cancellationToken);
 
         return new AccountingDashboardResponse(
             revenue,
             currentDebt,
             overdueDebt,
-            fromDate,
-            toDate,
             revenueByMonth,
-            transactions,
-            auditLogs);
-    }
-
-    private static DateTime StartOfDayUtc(DateOnly date)
-    {
-        return new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue), VietnamOffset).UtcDateTime;
+            transactions);
     }
 
     private void EnsureRole(params string[] roles)

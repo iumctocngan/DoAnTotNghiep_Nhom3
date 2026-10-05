@@ -37,11 +37,8 @@ public class RoleDashboardController(IRoleDashboardService dashboardService) : C
     [HttpGet("accounting")]
     [Authorize(Roles = UserRole.Accountant)]
     public async Task<ActionResult<AccountingDashboardResponse>> GetAccountingDashboard(
-        [FromQuery] DateOnly? fromDate,
-        [FromQuery] DateOnly? toDate,
         CancellationToken cancellationToken = default)
     {
-        return Ok(await dashboardService.GetAccountingDashboardAsync(
-            fromDate, toDate, cancellationToken));
+        return Ok(await dashboardService.GetAccountingDashboardAsync(cancellationToken));
     }
 }

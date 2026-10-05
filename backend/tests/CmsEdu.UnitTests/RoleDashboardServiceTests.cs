@@ -63,7 +63,7 @@ public class RoleDashboardServiceTests
     {
         await using var fixture = await Fixture.CreateAsync();
 
-        var result = await fixture.Service.GetAccountingDashboardAsync(null, null);
+        var result = await fixture.Service.GetAccountingDashboardAsync();
 
         Assert.Equal(2_000_000m, result.Revenue);
         Assert.Equal(4_000_000m, result.CurrentDebt);
@@ -71,7 +71,6 @@ public class RoleDashboardServiceTests
         Assert.Equal(2, result.Transactions.Count);
         Assert.Equal("REC-202609-0001", result.Transactions[0].ReceiptNumber);
         Assert.Equal("Cancelled", result.Transactions[1].Status);
-        Assert.Single(result.AuditLogs);
     }
 
     [Fact]
@@ -83,34 +82,9 @@ public class RoleDashboardServiceTests
         invoice.DueDate = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-1);
         await fixture.Context.SaveChangesAsync();
 
-        var result = await fixture.Service.GetAccountingDashboardAsync(null, null);
+        var result = await fixture.Service.GetAccountingDashboardAsync();
 
         Assert.Equal(4_000_000m, result.OverdueDebt);
-    }
-
-    [Fact]
-    public async Task GetAccountingDashboardAsync_IncludesTheWholeToDate()
-    {
-        await using var fixture = await Fixture.CreateAsync();
-
-        var result = await fixture.Service.GetAccountingDashboardAsync(
-            new DateOnly(2026, 9, 10),
-            new DateOnly(2026, 9, 10));
-
-        Assert.Equal(2_000_000m, result.Revenue);
-        Assert.Equal(4_000_000m, result.CurrentDebt);
-        Assert.Single(result.Transactions);
-    }
-
-    [Fact]
-    public async Task GetAccountingDashboardAsync_RejectsAnInvalidDateRange()
-    {
-        await using var fixture = await Fixture.CreateAsync();
-
-        await Assert.ThrowsAsync<ValidationException>(() =>
-            fixture.Service.GetAccountingDashboardAsync(
-                new DateOnly(2026, 10, 1),
-                new DateOnly(2026, 9, 1)));
     }
 
     [Theory]
@@ -121,7 +95,7 @@ public class RoleDashboardServiceTests
         await using var fixture = await Fixture.CreateAsync(role);
 
         await Assert.ThrowsAsync<ForbiddenAccessException>(() =>
-            fixture.Service.GetAccountingDashboardAsync(null, null));
+            fixture.Service.GetAccountingDashboardAsync());
     }
 
     private sealed class Fixture : IAsyncDisposable
