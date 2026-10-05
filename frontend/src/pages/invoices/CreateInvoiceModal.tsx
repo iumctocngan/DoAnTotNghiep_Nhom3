@@ -221,7 +221,7 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
             id="amt"
             type="number"
             min="1000"
-            step="10000"
+            step="any"
             value={amountDue}
             onChange={(e) => setAmountDue(e.target.value ? Number(e.target.value) : '')}
             disabled={mutation.isPending}

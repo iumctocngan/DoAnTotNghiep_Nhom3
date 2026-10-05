@@ -133,7 +133,7 @@ export const CreatePaymentModal: React.FC<CreatePaymentModalProps> = ({
             type="number"
             min="1000"
             max={invoice.conNo}
-            step="10000"
+            step="any"
             value={amount}
             onChange={(e) => setAmount(e.target.value ? Number(e.target.value) : '')}
             disabled={mutation.isPending}
