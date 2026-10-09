@@ -171,29 +171,19 @@ public class DichVuHoaDon(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai) :
         if (yeuCau.LyDoHuy.Trim().Length > 500)
             throw new ValidationException("Lý do hủy không được vượt quá 500 ký tự.");
 
-        var hoaDon = await LayHoaDonAsync(maHoaDon, coTracking: true, maHuy)
-            ?? throw new NotFoundException("Không tìm thấy hóa đơn.");
-
-        if (hoaDon.Status == InvoiceStatus.Cancelled)
-            throw new ConflictException("Hóa đơn này đã bị hủy trước đó.");
-
-        if (hoaDon.Status == InvoiceStatus.Paid)
-            throw new ConflictException("Không thể hủy hóa đơn đã thanh toán đủ.");
-
-        if (hoaDon.Payments.Any(p => p.Status == PaymentStatus.Confirmed))
-            throw new ConflictException("Không thể hủy hóa đơn đã phát sinh thanh toán được xác nhận.");
-
-        // --- Cập nhật trạng thái hủy ---
-        hoaDon.Status       = InvoiceStatus.Cancelled;
-        hoaDon.CancelledBy  = nguoiDungHienTai.UserId;
-        hoaDon.CancelledAt  = DateTime.UtcNow;
-        hoaDon.CancelReason = yeuCau.LyDoHuy.Trim();
-
+        Invoice hoaDon;
         if (nguCanh.Database.IsRelational())
         {
-            await using var tx = await nguCanh.Database.BeginTransactionAsync(maHuy);
+            await using var tx = await nguCanh.Database.BeginTransactionAsync(
+                IsolationLevel.Serializable, maHuy);
             try
             {
+                await KhoaInvoiceChoThanhToanAsync(maHoaDon, maHuy);
+                hoaDon = await LayHoaDonAsync(maHoaDon, coTracking: true, maHuy)
+                    ?? throw new NotFoundException("Không tìm thấy hóa đơn.");
+                KiemTraHoaDonCoTheHuy(hoaDon);
+                ApDungHuyHoaDon(hoaDon, yeuCau.LyDoHuy.Trim());
+
                 GhiAuditLog("CANCEL_INVOICE",
                     hoaDon.Id.ToString(),
                     $"Hủy hóa đơn {hoaDon.InvoiceNumber}. Lý do: {yeuCau.LyDoHuy.Trim()}");
@@ -209,6 +199,11 @@ public class DichVuHoaDon(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai) :
         }
         else
         {
+            hoaDon = await LayHoaDonAsync(maHoaDon, coTracking: true, maHuy)
+                ?? throw new NotFoundException("Không tìm thấy hóa đơn.");
+            KiemTraHoaDonCoTheHuy(hoaDon);
+            ApDungHuyHoaDon(hoaDon, yeuCau.LyDoHuy.Trim());
+
             GhiAuditLog("CANCEL_INVOICE",
                 hoaDon.Id.ToString(),
                 $"Hủy hóa đơn {hoaDon.InvoiceNumber}. Lý do: {yeuCau.LyDoHuy.Trim()}");
@@ -420,6 +415,46 @@ public class DichVuHoaDon(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai) :
             IF @result < 0
                 THROW 50001, 'Không thể khóa nghiệp vụ hóa đơn của học sinh.', 1;
             """, maHuy);
+    }
+
+    private async Task KhoaInvoiceChoThanhToanAsync(
+        int invoiceId,
+        CancellationToken maHuy)
+    {
+        if (!nguCanh.Database.IsSqlServer())
+            return;
+
+        var resource = $"CmsEdu:Payment:Invoice:{invoiceId}";
+        await nguCanh.Database.ExecuteSqlInterpolatedAsync($"""
+            DECLARE @result int;
+            EXEC @result = sp_getapplock
+                @Resource = {resource},
+                @LockMode = N'Exclusive',
+                @LockOwner = N'Transaction',
+                @LockTimeout = 10000;
+            IF @result < 0
+                THROW 50002, 'Không thể khóa nghiệp vụ payment của hóa đơn.', 1;
+            """, maHuy);
+    }
+
+    private static void KiemTraHoaDonCoTheHuy(Invoice hoaDon)
+    {
+        if (hoaDon.Status == InvoiceStatus.Cancelled)
+            throw new ConflictException("Hóa đơn này đã bị hủy trước đó.");
+
+        if (hoaDon.Status == InvoiceStatus.Paid)
+            throw new ConflictException("Không thể hủy hóa đơn đã thanh toán đủ.");
+
+        if (hoaDon.Payments.Any(p => p.Status == PaymentStatus.Confirmed))
+            throw new ConflictException("Không thể hủy hóa đơn đã phát sinh thanh toán được xác nhận.");
+    }
+
+    private void ApDungHuyHoaDon(Invoice hoaDon, string lyDo)
+    {
+        hoaDon.Status = InvoiceStatus.Cancelled;
+        hoaDon.CancelledBy = nguoiDungHienTai.UserId;
+        hoaDon.CancelledAt = DateTime.UtcNow;
+        hoaDon.CancelReason = lyDo;
     }
 
     private Invoice TaoHoaDonEntity(
