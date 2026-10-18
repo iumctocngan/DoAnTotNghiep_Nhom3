@@ -115,6 +115,7 @@ export const AppLayout: React.FC = () => {
 
           {(user?.role === 'Teacher' || user?.role === 'Admin') && (
             <>
+              <NavLink to="/assessments" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Đánh giá học sinh AI</NavLink>
               <NavLink
                 to="/teacher/classes"
                 className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}

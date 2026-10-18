@@ -22,6 +22,51 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("CmsEdu.Domain.Entities.AssessmentRubric", b =>
+            {
+                b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int");
+                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                b.Property<int>("ClassId").HasColumnType("int");
+                b.Property<string>("Name").IsRequired().HasMaxLength(200).HasColumnType("nvarchar(200)");
+                b.Property<string>("DefinitionJson").IsRequired().HasColumnType("nvarchar(max)");
+                b.HasKey("Id");
+                b.HasIndex("ClassId");
+                b.ToTable("AssessmentRubric");
+            });
+            modelBuilder.Entity("CmsEdu.Domain.Entities.Assessment", b =>
+            {
+                b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int");
+                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                b.Property<int>("EnrollmentId").HasColumnType("int");
+                b.Property<int>("RubricId").HasColumnType("int");
+                b.Property<string>("Title").IsRequired().HasColumnType("nvarchar(max)");
+                b.Property<DateOnly>("Date").HasColumnType("date");
+                b.Property<decimal>("Score").HasPrecision(5, 2).HasColumnType("decimal(5,2)");
+                b.Property<string>("ScoresJson").IsRequired().HasColumnType("nvarchar(max)");
+                b.Property<string>("CreatedBy").IsRequired().HasColumnType("nvarchar(max)");
+                b.Property<DateTime>("CreatedAt").HasColumnType("datetime2");
+                b.Property<string>("Feedback").HasColumnType("nvarchar(max)");
+                b.Property<string>("FeedbackSource").HasColumnType("nvarchar(max)");
+                b.Property<string>("ApprovedBy").HasColumnType("nvarchar(max)");
+                b.Property<DateTime?>("ApprovedAt").HasColumnType("datetime2");
+                b.HasKey("Id");
+                b.HasIndex("EnrollmentId", "Date");
+                b.HasIndex("RubricId");
+                b.ToTable("Assessment");
+            });
+            modelBuilder.Entity("CmsEdu.Domain.Entities.AssessmentRubric", b =>
+            {
+                b.HasOne("CmsEdu.Domain.Entities.Class", "Class").WithMany().HasForeignKey("ClassId").OnDelete(DeleteBehavior.Restrict).IsRequired();
+                b.Navigation("Class");
+            });
+            modelBuilder.Entity("CmsEdu.Domain.Entities.Assessment", b =>
+            {
+                b.HasOne("CmsEdu.Domain.Entities.Enrollment", "Enrollment").WithMany().HasForeignKey("EnrollmentId").OnDelete(DeleteBehavior.Restrict).IsRequired();
+                b.HasOne("CmsEdu.Domain.Entities.AssessmentRubric", "Rubric").WithMany().HasForeignKey("RubricId").OnDelete(DeleteBehavior.Restrict).IsRequired();
+                b.Navigation("Enrollment");
+                b.Navigation("Rubric");
+            });
+
             modelBuilder.Entity("CmsEdu.Domain.Entities.Attendance", b =>
                 {
                     b.Property<int>("Id")

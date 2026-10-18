@@ -14,6 +14,7 @@ import { SessionListPage } from './pages/sessions/SessionListPage';
 import { InvoiceListPage } from './pages/invoices/InvoiceListPage';
 import { ToastProvider } from './components/common/ToastProvider';
 import { TrangQuanLy } from './pages/quan-ly/TrangQuanLy';
+import { AssessmentPage } from './pages/teacher/AssessmentPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -66,6 +67,7 @@ export const App: React.FC = () => {
                 </Route>
                 <Route element={<ProtectedRoute allowedRoles={['Admin', 'Teacher']} />}>
                   <Route path="/teacher/classes" element={<TeacherClassesPage />} />
+                  <Route path="/assessments" element={<AssessmentPage />} />
                   <Route path="/teacher/schedule" element={<TeacherSchedulePage />} />
                 </Route>
               </Route>

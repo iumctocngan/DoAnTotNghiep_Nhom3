@@ -30,6 +30,12 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+        builder.Entity<AssessmentRubric>().Property(x => x.Name).HasMaxLength(200);
+        builder.Entity<AssessmentRubric>().HasOne(x => x.Class).WithMany().HasForeignKey(x => x.ClassId).OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<Assessment>().HasOne(x => x.Enrollment).WithMany().HasForeignKey(x => x.EnrollmentId).OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<Assessment>().HasOne(x => x.Rubric).WithMany().HasForeignKey(x => x.RubricId).OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<Assessment>().Property(x => x.Score).HasPrecision(5, 2);
+        builder.Entity<Assessment>().HasIndex(x => new { x.EnrollmentId, x.Date });
         builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }
 }

@@ -436,3 +436,14 @@
     width: 100px;
   }
 }
+/* Module 1: assessment workspace */
+.assessment-page { max-width: 1100px; margin: auto; }
+.assessment-page section, .assessment-page details { background: white; padding: 24px; border: 1px solid #dce3ed; border-radius: 12px; margin: 20px 0; }
+.assessment-page label { display: inline-flex; flex-direction: column; gap: 6px; margin: 8px 16px 8px 0; max-width: 100%; }
+.assessment-page input, .assessment-page select, .assessment-page textarea { border: 1px solid #b7c4d6; border-radius: 6px; padding: 9px; background: white; color: #172033; }
+.assessment-page textarea { width: 100%; box-sizing: border-box; }
+.assessment-page button { padding: 9px 14px; border: 1px solid #b7c4d6; border-radius: 6px; margin: 8px 0; cursor: pointer; }
+.assessment-page button:disabled { opacity: .5; cursor: default; }
+.assessment-page fieldset, .assessment-page article { border: 1px solid #dce3ed; border-radius: 8px; padding: 16px; margin: 12px 0; }
+.assessment-page table { width: 100%; border-collapse: collapse; }
+.assessment-page th, .assessment-page td { text-align: left; padding: 10px; border-bottom: 1px solid #dce3ed; }
