@@ -254,6 +254,58 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                     b.ToTable("Courses", (string)null);
                 });
 
+            modelBuilder.Entity("CmsEdu.Domain.Entities.Document", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("DocumentType")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(10)");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("NotebookId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(20)")
+                        .HasDefaultValue("processing");
+
+                    b.Property<string>("StoragePath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NotebookId");
+
+                    b.ToTable("Documents", (string)null);
+                });
+
             modelBuilder.Entity("CmsEdu.Domain.Entities.Enrollment", b =>
                 {
                     b.Property<int>("Id")
@@ -491,6 +543,41 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("Levels", (string)null);
+                });
+
+            modelBuilder.Entity("CmsEdu.Domain.Entities.Notebook", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("TeacherId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Notebooks", (string)null);
                 });
 
             modelBuilder.Entity("CmsEdu.Domain.Entities.Payment", b =>
@@ -1044,6 +1131,17 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                     b.Navigation("Level");
                 });
 
+            modelBuilder.Entity("CmsEdu.Domain.Entities.Document", b =>
+                {
+                    b.HasOne("CmsEdu.Domain.Entities.Notebook", "Notebook")
+                        .WithMany("Documents")
+                        .HasForeignKey("NotebookId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Notebook");
+                });
+
             modelBuilder.Entity("CmsEdu.Domain.Entities.Enrollment", b =>
                 {
                     b.HasOne("CmsEdu.Domain.Entities.Class", "Class")
@@ -1265,6 +1363,11 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                     b.Navigation("Classes");
 
                     b.Navigation("Lessons");
+                });
+
+            modelBuilder.Entity("CmsEdu.Domain.Entities.Notebook", b =>
+                {
+                    b.Navigation("Documents");
                 });
 
             modelBuilder.Entity("CmsEdu.Domain.Entities.Session", b =>

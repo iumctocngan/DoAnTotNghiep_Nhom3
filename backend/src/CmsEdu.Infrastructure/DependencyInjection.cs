@@ -2,6 +2,7 @@ using CmsEdu.Application.Common.Interfaces;
 using CmsEdu.Application.Curriculum;
 using CmsEdu.Application.Classes;
 using CmsEdu.Application.Enrollments;
+using CmsEdu.Application.Notebooks;
 using CmsEdu.Application.Remarks;
 using CmsEdu.Application.Teachers;
 using CmsEdu.Infrastructure.Identity;
@@ -74,6 +75,10 @@ public static class DependencyInjection
         services.AddScoped<DichVuLopHoc>();
         services.AddScoped<DichVuGhiDanh>();
         services.AddScoped<DichVuNhanXetHocVien>();
+
+        services.AddHttpClient<IRagModuleClient, RagModuleClient>();
+        services.AddScoped<INotebookRepository, NotebookRepository>();
+        services.AddScoped<NotebookService>();
 
         return services;
     }

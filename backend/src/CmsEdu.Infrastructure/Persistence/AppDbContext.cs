@@ -26,6 +26,8 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<Notebook> Notebooks => Set<Notebook>();
+    public DbSet<Document> Documents => Set<Document>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
