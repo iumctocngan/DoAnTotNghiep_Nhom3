@@ -12,7 +12,7 @@ import { useToast } from '../common/ToastProvider';
 export const AppLayout: React.FC = () => {
   const { user, logout } = useAuth();
   const viTri = useLocation();
-  const tenTrang: Record<string, string> = { 'hoc-vien': 'Học viên', 'nguoi-giam-ho': 'Người giám hộ', 'lop-hoc': 'Lớp học', 'ghi-danh': 'Ghi danh', sessions: 'Buổi học & Điểm danh', invoices: 'Học phí & Thu tiền', curriculum: 'Chương trình học', staff: 'Nhân sự', teacher: 'Giảng dạy' };
+  const tenTrang: Record<string, string> = { 'hoc-vien': 'Học viên', 'nguoi-giam-ho': 'Người giám hộ', 'lop-hoc': 'Lớp học', 'ghi-danh': 'Ghi danh', sessions: 'Buổi học & Điểm danh', invoices: 'Học phí & Thu tiền', curriculum: 'Chương trình học', staff: 'Nhân sự', teacher: 'Giảng dạy', notebooks: 'Học liệu thông minh' };
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isLogoutConfirmationOpen, setIsLogoutConfirmationOpen] = useState(false);
@@ -127,6 +127,12 @@ export const AppLayout: React.FC = () => {
                 className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
               >
                 Lịch giảng dạy
+              </NavLink>
+              <NavLink
+                to="/notebooks"
+                className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+              >
+                Học liệu thông minh
               </NavLink>
             </>
           )}

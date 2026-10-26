@@ -15,6 +15,8 @@ import { InvoiceListPage } from './pages/invoices/InvoiceListPage';
 import { ToastProvider } from './components/common/ToastProvider';
 import { TrangQuanLy } from './pages/quan-ly/TrangQuanLy';
 import { AssessmentPage } from './pages/teacher/AssessmentPage';
+import { NotebooksListPage } from './pages/notebooks/NotebooksListPage';
+import { NotebookDetailPage } from './pages/notebooks/NotebookDetailPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -69,6 +71,8 @@ export const App: React.FC = () => {
                   <Route path="/teacher/classes" element={<TeacherClassesPage />} />
                   <Route path="/assessments" element={<AssessmentPage />} />
                   <Route path="/teacher/schedule" element={<TeacherSchedulePage />} />
+                  <Route path="/notebooks" element={<NotebooksListPage />} />
+                  <Route path="/notebooks/:id" element={<NotebookDetailPage />} />
                 </Route>
               </Route>
             </Route>

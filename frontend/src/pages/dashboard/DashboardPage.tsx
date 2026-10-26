@@ -253,7 +253,7 @@ const AdminDashboardView: React.FC = () => {
       case 'Active': return 'var(--primary)';
       case 'Preparing': return '#94a3b8';
       case 'Completed': return 'var(--success)';
-      case 'Cancelled': return '#cbd5e1';
+      case 'Cancelled': return '#ef4444';
       default: return 'var(--primary)';
     }
   };
@@ -430,7 +430,7 @@ const CustomerCareDashboardView: React.FC = () => {
       case 'Active': return 'Đang theo học';
       case 'Paused': return 'Bảo lưu';
       case 'Completed': return 'Hoàn thành';
-      case 'Withdrawn': return 'Đã rút';
+      case 'Withdrawn': return 'Thôi học';
       default: return status;
     }
   };
@@ -440,7 +440,7 @@ const CustomerCareDashboardView: React.FC = () => {
       case 'Active': return 'var(--primary)';
       case 'Paused': return '#d97706';
       case 'Completed': return 'var(--success)';
-      case 'Withdrawn': return '#94a3b8';
+      case 'Withdrawn': return '#ef4444';
       default: return 'var(--primary)';
     }
   };
