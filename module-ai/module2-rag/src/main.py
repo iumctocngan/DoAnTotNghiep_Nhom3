@@ -13,7 +13,7 @@ from api.chat import router as chat_router
 from api.clo_rubric import router as clo_rubric_router
 from api.documents import router as documents_router
 from core import Settings, get_settings
-from storage import ensure_collection_exists, get_qdrant_client
+from db import ensure_collection_exists, get_qdrant_client
 
 logger = logging.getLogger(__name__)
 

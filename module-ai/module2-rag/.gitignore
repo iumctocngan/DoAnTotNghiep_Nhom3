@@ -1,10 +1,12 @@
 .venv/
 __pycache__/
 *.pyc
-storage/
-storage/uploads/
-storage/page-renders/
-storage/pages/
+/storage/uploads/*
+!/storage/uploads/.gitkeep
+/storage/cache/*
+!/storage/cache/pages/
+/storage/cache/pages/*
+!/storage/cache/pages/.gitkeep
 data/processed/
 .env
 *.egg-info/

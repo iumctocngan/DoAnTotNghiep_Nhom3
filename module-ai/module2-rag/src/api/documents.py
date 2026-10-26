@@ -11,7 +11,7 @@ from api.schemas import DocumentOutlineItem, IngestionResponse
 from api.security import CurrentUser, get_current_user
 from core import Settings
 from ingestion.pipeline import DocumentContentError, ingest_document
-from storage import (
+from db import (
     delete_document_chunks,
     delete_notebook_chunks,
     document_path,

@@ -3,7 +3,7 @@ from uuid import UUID
 
 from qdrant_client import AsyncQdrantClient, models
 
-from storage import DocumentChunk
+from db import DocumentChunk
 
 BRANCH_LIMIT = 30
 RRF_LIMIT = 15
@@ -19,7 +19,6 @@ class SearchHit:
 
     @property
     def citation_score(self) -> float | None:
-        # Cross-encoder trả về logit (~ -10 đến +10). Nếu không rerank thì trả về điểm RRF (~ 0.01 đến 0.03).
         if self.rerank_score is not None:
             return self.rerank_score
         return self.fusion_score or None
@@ -83,7 +82,6 @@ async def hybrid_search(
                 using="sparse",
                 filter=scope,
                 limit=BRANCH_LIMIT,
-                # IDF tính trên toàn notebook (không chỉ document đang lọc) để điểm BM25 ổn định khi người dùng chọn ít tài liệu.
                 params=models.SearchParams(idf=models.IdfCorpusParams(corpus=notebook_filter)),
             ),
         ],

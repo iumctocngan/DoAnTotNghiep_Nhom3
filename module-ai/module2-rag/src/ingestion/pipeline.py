@@ -10,7 +10,7 @@ from qdrant_client import AsyncQdrantClient, models
 from core import Settings, embed_documents, embed_sparse_documents
 from ingestion.chunking import build_chunks, embedding_text
 from ingestion.loaders import extract_document
-from storage import delete_document_chunks, ensure_collection_exists, upsert_document_chunks
+from db import delete_document_chunks, ensure_collection_exists, upsert_document_chunks
 
 _EMBEDDING_BATCH_SIZE = 16
 
