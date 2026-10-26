@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+storage/
+storage/uploads/
+storage/page-renders/
+storage/pages/
+data/processed/
+.env
+*.egg-info/
+dist/
+build/
+.pytest_cache/
