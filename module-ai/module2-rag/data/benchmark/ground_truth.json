@@ -1,0 +1,272 @@
+[
+  {
+    "ma_cau_hoi": "GT_01",
+    "cau_hoi": "Trong hoạt động khám phá Tạo các hình vuông ở bài 1 sách P31, các bước thực hành để tạo thành một hình vuông từ hình phụ lục được hướng dẫn như thế nào?",
+    "dap_an_chuan": "Hoạt động yêu cầu: cắt các hình trong phần phụ lục ra; chia hình thành 4 phần giống nhau (có cùng kích cỡ và hình dạng); sau đó ghép các phần lại với nhau để tạo thành 1 hình vuông hoàn chỉnh.",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_02",
+    "cau_hoi": "Trong hoạt động Chia thành các hình giống nhau ở bài 1 sách P31, yêu cầu về kích cỡ và hình dạng của các phần sau khi chia là gì?",
+    "dap_an_chuan": "Khi chia hình thành 2 phần, kích cỡ và hình dạng của phần bị cắt rời phải bằng nhau và giống nhau.",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_03",
+    "cau_hoi": "Trong bài toán chuyển Hình chữ nhật thành hình vuông ở bài 1 sách P31, nếu hình chữ nhật có kích thước 9 x 4 với diện tích là 36 thì hình vuông tạo thành khi ghép lại có độ dài cạnh là bao nhiêu?",
+    "dap_an_chuan": "Vì diện tích của hình chữ nhật là 36 (9 x 4), nên khi chia thành 2 phần bằng nhau rồi ghép lại, hình vuông tạo thành phải có chiều dài các cạnh là 6.",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_04",
+    "cau_hoi": "Trong bài toán lật đồng xu bảng 2x2 ở bài 2 sách P31, nếu ban đầu có 1 đồng xu mặt số và 3 đồng xu mặt chữ, mỗi lần lật 1 hàng hoặc 1 cột 2 đồng xu thì có thể làm cho cả 4 đồng xu cùng về mặt số được không? Giải thích vì sao.",
+    "dap_an_chuan": "Không thể. Ban đầu chỉ có 1 đồng xu mặt số (số lẻ). Mỗi lần lật 2 đồng xu: nếu lật 2 mặt số thì giảm 2; nếu lật 2 mặt chữ thì tăng 2; nếu lật 1 số 1 chữ thì không đổi. Số lượng đồng xu mặt số luôn thay đổi một lượng chẵn (tăng hoặc giảm 2). Xuất phát từ số lẻ (1) nên tổng số mặt số luôn luôn là số lẻ, không bao giờ đạt được 4 (số chẵn).",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_05",
+    "cau_hoi": "Trong hoạt động Vỗ tay ở bài 2 sách P31, tại sao tổng số lần tay vỗ của các học sinh luôn luôn là số chẵn?",
+    "dap_an_chuan": "Tổng số lần tay vỗ luôn luôn là số chẵn vì số lần tay vỗ trước khi bắt đầu là 0 (chẵn), và mỗi lần vỗ tay cần có 2 học sinh nên số lần tay vỗ luôn tăng một lượng là 2. Từ đó suy ra luôn có một số chẵn học sinh đã vỗ tay một số lẻ lần (vì lẻ x chẵn = chẵn).",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_06",
+    "cau_hoi": "Trong bài toán Phủ một bàn cờ bằng quân domino ở bài 2 sách P31, có thể phủ đầy một bàn cờ 6x6 bị cắt bỏ hai góc bằng 17 quân domino kích thước 2x1 không? Vì sao?",
+    "dap_an_chuan": "Không thể. Mỗi quân domino 2x1 luôn phủ đúng 1 ô trắng và 1 ô đen, do đó cần số lượng ô trắng và ô đen bằng nhau. Tuy nhiên, bàn cờ 6x6 sau khi cắt 2 góc chỉ còn lại 18 ô trắng và 16 ô đen (không bằng nhau). Vì vậy không thể phủ kín bàn cờ bằng 17 quân domino.",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_07",
+    "cau_hoi": "Trong bài học Có bao nhiêu thẻ ở sách P31, khi sử dụng 4 thẻ bài số 1, 3, 5, 6 để tạo các số có 3 chữ số (mỗi thẻ dùng tối đa 1 lần trong mỗi số), tổng của tất cả các số có 3 chữ số có thể tạo ra là bao nhiêu?",
+    "dap_an_chuan": "Có tất cả 24 số có 3 chữ số (4 x 3 x 2 = 24). Mỗi chữ số 1, 3, 5, 6 xuất hiện 6 lần ở hàng trăm, hàng chục và hàng đơn vị. Tổng các số ở hàng trăm là 9,000; hàng chục là 900; hàng đơn vị là 90. Tổng của tất cả các số tạo được là 9,000 + 900 + 90 = 9,990.",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa"
+  },
+  {
+    "ma_cau_hoi": "GT_08",
+    "cau_hoi": "Trong bài toán Máy thẻ bài số ở bài 3 sách P31, nếu chiếc máy tạo thẻ bài số bắt đầu in từ 1 và tổng tất cả các chữ số trên các thẻ vừa tạo ra là 330 thì chiếc thẻ bài cuối cùng máy tạo ra là thẻ số bao nhiêu?",
+    "dap_an_chuan": "Chiếc thẻ bài cuối cùng mà chiếc máy tạo ra là thẻ số 50.",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_09",
+    "cau_hoi": "Trong trò chơi 3-6-9 ở bài 3 sách P31, tính từ số 1 đến số 999 thì chữ số 3 xuất hiện tổng cộng bao nhiêu lần ở các hàng?",
+    "dap_an_chuan": "Tính từ 1 đến 999, chữ số 3 xuất hiện 100 lần ở hàng đơn vị, 100 lần ở hàng chục và 100 lần ở hàng trăm. Tổng cộng chữ số 3 xuất hiện 300 lần (tương tự chữ số 6 và chữ số 9 cũng xuất hiện 300 lần).",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_10",
+    "cau_hoi": "Trong hoạt động Làm đường ở bài 4 sách P31, cần tối thiểu bao nhiêu con đường để có thể kết nối liên thông tất cả 7 ngôi làng A, B, C, D, E, F và G với nhau?",
+    "dap_an_chuan": "Cần tối thiểu ít nhất 6 con đường để kết nối liên thông tất cả 7 ngôi làng A, B, C, D, E, F và G.",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_11",
+    "cau_hoi": "Trong bài toán Biểu diễn kịch ở bài 4 sách P31, các công việc C, D, E có thể làm đồng thời trong tối đa 7 ngày. Số ngày tối thiểu cần thiết để hoàn thành toàn bộ 6 công việc chuẩn bị cho vở kịch là bao nhiêu ngày?",
+    "dap_an_chuan": "Vì các công việc C, D, E có thể làm đồng thời trong cùng khoảng thời gian tối đa là 7 ngày (thời gian của E), nên số ngày tối thiểu để hoàn thành tất cả các công việc là 13 ngày (tính theo chuỗi A + B + CDE + F = 3 + 2 + 7 + 1 = 13 ngày).",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_12",
+    "cau_hoi": "Trong bài toán Chiếc xe đạp bay ở bài 4 sách P31, số ngày tối thiểu cần thiết để hoàn thành sản xuất một chiếc xe đạp bay theo sơ đồ tiến trình công việc là bao nhiêu ngày?",
+    "dap_an_chuan": "Số ngày tối thiểu cần để sản xuất 1 chiếc xe đạp bay là 31 ngày, được xác định theo chuỗi công việc dài nhất B(5) + D(3) + F(7) + J(16) = 31 ngày.",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_13",
+    "cau_hoi": "Số đầu rồng (dragon head numbers) được định nghĩa theo những điều kiện nào trong bài 1 sách P33?",
+    "dap_an_chuan": "Số đầu rồng phải thỏa mãn 2 điều kiện: thứ nhất, chữ số '0' không được coi là một chữ số; thứ hai, tổng của tất cả các chữ số bằng chữ số đầu tiên nhân với 2 (tức là chữ số đầu tiên bằng tổng của các chữ số còn lại).",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa"
+  },
+  {
+    "ma_cau_hoi": "GT_14",
+    "cau_hoi": "Trong bài 1 sách P33, số đầu rồng nhỏ nhất có 4 chữ số là số nào và giải thích cách tìm?",
+    "dap_an_chuan": "Số đầu rồng nhỏ nhất có 4 chữ số là 3,111. Giải thích: gọi số đó là ABCD thì B + C + D = A. Vì chữ số 0 không được sử dụng nên các giá trị nhỏ nhất của B, C, D là 1, 1, 1; do đó chữ số đầu tiên A nhỏ nhất phải là 1 + 1 + 1 = 3.",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa"
+  },
+  {
+    "ma_cau_hoi": "GT_15",
+    "cau_hoi": "Trong bài 1 sách P33, số cửu chương được định nghĩa với những điều kiện nào?",
+    "dap_an_chuan": "Số cửu chương thỏa mãn 2 điều kiện: thứ nhất, chữ số '0' không được coi là một chữ số; thứ hai, tích của hai chữ số liền kề nhau sẽ tạo thành chữ số ở vị trí tiếp theo trong số đó.",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa"
+  },
+  {
+    "ma_cau_hoi": "GT_16",
+    "cau_hoi": "Trong hoạt động mở đầu bài Tom và Huckle ở sách P33, Tom bị phạt sơn hàng rào và mất bao nhiêu thời gian để sơn xong một phần hàng rào?",
+    "dap_an_chuan": "Tom mất 3 giờ và 20 phút để sơn xong một phần hàng rào.",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_17",
+    "cau_hoi": "Trong bài toán Xây nhà trên cây ở sách P33, nếu Tom làm một mình mất 6 ngày và Huckle làm một mình mất 12 ngày thì khi cả hai bạn cùng làm sẽ hoàn thành trong bao nhiêu ngày?",
+    "dap_an_chuan": "Trong 1 ngày Tom làm được 1/6 công việc, Huckle làm được 1/12 công việc. Cả hai cùng làm 1 ngày được 1/6 + 1/12 = 3/12 = 1/4 công việc. Do đó cả hai bạn cùng làm sẽ hoàn thành ngôi nhà trên cây trong 4 ngày.",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_18",
+    "cau_hoi": "Dạng bài toán Cỏ trên trang trại ở bài Tom và Huckle (sách P33) dựa trên nguyên lý tốc độ nào để tính toán lượng cỏ tiêu thụ?",
+    "dap_an_chuan": "Bài toán dựa trên nguyên lý: trang trại có lượng cỏ ban đầu có sẵn và mỗi ngày lượng cỏ mới mọc thêm với một tốc độ không đổi, từ đó tính toán sự cân bằng giữa lượng cỏ mọc thêm hàng ngày và số lượng bò ăn mỗi ngày.",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_19",
+    "cau_hoi": "Trong bài 3 sách P33, 5 số đầu tiên của dãy số tam giác là những số nào?",
+    "dap_an_chuan": "5 số đầu tiên của dãy số tam giác là 1, 3, 6, 10 và 15.",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa"
+  },
+  {
+    "ma_cau_hoi": "GT_20",
+    "cau_hoi": "Trong bài 3 sách P33, mối quan hệ giữa hai số tam giác liên tiếp và một số vuông được thể hiện như thế nào?",
+    "dap_an_chuan": "Tổng của hai số tam giác liên tiếp sẽ tạo thành một số vuông (ví dụ: 1 + 3 = 4; 3 + 6 = 9; 6 + 10 = 16).",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_21",
+    "cau_hoi": "Trong bài học Số đa giác ở sách P33, các số đa giác như số ngũ giác và lục giác có thể được phân tách như thế nào?",
+    "dap_an_chuan": "Các số đa giác lớn hơn có thể được phân tách thành tổng của các số tam giác và các số đa giác nhỏ hơn thông qua các lớp điểm chấm mở rộng.",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa"
+  },
+  {
+    "ma_cau_hoi": "GT_22",
+    "cau_hoi": "Trong trò chơi Jump Jump Puzzle ở bài 4 sách P33, số lần di chuyển ít nhất để tráo đổi vị trí của 3 con chip màu bên trái và 3 con chip khác màu bên phải qua 1 ô trống là bao nhiêu lần?",
+    "dap_an_chuan": "Số lần di chuyển ít nhất cần có để tráo đổi vị trí của 3 con chip màu bên trái và 3 con chip khác màu bên phải là 15 lần di chuyển.",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_23",
+    "cau_hoi": "Trong bài 4 sách P33, nếu có 4 con chip cùng màu và 4 con chip khác màu cần tráo đổi vị trí qua 1 ô trống thì số lần di chuyển ít nhất là bao nhiêu lần?",
+    "dap_an_chuan": "Số lần di chuyển ít nhất để 4 con chip cùng màu và 4 con chip khác màu tráo đổi vị trí là 24 lần di chuyển.",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_24",
+    "cau_hoi": "Trong hoạt động Nhảy cùng nhau ở bài 4 sách P33, số lần di chuyển ít nhất để di chuyển các con chip màu đang ở cạnh nhau thành vị trí đặt xen kẽ là bao nhiêu lần?",
+    "dap_an_chuan": "Số lần di chuyển ít nhất cần có để các con chip màu được đặt xen kẽ nhau là 4 lần di chuyển.",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_25",
+    "cau_hoi": "Trong bài toán hai chú ếch Ellie và Flip nhảy quanh ao có chu vi 825 cm (sách P41), cả hai nhảy 15 lần trước khi gặp nhau và bước nhảy của Ellie dài hơn Flip 5 cm. Độ dài bước nhảy của Flip là bao nhiêu cm?",
+    "dap_an_chuan": "Phương trình giải là: 15 x (x + x + 5) = 825, tương đương 2x + 5 = 55, suy ra x = 25 cm. Vậy độ dài bước nhảy của chú ếch Flip là 25 cm.",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_26",
+    "cau_hoi": "Nhà toán học Diophantus được giới thiệu với danh xưng gì trong lịch sử toán học ở bài 1 sách P41?",
+    "dap_an_chuan": "Diophantus là nhà toán học thời kỳ Hellenistic và được coi là cha đẻ của môn đại số học.",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa"
+  },
+  {
+    "ma_cau_hoi": "GT_27",
+    "cau_hoi": "Trong hoạt động mua sắm Kỳ nghỉ hè ở bài 1 sách P41, phương pháp giải toán nào được ghi chú để học sinh sử dụng giải quyết vấn đề?",
+    "dap_an_chuan": "Phương pháp được ghi chú để học sinh sử dụng giải quyết vấn đề mua sắm là phương pháp thế (phép thế).",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_28",
+    "cau_hoi": "Trong trò chơi vẽ đoạn thẳng nối 16 điểm trên đường tròn ở bài 2 sách P41, quy tắc cốt lõi về việc vẽ các đoạn thẳng mới là gì?",
+    "dap_an_chuan": "Quy tắc là lần lượt chọn 2 điểm để vẽ đoạn thẳng nối chúng, nhưng không được phép vẽ đoạn thẳng cắt bất kỳ đoạn thẳng nào đã được vẽ trước đó; người không thể vẽ tiếp sẽ thua cuộc.",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_29",
+    "cau_hoi": "Trong trò chơi vẽ Domino trên bảng ở bài 2 sách P41, chiến lược chiến thắng đối xứng dành cho người chơi nào?",
+    "dap_an_chuan": "Người chơi sau có lợi thế chiến thắng bằng cách vẽ các tấm domino đối xứng với các tấm domino của người chơi trước qua điểm tâm ở chính giữa bảng.",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_30",
+    "cau_hoi": "Học liệu và số lượng đồng xu được chuẩn bị cho hoạt động khám phá Chiến lược trò chơi Nim ở bài 2 sách P41 gồm những gì?",
+    "dap_an_chuan": "Học liệu gồm các đồng xu màu, mỗi đội lấy 6 đồng xu cùng màu và 8 đồng xu màu khác để tham gia trò chơi.",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_31",
+    "cau_hoi": "Chu trình Hamilton được định nghĩa như thế nào trong bài 3 sách P41?",
+    "dap_an_chuan": "Chu trình Hamilton là đường đi qua tất cả các đỉnh của hình và quay trở về điểm ban đầu (mỗi đỉnh đi qua đúng một lần).",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa"
+  },
+  {
+    "ma_cau_hoi": "GT_32",
+    "cau_hoi": "Trong bài 3 sách P41, 5 khối hình không gian nào được đưa ra để khảo sát sự tồn tại của chu trình Hamilton?",
+    "dap_an_chuan": "5 khối hình không gian được khảo sát gồm: Khối tứ diện, Khối lập phương, Hình 8 mặt (khối bát diện), Khối 12 mặt và Khối 20 mặt.",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_33",
+    "cau_hoi": "Trong bài toán Dịch vụ bưu điện ở bài 3 sách P41, ghi chú bài học nhận định như thế nào về việc tìm chu trình Hamilton ngắn nhất?",
+    "dap_an_chuan": "Ghi chú chỉ ra rằng không có một hệ thống công thức cố định nào để xác định chu trình Hamilton ngắn nhất, mà phương pháp là thử nghiệm các khả năng khác nhau có thể xảy ra để tìm ra lộ trình tối ưu.",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_34",
+    "cau_hoi": "Trong hoạt động Tàu đánh bắt cá ở bài 4 sách P41, tàu đánh bắt cá cơm có chiều dài quy định là bao nhiêu ô trên bản đồ ra đa?",
+    "dap_an_chuan": "Tàu đánh bắt cá cơm có chiều dài là 3 ô trên bản đồ ra đa.",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_35",
+    "cau_hoi": "Trong bài toán Tàu chiến ở bài 4 sách P41, các con tàu chiến được quy định đặt theo những hướng nào trên bản đồ?",
+    "dap_an_chuan": "Các tàu chiến không được đặt chéo mà chỉ có thể đặt theo chiều dọc hoặc chiều ngang trên bản đồ.",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_36",
+    "cau_hoi": "Trong Câu đố về ô vuông ở bài 4 sách P41, quy tắc đặt các hình vuông trên bản đồ là gì và nên bắt đầu với ô vuông nào?",
+    "dap_an_chuan": "Các hình vuông không được chồng lên nhau và không được sát nhau theo chiều ngang, dọc và chéo; bước giải quyết vấn đề ưu tiên xem xét đặt ô vuông có kích thước lớn nhất trước trên bản đồ.",
+    "dang_cau_hoi": "Giải toán & Suy luận"
+  },
+  {
+    "ma_cau_hoi": "GT_37",
+    "cau_hoi": "Quy tắc 'Số đuôi hổ' trong giáo trình CMS Edu được phát biểu và áp dụng như thế nào?",
+    "dap_an_chuan": "Tôi chưa tìm thấy thông tin phù hợp trong tài liệu của notebook này.",
+    "dang_cau_hoi": "Câu hỏi bẫy"
+  },
+  {
+    "ma_cau_hoi": "GT_38",
+    "cau_hoi": "Chiến lược 'Chiếc thảm bay thần kỳ' trong bài Nào cùng nhảy được hướng dẫn thực hiện qua những bước nào?",
+    "dap_an_chuan": "Tôi chưa tìm thấy thông tin phù hợp trong tài liệu của notebook này.",
+    "dang_cau_hoi": "Câu hỏi bẫy"
+  },
+  {
+    "ma_cau_hoi": "GT_39",
+    "cau_hoi": "Định lý 'Tam giác vàng CMS' được nêu ở trang nào của cuốn sách P33 và nội dung định lý là gì?",
+    "dap_an_chuan": "Tôi chưa tìm thấy thông tin phù hợp trong tài liệu của notebook này.",
+    "dang_cau_hoi": "Câu hỏi bẫy"
+  },
+  {
+    "ma_cau_hoi": "GT_40",
+    "cau_hoi": "Quy tắc 'Gấp giấy vô cực' trong bài Chu trình Hamilton sách P41 được mô tả như thế nào?",
+    "dap_an_chuan": "Tôi chưa tìm thấy thông tin phù hợp trong tài liệu của notebook này.",
+    "dang_cau_hoi": "Câu hỏi bẫy"
+  },
+  {
+    "ma_cau_hoi": "GT_41",
+    "cau_hoi": "Hãy phát biểu Định lý Pytago và tính cạnh huyền của tam giác vuông có hai cạnh góc vuông là 3 và 4 theo tài liệu giáo trình.",
+    "dap_an_chuan": "Tôi chưa tìm thấy thông tin phù hợp trong tài liệu của notebook này.",
+    "dang_cau_hoi": "Câu hỏi bẫy"
+  },
+  {
+    "ma_cau_hoi": "GT_42",
+    "cau_hoi": "Công thức tính diện tích hình tròn có bán kính R được trình bày ở bài học nào trong 3 cuốn sách này?",
+    "dap_an_chuan": "Tôi chưa tìm thấy thông tin phù hợp trong tài liệu của notebook này.",
+    "dang_cau_hoi": "Câu hỏi bẫy"
+  },
+  {
+    "ma_cau_hoi": "GT_43",
+    "cau_hoi": "Nêu công thức nghiệm của phương trình bậc hai ax^2 + bx + c = 0 theo hướng dẫn của tài liệu.",
+    "dap_an_chuan": "Tôi chưa tìm thấy thông tin phù hợp trong tài liệu của notebook này.",
+    "dang_cau_hoi": "Câu hỏi bẫy"
+  },
+  {
+    "ma_cau_hoi": "GT_44",
+    "cau_hoi": "Hãy soạn cho tôi một giáo án hoàn chỉnh 45 phút kèm slide thuyết trình cho bài Tấm bia mộ của Diophantus.",
+    "dap_an_chuan": "Yêu cầu này nằm ngoài phạm vi tra cứu tài liệu của trợ lý RAG. Tôi có thể giúp tra cứu, tóm tắt hoặc giải thích nội dung có trong tài liệu.",
+    "dang_cau_hoi": "Câu hỏi bẫy"
+  },
+  {
+    "ma_cau_hoi": "GT_45",
+    "cau_hoi": "Hãy thiết kế một đề kiểm tra 15 phút gồm 5 câu hỏi trắc nghiệm kèm ma trận điểm cho bài Chu trình Hamilton.",
+    "dap_an_chuan": "Yêu cầu này nằm ngoài phạm vi tra cứu tài liệu của trợ lý RAG. Tôi có thể giúp tra cứu, tóm tắt hoặc giải thích nội dung có trong tài liệu.",
+    "dang_cau_hoi": "Câu hỏi bẫy"
+  }
+]
