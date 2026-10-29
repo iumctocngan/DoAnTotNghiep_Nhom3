@@ -1,5 +1,4 @@
 import asyncio
-import unicodedata
 from functools import lru_cache
 from threading import Lock
 
@@ -11,17 +10,11 @@ QUERY_PREFIX = "query: "
 _DENSE_LOCK = Lock()
 _SPARSE_LOCK = Lock()
 
+
 def prepare_document_text(text: str) -> str:
     cleaned = text.strip()
     return f"{PASSAGE_PREFIX}{cleaned}" if cleaned else ""
 
-# Thêm bản không dấu của các từ có dấu để BM25 khớp cả khi người dùng gõ không dấu.
-def lexical_text(text: str) -> str:
-    normalized = unicodedata.normalize("NFC", text)
-    decomposed = unicodedata.normalize("NFD", normalized.replace("đ", "d").replace("Đ", "D"))
-    folded = "".join(c for c in decomposed if unicodedata.category(c) != "Mn")
-    extra = [plain for word, plain in zip(normalized.split(), folded.split()) if plain != word]
-    return " ".join([normalized, *extra])
 
 @lru_cache(maxsize=1)
 def _dense_model(model_name: str):
@@ -31,6 +24,7 @@ def _dense_model(model_name: str):
         return SentenceTransformer(model_name, device="cpu", local_files_only=True)
     except Exception:
         return SentenceTransformer(model_name, device="cpu")
+
 
 @lru_cache(maxsize=1)
 def _sparse_model():
@@ -48,14 +42,14 @@ def _encode_dense(model_name: str, texts: list[str]) -> list[list[float]]:
 def _encode_sparse(texts: list[str]) -> list[tuple[list[int], list[float]]]:
     model = _sparse_model()
     with _SPARSE_LOCK:
-        embeddings = list(model.embed([lexical_text(text) for text in texts]))
+        embeddings = list(model.embed(texts))
     return [(e.indices.tolist(), e.values.tolist()) for e in embeddings]
 
 
 def _encode_sparse_query(texts: list[str]) -> list[tuple[list[int], list[float]]]:
     model = _sparse_model()
     with _SPARSE_LOCK:
-        embeddings = list(model.query_embed([lexical_text(text) for text in texts]))
+        embeddings = list(model.query_embed(texts))
     return [(e.indices.tolist(), e.values.tolist()) for e in embeddings]
 
 

@@ -22,7 +22,7 @@ Dịch vụ RAG (Retrieval-Augmented Generation) phục vụ hỏi đáp thông 
 | **API Framework** | FastAPI, Uvicorn, Pydantic v2 | Xây dựng RESTful API async hiệu năng cao, kiểm định schema chặt chẽ |
 | **Vector Database** | Qdrant v1.19+ | Lưu trữ vector đa chiều kết hợp Sparse BM25 index, hỗ trợ Multi-tenant cô lập đồ thị HNSW theo `notebook_id` |
 | **Dense Embedding** | `intfloat/multilingual-e5-small` | Mô hình ngôn ngữ đa ngữ (384 dimensions) tối ưu biểu diễn ngữ nghĩa tiếng Việt |
-| **Sparse BM25** | `fastembed` (`Qdrant/bm25`) | Đánh chỉ mục từ khóa từ vựng tiếng Việt (loại bỏ stemmer tiếng Anh, bổ sung `lexical_text` không dấu) |
+| **Sparse BM25** | `fastembed` (`Qdrant/bm25`) | Đánh chỉ mục từ khóa từ vựng tiếng Việt (loại bỏ stemmer tiếng Anh) |
 | **Reranker** | `cross-encoder/mmarco-mMiniLMv2-L12-H384-v1` | Chấm điểm tương quan chéo giữa câu hỏi và từng chunk ứng viên để chọn ra top kết quả phù hợp nhất |
 | **Generative LLM** | Google Gemini (Gemini SDK) | Sinh câu trả lời và trích xuất chuẩn đầu ra có cấu trúc (Structured Outputs JSON) |
 | **Document Parsing** | PyMuPDF (fitz), python-docx | Trích xuất văn bản có cấu trúc từ PDF giáo trình (nhận diện mục lục, banner) và tài liệu Word DOCX |
@@ -40,7 +40,7 @@ Hệ thống được thiết kế theo 2 pipeline cốt lõi:
 2. **Phân đoạn văn bản (Chunking)**: Chia nhỏ văn bản theo token (cỡ 350 tokens, độ gối overlap 50 tokens) đảm bảo bao trọn vẹn ngữ cảnh một hoạt động sư phạm và không vượt trần 512 tokens khi vào Cross-Encoder.
 3. **Mã hóa kép (Dual Embedding)**:
    - Tạo vector ngữ nghĩa dense với tiền tố `passage: ` qua mô hình E5 đa ngữ.
-   - Tạo vector từ khóa sparse BM25 kèm văn bản không dấu (`lexical_text`) qua FastEmbed.
+   - Tạo vector từ khóa sparse BM25 qua FastEmbed.
 4. **Lưu trữ đa khách thuê (Multi-tenant Upsert)**: Đẩy vector vào Qdrant collection `document_chunks` với payload index `notebook_id` (cô lập tìm kiếm theo notebook).
 
 ### 3.2. Luồng Truy xuất & Sinh nội dung (Retrieval & Generation Pipeline)
