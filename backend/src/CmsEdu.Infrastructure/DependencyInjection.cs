@@ -54,6 +54,8 @@ public static class DependencyInjection
             .Validate(options => options.AccessTokenMinutes > 0, "Jwt:AccessTokenMinutes must be greater than zero.")
             .Validate(options => options.RefreshTokenDays > 0, "Jwt:RefreshTokenDays must be greater than zero.");
 
+        services.AddMemoryCache();
+        services.AddScoped<IPermissionService, PermissionService>();
         services.AddScoped<IAccessTokenGenerator, JwtAccessTokenGenerator>();
         services.AddScoped<IAuthenticationService, AuthenticationService>();
         services.AddScoped<IKhoDuLieuNguoiGiamHo, Persistence.Repositories.KhoDuLieuNguoiGiamHo>();

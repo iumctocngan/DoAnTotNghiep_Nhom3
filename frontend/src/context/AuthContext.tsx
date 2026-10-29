@@ -17,6 +17,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   changePassword: (request: ChangePasswordRequest) => Promise<void>;
   refreshSession: () => Promise<boolean>;
+  hasPermission: (permission: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -53,6 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             fullName: loginResponse.fullName,
             email: loginResponse.email,
             role: loginResponse.role,
+            permissions: loginResponse.permissions ?? [],
           });
           setStatus('authenticated');
         }
@@ -80,6 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       fullName: data.fullName,
       email: data.email,
       role: data.role,
+      permissions: data.permissions ?? [],
     });
     setStatus('authenticated');
   };
@@ -107,6 +110,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         fullName: data.fullName,
         email: data.email,
         role: data.role,
+        permissions: data.permissions ?? [],
       });
       setStatus('authenticated');
       return true;
@@ -114,6 +118,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       clearSession();
       return false;
     }
+  };
+
+  const hasPermission = (permission: string): boolean => {
+    if (!user) return false;
+    if (user.role === 'Admin') return true;
+    return user.permissions?.includes(permission) ?? false;
   };
 
   return (
@@ -125,6 +135,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         changePassword,
         refreshSession,
+        hasPermission,
       }}
     >
       {children}

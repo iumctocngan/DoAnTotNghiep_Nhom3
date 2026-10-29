@@ -1,6 +1,7 @@
+using CmsEdu.Api.Authorization;
 using CmsEdu.Api.ExceptionHandling;
 using CmsEdu.Application.Guardians;
-using CmsEdu.Domain.Enums;
+using CmsEdu.Domain.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,11 +14,12 @@ namespace CmsEdu.Api.Controllers;
 public sealed class LienKetNguoiGiamHoController(DichVuNguoiGiamHo dichVu) : ControllerBase
 {
     [HttpGet]
+    [HasPermission(Permissions.Guardians.View)]
     public async Task<IActionResult> LayDanhSach([FromRoute(Name = "id")] int maHocVien, CancellationToken maHuy) =>
         Ok(await dichVu.LayLienKetAsync(maHocVien, maHuy));
 
     [HttpPost]
-    [Authorize(Roles = $"{UserRole.Admin},{UserRole.CustomerCare}")]
+    [HasPermission(Permissions.Guardians.Manage)]
     public async Task<IActionResult> GanLienKet([FromRoute(Name = "id")] int maHocVien, YeuCauLienKetNguoiGiamHo yeuCau, CancellationToken maHuy)
     {
         await dichVu.GanLienKetAsync(maHocVien, yeuCau, maHuy);
@@ -25,7 +27,7 @@ public sealed class LienKetNguoiGiamHoController(DichVuNguoiGiamHo dichVu) : Con
     }
 
     [HttpPut("{guardianId:int}")]
-    [Authorize(Roles = $"{UserRole.Admin},{UserRole.CustomerCare}")]
+    [HasPermission(Permissions.Guardians.Manage)]
     public async Task<IActionResult> CapNhatLienKet([FromRoute(Name = "id")] int maHocVien,
         [FromRoute(Name = "guardianId")] int maNguoiGiamHo, YeuCauCapNhatLienKetNguoiGiamHo yeuCau, CancellationToken maHuy)
     {
@@ -34,7 +36,7 @@ public sealed class LienKetNguoiGiamHoController(DichVuNguoiGiamHo dichVu) : Con
     }
 
     [HttpPut("{guardianId:int}/primary")]
-    [Authorize(Roles = $"{UserRole.Admin},{UserRole.CustomerCare}")]
+    [HasPermission(Permissions.Guardians.Manage)]
     public async Task<IActionResult> DatNguoiChinh([FromRoute(Name = "id")] int maHocVien,
         [FromRoute(Name = "guardianId")] int maNguoiGiamHo, CancellationToken maHuy)
     {
@@ -43,7 +45,7 @@ public sealed class LienKetNguoiGiamHoController(DichVuNguoiGiamHo dichVu) : Con
     }
 
     [HttpDelete("{guardianId:int}")]
-    [Authorize(Roles = $"{UserRole.Admin},{UserRole.CustomerCare}")]
+    [HasPermission(Permissions.Guardians.Manage)]
     public async Task<IActionResult> GoLienKet([FromRoute(Name = "id")] int maHocVien,
         [FromRoute(Name = "guardianId")] int maNguoiGiamHo, CancellationToken maHuy)
     {

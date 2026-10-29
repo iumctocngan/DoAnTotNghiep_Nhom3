@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using CmsEdu.Api.Authorization;
 using CmsEdu.Api.ExceptionHandling;
 using CmsEdu.Api.Services;
 using CmsEdu.Application.Common.Interfaces;
@@ -22,7 +23,11 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 
-// Infrastructure services (DbContext, Identity)
+// Dynamic Authorization Services (RBAC)
+builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
+
+// Infrastructure services (DbContext, Identity, Permissions)
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
 var jwtOptions = builder.Configuration

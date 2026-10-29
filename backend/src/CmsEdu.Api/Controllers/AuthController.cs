@@ -11,6 +11,7 @@ namespace CmsEdu.Api.Controllers;
 [Route("api/auth")]
 public class AuthController(
     IAuthenticationService authenticationService,
+    IPermissionService permissionService,
     IWebHostEnvironment environment) : ControllerBase
 {
     private const string RefreshTokenCookieName = "refreshToken";
@@ -65,7 +66,7 @@ public class AuthController(
 
     [Authorize]
     [HttpGet("me")]
-    public ActionResult<CurrentUserResponse> Me()
+    public async Task<ActionResult<CurrentUserResponse>> Me(CancellationToken cancellationToken)
     {
         var userId = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
         var employeeCode = User.FindFirstValue("employee_code");
@@ -78,7 +79,8 @@ public class AuthController(
             return Unauthorized();
         }
 
-        return Ok(new CurrentUserResponse(userId, employeeCode, fullName, email, role));
+        var permissions = await permissionService.GetPermissionsForRoleAsync(role, cancellationToken);
+        return Ok(new CurrentUserResponse(userId, employeeCode, fullName, email, role, permissions));
     }
 
     [Authorize]

@@ -2,6 +2,8 @@ using CmsEdu.Infrastructure.Persistence;
 using CmsEdu.Application.Common.Interfaces;
 using CmsEdu.Application.Common.Models;
 using CmsEdu.Application.Staff;
+using CmsEdu.Api.Authorization;
+using CmsEdu.Domain.Authorization;
 using CmsEdu.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +12,8 @@ namespace CmsEdu.Api.Controllers;
 
 [ApiController]
 [Route("api/staff")]
-[Authorize(Roles = UserRole.Admin)]
+[Authorize]
+[HasPermission(Permissions.Staff.View)]
 public class StaffController(IStaffService staffService, AppDbContext duLieu) : ControllerBase
 {
     [HttpGet]
@@ -35,6 +38,7 @@ public class StaffController(IStaffService staffService, AppDbContext duLieu) : 
     }
 
     [HttpPost]
+    [HasPermission(Permissions.Staff.Manage)]
     public async Task<ActionResult<StaffResponse>> CreateStaff(
         CreateStaffRequest request,
         CancellationToken cancellationToken)
@@ -45,6 +49,7 @@ public class StaffController(IStaffService staffService, AppDbContext duLieu) : 
     }
 
     [HttpPut("{id}")]
+    [HasPermission(Permissions.Staff.Manage)]
     public async Task<ActionResult<StaffResponse>> UpdateStaff(
         string id,
         UpdateStaffRequest request,
@@ -54,6 +59,7 @@ public class StaffController(IStaffService staffService, AppDbContext duLieu) : 
     }
 
     [HttpPut("{id}/role")]
+    [HasPermission(Permissions.Staff.Manage)]
     public async Task<IActionResult> ChangeRole(
         string id,
         ChangeStaffRoleRequest request,
@@ -64,6 +70,7 @@ public class StaffController(IStaffService staffService, AppDbContext duLieu) : 
     }
 
     [HttpPost("{id}/reset-password")]
+    [HasPermission(Permissions.Staff.Manage)]
     public async Task<IActionResult> ResetPassword(
         string id,
         ResetStaffPasswordRequest request,
@@ -74,6 +81,7 @@ public class StaffController(IStaffService staffService, AppDbContext duLieu) : 
     }
 
     [HttpPost("{id}/activate")]
+    [HasPermission(Permissions.Staff.Manage)]
     public async Task<IActionResult> Activate(string id, CancellationToken cancellationToken)
     {
         await staffService.ActivateAsync(id, cancellationToken);
@@ -81,6 +89,7 @@ public class StaffController(IStaffService staffService, AppDbContext duLieu) : 
     }
 
     [HttpPost("{id}/deactivate")]
+    [HasPermission(Permissions.Staff.Manage)]
     public async Task<IActionResult> Deactivate(string id, CancellationToken cancellationToken)
     {
         await staffService.DeactivateAsync(id, cancellationToken);

@@ -1,6 +1,7 @@
 using CmsEdu.Application.Common.Interfaces;
 using CmsEdu.Application.Notebooks;
-using CmsEdu.Domain.Enums;
+using CmsEdu.Api.Authorization;
+using CmsEdu.Domain.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,7 +9,8 @@ namespace CmsEdu.Api.Controllers;
 
 [ApiController]
 [Route("api/notebooks")]
-[Authorize(Roles = $"{UserRole.Admin},{UserRole.Teacher}")]
+[Authorize]
+[HasPermission(Permissions.Notebooks.View)]
 public class NotebooksController(NotebookService notebookService) : ControllerBase
 {
     [HttpGet]
@@ -20,6 +22,7 @@ public class NotebooksController(NotebookService notebookService) : ControllerBa
         Ok(await notebookService.GetByIdAsync(id, cancellationToken));
 
     [HttpPost]
+    [HasPermission(Permissions.Notebooks.Manage)]
     public async Task<ActionResult<NotebookDetailDto>> Create(CreateNotebookDto dto, CancellationToken cancellationToken)
     {
         var notebook = await notebookService.CreateAsync(dto, cancellationToken);
@@ -27,10 +30,12 @@ public class NotebooksController(NotebookService notebookService) : ControllerBa
     }
 
     [HttpPut("{id:guid}")]
+    [HasPermission(Permissions.Notebooks.Manage)]
     public async Task<ActionResult<NotebookDetailDto>> Update(Guid id, UpdateNotebookDto dto, CancellationToken cancellationToken) =>
         Ok(await notebookService.UpdateAsync(id, dto, cancellationToken));
 
     [HttpDelete("{id:guid}")]
+    [HasPermission(Permissions.Notebooks.Manage)]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
         await notebookService.DeleteAsync(id, cancellationToken);
@@ -38,6 +43,7 @@ public class NotebooksController(NotebookService notebookService) : ControllerBa
     }
 
     [HttpPost("{id:guid}/documents")]
+    [HasPermission(Permissions.Notebooks.Manage)]
     [RequestSizeLimit(30 * 1024 * 1024)]
     public async Task<ActionResult<DocumentItemDto>> UploadDocument(Guid id, IFormFile file, CancellationToken cancellationToken)
     {
@@ -57,6 +63,7 @@ public class NotebooksController(NotebookService notebookService) : ControllerBa
     }
 
     [HttpDelete("{id:guid}/documents/{documentId:guid}")]
+    [HasPermission(Permissions.Notebooks.Manage)]
     public async Task<IActionResult> DeleteDocument(Guid id, Guid documentId, CancellationToken cancellationToken)
     {
         await notebookService.DeleteDocumentAsync(id, documentId, cancellationToken);
@@ -74,12 +81,13 @@ public class NotebooksController(NotebookService notebookService) : ControllerBa
     public async Task<ActionResult<List<DocumentOutlineItemDto>>> GetDocumentOutline(Guid id, Guid documentId, CancellationToken cancellationToken) =>
         Ok(await notebookService.GetDocumentOutlineAsync(id, documentId, cancellationToken));
 
-
     [HttpPost("{id:guid}/chat")]
+    [HasPermission(Permissions.Notebooks.Chat)]
     public async Task<ActionResult<ChatResponseDto>> Chat(Guid id, ChatRequestDto request, CancellationToken cancellationToken) =>
         Ok(await notebookService.ChatAsync(id, request, cancellationToken));
 
     [HttpPost("{id:guid}/clo-rubric")]
+    [HasPermission(Permissions.Notebooks.Chat)]
     public async Task<IActionResult> GenerateCloRubric(Guid id, CloRubricRequestDto request, CancellationToken cancellationToken)
     {
         var (bytes, fileName) = await notebookService.GenerateCloRubricAsync(request with { NotebookId = id }, cancellationToken);

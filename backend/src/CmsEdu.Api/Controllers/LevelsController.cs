@@ -1,7 +1,8 @@
 using CmsEdu.Infrastructure.Persistence;
 using CmsEdu.Application.Common.Models;
 using CmsEdu.Application.Curriculum;
-using CmsEdu.Domain.Enums;
+using CmsEdu.Api.Authorization;
+using CmsEdu.Domain.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,6 +11,7 @@ namespace CmsEdu.Api.Controllers;
 [ApiController]
 [Route("api/levels")]
 [Authorize]
+[HasPermission(Permissions.Curriculum.View)]
 public class LevelsController(CurriculumService curriculumService, AppDbContext duLieu) : ControllerBase
 {
     [HttpGet]
@@ -34,7 +36,7 @@ public class LevelsController(CurriculumService curriculumService, AppDbContext 
     }
 
     [HttpPost]
-    [Authorize(Roles = UserRole.Admin)]
+    [HasPermission(Permissions.Curriculum.Manage)]
     public async Task<ActionResult<LevelResponse>> CreateLevel(
         LevelRequest request,
         CancellationToken cancellationToken = default)
@@ -45,7 +47,7 @@ public class LevelsController(CurriculumService curriculumService, AppDbContext 
     }
 
     [HttpPut("{id:int}")]
-    [Authorize(Roles = UserRole.Admin)]
+    [HasPermission(Permissions.Curriculum.Manage)]
     public async Task<ActionResult<LevelResponse>> UpdateLevel(
         int id,
         LevelRequest request,
@@ -56,7 +58,7 @@ public class LevelsController(CurriculumService curriculumService, AppDbContext 
     }
 
     [HttpPost("{id:int}/deactivate")]
-    [Authorize(Roles = UserRole.Admin)]
+    [HasPermission(Permissions.Curriculum.Manage)]
     public async Task<IActionResult> DeactivateLevel(
         int id,
         CancellationToken cancellationToken = default)

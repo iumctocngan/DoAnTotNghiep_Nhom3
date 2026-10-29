@@ -13,6 +13,7 @@ export interface LoginResponse {
   fullName: string;
   email: string;
   role: UserRole;
+  permissions?: string[];
 }
 
 export interface CurrentUserResponse {
@@ -21,6 +22,7 @@ export interface CurrentUserResponse {
   fullName: string;
   email: string;
   role: UserRole;
+  permissions?: string[];
 }
 
 export interface ChangePasswordRequest {

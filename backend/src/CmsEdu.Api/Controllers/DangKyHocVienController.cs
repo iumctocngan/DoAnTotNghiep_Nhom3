@@ -1,8 +1,10 @@
 using System.Data;
+using CmsEdu.Api.Authorization;
 using CmsEdu.Api.ExceptionHandling;
 using CmsEdu.Application.Common.Interfaces;
 using CmsEdu.Application.Guardians;
 using CmsEdu.Application.Students;
+using CmsEdu.Domain.Authorization;
 using CmsEdu.Domain.Enums;
 using CmsEdu.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
@@ -16,7 +18,8 @@ public record YeuCauDangKyHocVien(string FullName, DateOnly DateOfBirth, Gender?
 
 [ApiController]
 [Route("api/students/register")]
-[Authorize(Roles = $"{UserRole.Admin},{UserRole.CustomerCare}")]
+[Authorize]
+[HasPermission(Permissions.Students.Create)]
 [BoLocKiemTraHocVien]
 public class DangKyHocVienController(AppDbContext duLieu, IDichVuHocVien hocVien,
     DichVuNguoiGiamHo nguoiGiamHo) : ControllerBase

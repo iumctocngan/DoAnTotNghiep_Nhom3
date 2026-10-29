@@ -9,7 +9,8 @@ public record LoginResponse(
     string EmployeeCode,
     string FullName,
     string Email,
-    string Role);
+    string Role,
+    IReadOnlyList<string>? Permissions = null);
 
 public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
 
@@ -18,7 +19,8 @@ public record CurrentUserResponse(
     string EmployeeCode,
     string FullName,
     string Email,
-    string Role);
+    string Role,
+    IReadOnlyList<string>? Permissions = null);
 
 public record AccessTokenResult(string Token, DateTime ExpiresAtUtc);
 

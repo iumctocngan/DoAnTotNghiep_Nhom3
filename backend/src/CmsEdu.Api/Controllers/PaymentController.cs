@@ -1,6 +1,8 @@
 using CmsEdu.Application.Common.Interfaces;
 using CmsEdu.Application.Common.Models;
 using CmsEdu.Application.Payments;
+using CmsEdu.Api.Authorization;
+using CmsEdu.Domain.Authorization;
 using CmsEdu.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +12,8 @@ namespace CmsEdu.Api.Controllers;
 /// <summary>Cung cấp API quản lý khoản thanh toán và phiếu thu.</summary>
 [ApiController]
 [Route("api/payments")]
-[Authorize(Roles = $"{UserRole.Admin},{UserRole.Accountant}")]
+[Authorize]
+[HasPermission(Permissions.Invoices.Payment)]
 public class PaymentController(IDichVuPayment dichVuPayment) : ControllerBase
 {
     /// <summary>Lấy danh sách khoản thanh toán theo bộ lọc.</summary>

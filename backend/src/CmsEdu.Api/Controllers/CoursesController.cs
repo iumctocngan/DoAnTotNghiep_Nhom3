@@ -1,7 +1,8 @@
 using CmsEdu.Infrastructure.Persistence;
 using CmsEdu.Application.Common.Models;
 using CmsEdu.Application.Curriculum;
-using CmsEdu.Domain.Enums;
+using CmsEdu.Api.Authorization;
+using CmsEdu.Domain.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,6 +11,7 @@ namespace CmsEdu.Api.Controllers;
 [ApiController]
 [Route("api/courses")]
 [Authorize]
+[HasPermission(Permissions.Curriculum.View)]
 public class CoursesController(CurriculumService curriculumService, AppDbContext duLieu) : ControllerBase
 {
     [HttpGet]
@@ -33,7 +35,7 @@ public class CoursesController(CurriculumService curriculumService, AppDbContext
     }
 
     [HttpPost]
-    [Authorize(Roles = UserRole.Admin)]
+    [HasPermission(Permissions.Curriculum.Manage)]
     public async Task<ActionResult<CourseResponse>> CreateCourse(
         CourseRequest request,
         CancellationToken cancellationToken = default)
@@ -44,7 +46,7 @@ public class CoursesController(CurriculumService curriculumService, AppDbContext
     }
 
     [HttpPut("{id:int}")]
-    [Authorize(Roles = UserRole.Admin)]
+    [HasPermission(Permissions.Curriculum.Manage)]
     public async Task<ActionResult<CourseResponse>> UpdateCourse(
         int id,
         CourseRequest request,
@@ -55,7 +57,7 @@ public class CoursesController(CurriculumService curriculumService, AppDbContext
     }
 
     [HttpPost("{id:int}/deactivate")]
-    [Authorize(Roles = UserRole.Admin)]
+    [HasPermission(Permissions.Curriculum.Manage)]
     public async Task<IActionResult> DeactivateCourse(
         int id,
         CancellationToken cancellationToken = default)

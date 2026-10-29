@@ -1,6 +1,7 @@
 using CmsEdu.Infrastructure.Persistence;
 using CmsEdu.Application.Classes;
-using CmsEdu.Domain.Enums;
+using CmsEdu.Api.Authorization;
+using CmsEdu.Domain.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,17 +13,17 @@ namespace CmsEdu.Api.Controllers;
 public class LopHocController(DichVuLopHoc dichVu, AppDbContext duLieu) : ControllerBase
 {
     [HttpGet]
-    [Authorize(Roles = $"{UserRole.Admin},{UserRole.Teacher},{UserRole.Accountant},{UserRole.CustomerCare}")]
+    [HasPermission(Permissions.Classes.View)]
     public async Task<ActionResult<List<ThongTinLopHoc>>> DanhSach(CancellationToken maHuy) =>
         Ok(await dichVu.DanhSach(maHuy));
 
     [HttpGet("{id:int}")]
-    [Authorize(Roles = $"{UserRole.Admin},{UserRole.Teacher},{UserRole.Accountant},{UserRole.CustomerCare}")]
+    [HasPermission(Permissions.Classes.View)]
     public async Task<ActionResult<ThongTinLopHoc>> ChiTiet(int id, CancellationToken maHuy) =>
         Ok(await dichVu.ChiTiet(id, maHuy));
 
     [HttpPost]
-    [Authorize(Roles = UserRole.Admin)]
+    [HasPermission(Permissions.Classes.Manage)]
     public async Task<ActionResult<ThongTinLopHoc>> Tao(YeuCauLopHoc yeuCau, CancellationToken maHuy)
     {
         yeuCau = yeuCau with { MaLop = await SinhMaTuDong.TaoAsync(duLieu, "LH", maHuy) };
@@ -31,12 +32,12 @@ public class LopHocController(DichVuLopHoc dichVu, AppDbContext duLieu) : Contro
     }
 
     [HttpPut("{id:int}")]
-    [Authorize(Roles = UserRole.Admin)]
+    [HasPermission(Permissions.Classes.Manage)]
     public async Task<ActionResult<ThongTinLopHoc>> CapNhat(int id, YeuCauLopHoc yeuCau,
         CancellationToken maHuy) => Ok(await dichVu.CapNhat(id, yeuCau, maHuy));
 
     [HttpDelete("{id:int}")]
-    [Authorize(Roles = UserRole.Admin)]
+    [HasPermission(Permissions.Classes.Delete)]
     public async Task<IActionResult> Xoa(int id, CancellationToken maHuy)
     {
         await dichVu.Xoa(id, maHuy);

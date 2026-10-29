@@ -2,13 +2,15 @@ using System.Data;
 using Microsoft.EntityFrameworkCore;
 using CmsEdu.Domain.Entities;
 using CmsEdu.Infrastructure.Persistence;
+using CmsEdu.Api.Authorization;
 using CmsEdu.Api.ExceptionHandling;
 using CmsEdu.Application.Common.Interfaces;
 using CmsEdu.Application.Common.Models;
 using CmsEdu.Application.Students;
-using CmsEdu.Domain.Enums;
+using CmsEdu.Domain.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 namespace CmsEdu.Api.Controllers;
 
 public record YeuCauGiaHan(int CourseMonths);
@@ -20,17 +22,19 @@ public record YeuCauGiaHan(int CourseMonths);
 public class HocVienController(IDichVuHocVien dichVuHocVien, AppDbContext duLieu) : ControllerBase
 {
     [HttpGet]
+    [HasPermission(Permissions.Students.View)]
     public async Task<ActionResult<PagedResult<PhanHoiHocVien>>> LayDanhSachHocVien(
         [FromQuery(Name = "search")] string? tuKhoa, [FromQuery(Name = "isArchived")] bool? daLuuTru = false,
         [FromQuery(Name = "page")] int trang = 1, [FromQuery(Name = "pageSize")] int kichThuocTrang = 20, CancellationToken maHuy = default) =>
         Ok(await dichVuHocVien.LayDanhSachHocVienAsync(tuKhoa, daLuuTru, trang, kichThuocTrang, maHuy));
 
     [HttpGet("{id:int}")]
+    [HasPermission(Permissions.Students.View)]
     public async Task<ActionResult<PhanHoiHocVien>> LayHocVien([FromRoute(Name = "id")] int maDinhDanh, CancellationToken maHuy) =>
         Ok(await dichVuHocVien.LayHocVienTheoIdAsync(maDinhDanh, maHuy));
 
     [HttpPost]
-    [Authorize(Roles = $"{UserRole.Admin},{UserRole.CustomerCare}")]
+    [HasPermission(Permissions.Students.Create)]
     public async Task<ActionResult<PhanHoiHocVien>> TaoHocVien(YeuCauTaoHocVien yeuCau, CancellationToken maHuy)
     {
         yeuCau = yeuCau with { StudentCode = await SinhMaTuDong.TaoAsync(duLieu, "HS", maHuy) };
@@ -39,12 +43,12 @@ public class HocVienController(IDichVuHocVien dichVuHocVien, AppDbContext duLieu
     }
 
     [HttpPut("{id:int}")]
-    [Authorize(Roles = $"{UserRole.Admin},{UserRole.CustomerCare}")]
+    [HasPermission(Permissions.Students.Edit)]
     public async Task<ActionResult<PhanHoiHocVien>> CapNhatHocVien([FromRoute(Name = "id")] int maDinhDanh, YeuCauCapNhatHocVien yeuCau, CancellationToken maHuy) =>
         Ok(await dichVuHocVien.CapNhatHocVienAsync(maDinhDanh, yeuCau, maHuy));
 
     [HttpPost("{id:int}/renew")]
-    [Authorize(Roles = $"{UserRole.Admin},{UserRole.CustomerCare}")]
+    [HasPermission(Permissions.Students.Edit)]
     public async Task<IActionResult> GiaHan(int id, YeuCauGiaHan yeuCau, CancellationToken maHuy)
     {
         if (yeuCau.CourseMonths < 1 || yeuCau.CourseMonths > 120)
@@ -67,7 +71,7 @@ public class HocVienController(IDichVuHocVien dichVuHocVien, AppDbContext duLieu
     }
 
     [HttpPost("{id:int}/archive")]
-    [Authorize(Roles = UserRole.Admin)]
+    [HasPermission(Permissions.Students.Delete)]
     public async Task<IActionResult> LuuTruHocVien([FromRoute(Name = "id")] int maDinhDanh, CancellationToken maHuy)
     {
         await dichVuHocVien.LuuTruHocVienAsync(maDinhDanh, maHuy);
@@ -75,7 +79,7 @@ public class HocVienController(IDichVuHocVien dichVuHocVien, AppDbContext duLieu
     }
 
     [HttpPost("{id:int}/restore")]
-    [Authorize(Roles = UserRole.Admin)]
+    [HasPermission(Permissions.Students.Edit)]
     public async Task<IActionResult> KhoiPhucHocVien([FromRoute(Name = "id")] int maDinhDanh, CancellationToken maHuy)
     {
         await dichVuHocVien.KhoiPhucHocVienAsync(maDinhDanh, maHuy);

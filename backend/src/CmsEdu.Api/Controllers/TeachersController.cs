@@ -1,6 +1,8 @@
 using CmsEdu.Application.Common.Interfaces;
 using CmsEdu.Application.Common.Models;
 using CmsEdu.Application.Teachers;
+using CmsEdu.Api.Authorization;
+using CmsEdu.Domain.Authorization;
 using CmsEdu.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +11,8 @@ namespace CmsEdu.Api.Controllers;
 
 [ApiController]
 [Route("api/teachers/{teacherId}")]
-[Authorize(Roles = $"{UserRole.Admin},{UserRole.Teacher}")]
+[Authorize]
+[HasPermission(Permissions.Teacher.Classes)]
 public class TeachersController(TeacherService teacherService) : ControllerBase
 {
     [HttpGet("classes")]

@@ -4,9 +4,11 @@ using System.Text.Json;
 using CmsEdu.Application.Assessments;
 using CmsEdu.Application.Common.Exceptions;
 using CmsEdu.Application.Common.Interfaces;
+using CmsEdu.Domain.Authorization;
 using CmsEdu.Domain.Entities;
 using CmsEdu.Domain.Enums;
 using CmsEdu.Infrastructure.Persistence;
+using CmsEdu.Api.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +16,8 @@ using Microsoft.EntityFrameworkCore;
 namespace CmsEdu.Api.Controllers;
 
 [ApiController, Route("api/assessments")]
-[Authorize(Roles = "Admin,Teacher")]
+[Authorize]
+[HasPermission(Permissions.Assessments.View)]
 public class AssessmentsController(AppDbContext db, ICurrentUser user, IConfiguration config) : ControllerBase
 {
     private async Task<Class> CheckClass(int id, CancellationToken ct)
@@ -47,6 +50,7 @@ public class AssessmentsController(AppDbContext db, ICurrentUser user, IConfigur
     }
 
     [HttpPost("rubrics")]
+    [HasPermission(Permissions.Assessments.Manage)]
     public async Task<IActionResult> CreateRubric(CreateRubric request, CancellationToken ct)
     {
         await CheckClass(request.ClassId, ct);
@@ -60,6 +64,7 @@ public class AssessmentsController(AppDbContext db, ICurrentUser user, IConfigur
     }
 
     [HttpPost]
+    [HasPermission(Permissions.Assessments.Manage)]
     public async Task<IActionResult> Grade(CreateAssessment request, CancellationToken ct)
     {
         var enrollment = await db.Enrollments.FindAsync([request.EnrollmentId], ct) ?? throw new NotFoundException("Không tìm thấy ghi danh.");
@@ -113,6 +118,7 @@ public class AssessmentsController(AppDbContext db, ICurrentUser user, IConfigur
     }
 
     [HttpPost("{id:int}/feedback")]
+    [HasPermission(Permissions.Assessments.Manage)]
     public async Task<IActionResult> Feedback(int id, CancellationToken ct)
     {
         var item = await Find(id, ct);
@@ -144,6 +150,7 @@ public class AssessmentsController(AppDbContext db, ICurrentUser user, IConfigur
     }
 
     [HttpPost("{id:int}/approve")]
+    [HasPermission(Permissions.Assessments.Manage)]
     public async Task<IActionResult> Approve(int id, ApproveFeedback request, CancellationToken ct)
     {
         var item = await Find(id, ct);

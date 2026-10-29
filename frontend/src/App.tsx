@@ -7,6 +7,7 @@ import { AppLayout } from './components/layout/AppLayout';
 import { LoginPage } from './pages/auth/LoginPage';
 import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { StaffListPage } from './pages/staff/StaffListPage';
+import { RolePermissionMatrixPage } from './pages/permissions/RolePermissionMatrixPage';
 import { CurriculumPage } from './pages/curriculum/CurriculumPage';
 import { TeacherClassesPage } from './pages/teacher/TeacherClassesPage';
 import { TeacherSchedulePage } from './pages/teacher/TeacherSchedulePage';
@@ -66,6 +67,7 @@ export const App: React.FC = () => {
                 <Route path="/curriculum" element={<CurriculumPage />} />
                 <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
                   <Route path="/staff" element={<StaffListPage />} />
+                  <Route path="/permissions" element={<RolePermissionMatrixPage />} />
                 </Route>
                 <Route element={<ProtectedRoute allowedRoles={['Admin', 'Teacher']} />}>
                   <Route path="/teacher/classes" element={<TeacherClassesPage />} />

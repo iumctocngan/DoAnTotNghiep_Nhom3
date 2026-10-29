@@ -15,6 +15,7 @@ public class AuthenticationService(
     UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager,
     IAccessTokenGenerator accessTokenGenerator,
+    IPermissionService permissionService,
     AppDbContext dbContext,
     IOptions<JwtOptions> options) : IAuthenticationService {
     private const string InvalidCredentialsMessage = "Email hoặc mật khẩu không chính xác.";
@@ -51,7 +52,7 @@ public class AuthenticationService(
         dbContext.RefreshTokens.Add(refreshToken);
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        return CreateAuthenticationResult(user, role, rawRefreshToken, refreshToken.ExpiresAt);
+        return await CreateAuthenticationResultAsync(user, role, rawRefreshToken, refreshToken.ExpiresAt, cancellationToken);
     }
 
     public async Task<AuthenticationResult> RefreshAsync(
@@ -124,7 +125,7 @@ public class AuthenticationService(
         await dbContext.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
 
-        return CreateAuthenticationResult(user, role, rawReplacement, replacement.ExpiresAt);
+        return await CreateAuthenticationResultAsync(user, role, rawReplacement, replacement.ExpiresAt, cancellationToken);
     }
 
     public async Task LogoutAsync(
@@ -200,11 +201,13 @@ public class AuthenticationService(
         return roles[0];
     }
 
-    private AuthenticationResult CreateAuthenticationResult(
+    private async Task<AuthenticationResult> CreateAuthenticationResultAsync(
         ApplicationUser user,
         string role,
         string refreshToken,
-        DateTime refreshTokenExpiresAt) {
+        DateTime refreshTokenExpiresAt,
+        CancellationToken cancellationToken = default) {
+        var permissions = await permissionService.GetPermissionsForRoleAsync(role, cancellationToken);
         var accessToken = accessTokenGenerator.Generate(
             user.Id,
             user.EmployeeCode,
@@ -220,7 +223,8 @@ public class AuthenticationService(
                 user.EmployeeCode,
                 user.FullName,
                 user.Email!,
-                role),
+                role,
+                permissions),
             refreshToken,
             refreshTokenExpiresAt);
     }

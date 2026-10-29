@@ -12,7 +12,7 @@ import { useToast } from '../common/ToastProvider';
 export const AppLayout: React.FC = () => {
   const { user, logout } = useAuth();
   const viTri = useLocation();
-  const tenTrang: Record<string, string> = { 'hoc-vien': 'Học viên', 'nguoi-giam-ho': 'Người giám hộ', 'lop-hoc': 'Lớp học', 'ghi-danh': 'Ghi danh', sessions: 'Buổi học & Điểm danh', invoices: 'Học phí & Thu tiền', curriculum: 'Chương trình học', staff: 'Nhân sự', teacher: 'Giảng dạy', notebooks: 'Học liệu thông minh' };
+  const tenTrang: Record<string, string> = { 'hoc-vien': 'Học viên', 'nguoi-giam-ho': 'Người giám hộ', 'lop-hoc': 'Lớp học', 'ghi-danh': 'Ghi danh', sessions: 'Buổi học & Điểm danh', invoices: 'Học phí & Thu tiền', curriculum: 'Chương trình học', staff: 'Nhân sự', permissions: 'Ma trận phân quyền', teacher: 'Giảng dạy', notebooks: 'Học liệu thông minh' };
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isLogoutConfirmationOpen, setIsLogoutConfirmationOpen] = useState(false);
@@ -139,11 +139,18 @@ export const AppLayout: React.FC = () => {
 
           {user?.role === 'Admin' && (
             <>
+              <div className="nhom-dieu-huong">Hệ thống</div>
               <NavLink
                 to="/staff"
                 className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
               >
                 Quản lý nhân sự
+              </NavLink>
+              <NavLink
+                to="/permissions"
+                className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+              >
+                Ma trận phân quyền
               </NavLink>
             </>
           )}
@@ -248,4 +255,4 @@ export const AppLayout: React.FC = () => {
   );
 };
 
-
+export default AppLayout;
