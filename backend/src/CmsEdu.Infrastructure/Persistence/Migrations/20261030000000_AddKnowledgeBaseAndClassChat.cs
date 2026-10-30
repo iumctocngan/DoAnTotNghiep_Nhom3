@@ -12,28 +12,6 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "ClassChatConversations",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ClassId = table.Column<int>(type: "int", nullable: true),
-                    TeacherUserId = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ClassChatConversations", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ClassChatConversations_Classes_ClassId",
-                        column: x => x.ClassId,
-                        principalTable: "Classes",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Documents",
                 columns: table => new
                 {
@@ -44,7 +22,7 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                     FileSize = table.Column<long>(type: "bigint", nullable: false),
                     DocumentType = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: false),
                     Status = table.Column<string>(type: "varchar(20)", unicode: false, maxLength: 20, nullable: false, defaultValue: "processing"),
-                    ErrorMessage = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Scope = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
@@ -77,56 +55,32 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "RagAnswerCaches",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CacheKey = table.Column<string>(type: "varchar(128)", unicode: false, maxLength: 128, nullable: false),
-                    ClassId = table.Column<int>(type: "int", nullable: false),
-                    NormalizedQuestion = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
-                    Answer = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CitationsJson = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    HitCount = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    LastAccessedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_RagAnswerCaches", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "ClassChatMessages",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ConversationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ClassId = table.Column<int>(type: "int", nullable: true),
+                    UserId = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
                     Role = table.Column<string>(type: "varchar(20)", unicode: false, maxLength: 20, nullable: false),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CitationsJson = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IsFromCache = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ClassChatMessages", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ClassChatMessages_ClassChatConversations_ConversationId",
-                        column: x => x.ConversationId,
-                        principalTable: "ClassChatConversations",
+                        name: "FK_ClassChatMessages_Classes_ClassId",
+                        column: x => x.ClassId,
+                        principalTable: "Classes",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_ClassChatConversations_ClassId_TeacherUserId",
-                table: "ClassChatConversations",
-                columns: new[] { "ClassId", "TeacherUserId" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ClassChatMessages_ConversationId_CreatedAt",
+                name: "IX_ClassChatMessages_ClassId_UserId_CreatedAt",
                 table: "ClassChatMessages",
-                columns: new[] { "ConversationId", "CreatedAt" });
+                columns: new[] { "ClassId", "UserId", "CreatedAt" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Documents_ClassId",
@@ -147,26 +101,13 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                 name: "IX_Documents_Scope_CourseId_LevelId_ClassId",
                 table: "Documents",
                 columns: new[] { "Scope", "CourseId", "LevelId", "ClassId" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_RagAnswerCaches_CacheKey",
-                table: "RagAnswerCaches",
-                column: "CacheKey",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_RagAnswerCaches_ClassId",
-                table: "RagAnswerCaches",
-                column: "ClassId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(name: "ClassChatMessages");
-            migrationBuilder.DropTable(name: "ClassChatConversations");
             migrationBuilder.DropTable(name: "Documents");
-            migrationBuilder.DropTable(name: "RagAnswerCaches");
         }
     }
 }

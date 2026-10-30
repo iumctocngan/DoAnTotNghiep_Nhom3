@@ -93,7 +93,7 @@ public class ClassChatAndKnowledgeTests
     }
 
     [Fact]
-    public async Task ChatAsync_CachesExactAnswerAndIncrementsHitCount()
+    public async Task ChatAsync_DirectlyQueriesRagAndPersistsMessages()
     {
         var db = CreateInMemoryDbContext();
         var teacherId = "teacher-123";
@@ -121,30 +121,28 @@ public class ClassChatAndKnowledgeTests
         var rag = new TestRagModuleClient();
         var service = new ClassChatService(db, user, rag);
 
-        // 1st request -> Cache miss
+        // 1st request
         var req = new ClassChatRequestDto("Mục tiêu của bài học số 1 là gì?");
         var result1 = await service.ChatAsync(100, req, CancellationToken.None);
 
-        Assert.False(result1.IsFromCache);
         Assert.Equal("Mục tiêu bài 1 là rèn luyện tư duy số học.", result1.Answer);
         Assert.Equal(1, rag.ScopedChatCallCount);
 
-        // Verify cache entry exists in DB
-        var cacheEntry = await db.RagAnswerCaches.FirstOrDefaultAsync(c => c.ClassId == 100);
-        Assert.NotNull(cacheEntry);
-        Assert.Equal(1, cacheEntry.HitCount);
-
-        // 2nd request with minor punctuation / casing difference -> Should be a Cache Hit!
-        var req2 = new ClassChatRequestDto("Mục tiêu của bài học số 1 là gì", result1.ConversationId);
+        // 2nd request -> Directly invokes RAG again (no cache)
+        var req2 = new ClassChatRequestDto("Mục tiêu của bài học số 1 là gì");
         var result2 = await service.ChatAsync(100, req2, CancellationToken.None);
 
-        Assert.True(result2.IsFromCache);
         Assert.Equal("Mục tiêu bài 1 là rèn luyện tư duy số học.", result2.Answer);
-        Assert.Equal(1, rag.ScopedChatCallCount);
+        Assert.Equal(2, rag.ScopedChatCallCount);
 
-        // Cache HitCount should now be 2
-        var updatedCache = await db.RagAnswerCaches.FirstAsync(c => c.Id == cacheEntry.Id);
-        Assert.Equal(2, updatedCache.HitCount);
+        // Verify messages in DB and via service
+        var messages = await service.GetMessagesAsync(100, CancellationToken.None);
+        Assert.Equal(4, messages.Count); // 2 user messages + 2 assistant messages
+
+        // Clear messages
+        await service.ClearMessagesAsync(100, CancellationToken.None);
+        var messagesAfterClear = await service.GetMessagesAsync(100, CancellationToken.None);
+        Assert.Empty(messagesAfterClear);
     }
 
     [Fact]

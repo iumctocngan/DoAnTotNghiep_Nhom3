@@ -164,21 +164,6 @@ public class KnowledgeDocumentService(
             ?? throw new NotFoundException("Không tìm thấy tài liệu.");
 
         dbContext.Documents.Remove(doc);
-
-        // Invalidate answer caches citing this document or tied to its immediate scope
-        var docIdStr = documentId.ToString();
-        var docIdHex = documentId.ToString("N");
-        var cachesToRemove = await dbContext.RagAnswerCaches
-            .Where(c => (c.CitationsJson != null && (c.CitationsJson.Contains(docIdStr) || c.CitationsJson.Contains(docIdHex)))
-                     || (doc.ClassId.HasValue && c.ClassId == doc.ClassId.Value)
-                     || (doc.Scope == KnowledgeScope.Global && c.ClassId == 0))
-            .ToListAsync(ct);
-
-        if (cachesToRemove.Count != 0)
-        {
-            dbContext.RagAnswerCaches.RemoveRange(cachesToRemove);
-        }
-
         await dbContext.SaveChangesAsync(ct);
         await ragClient.DeleteKnowledgeDocumentAsync(documentId, ct);
     }

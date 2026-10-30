@@ -1,18 +1,4 @@
-from dataclasses import dataclass
-from uuid import UUID
-
-from retrieval import SearchHit
-
-
-@dataclass(frozen=True)
-class Citation:
-    chunk_id: UUID
-    document_id: UUID
-    document_name: str
-    label: str
-    page_number: int | None
-    section_title: str | None
-    score: float | None
+from retrieval.queries import Citation, SearchHit
 
 
 def _label(hit: SearchHit) -> str:

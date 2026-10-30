@@ -7,7 +7,7 @@ import { useToast } from '../../components/common/ToastProvider';
 import { MaterialIcon } from '../../components/common/MaterialIcon';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { CitationPreviewModal } from './CitationPreviewModal';
-import { KnowledgeScope, type Citation, type ClassConversation, type ClassMessage } from '../../types/knowledge';
+import { KnowledgeScope, type Citation } from '../../types/knowledge';
 
 export const ClassAssistantPage: React.FC = () => {
   const showToast = useToast();
@@ -20,21 +20,16 @@ export const ClassAssistantPage: React.FC = () => {
   // Active Scope/Class State: 0 = Toàn bộ trung tâm (Admin only), >0 = Lớp cụ thể
   const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
 
-  // Left Panel Tab: 'docs' | 'history'
-  const [activeLeftTab, setActiveLeftTab] = useState<'docs' | 'history'>('docs');
-
   // Filter Selected Documents
   const [selectedDocIds, setSelectedDocIds] = useState<string[]>([]);
 
-  // Active Conversation State
-  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<ClassMessage[]>([]);
+  // Input & Asking State
   const [inputQuestion, setInputQuestion] = useState('');
   const [isAsking, setIsAsking] = useState(false);
 
   // Modals
   const [activeCitation, setActiveCitation] = useState<Citation | null>(null);
-  const [deletingConv, setDeletingConv] = useState<ClassConversation | null>(null);
+  const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false);
 
   // 1. Fetch Classes
   const { data: classes = [], isLoading: isClassesLoading } = useQuery({
@@ -67,55 +62,26 @@ export const ClassAssistantPage: React.FC = () => {
     }
   }, [classKnowledge]);
 
-  // 3. Fetch Conversations
-  const { data: conversations = [], isLoading: isConversationsLoading } = useQuery({
-    queryKey: ['class-conversations', selectedClassId],
-    queryFn: () => (selectedClassId !== null ? knowledgeApi.getClassConversations(selectedClassId) : []),
+  // 3. Fetch Persistent Messages of Selected Class
+  const { data: messages = [], isLoading: isMessagesLoading } = useQuery({
+    queryKey: ['class-messages', selectedClassId],
+    queryFn: () => (selectedClassId !== null ? knowledgeApi.getClassMessages(selectedClassId) : []),
     enabled: selectedClassId !== null,
   });
-
-  // Auto-select latest conversation or null for new chat
-  useEffect(() => {
-    if (conversations.length > 0 && !currentConversationId) {
-      setCurrentConversationId(conversations[0].id);
-    }
-  }, [conversations, currentConversationId]);
-
-  // 4. Fetch Messages of Current Conversation
-  const { data: conversationMessages } = useQuery({
-    queryKey: ['class-conversation-messages', selectedClassId, currentConversationId],
-    queryFn: () =>
-      selectedClassId !== null && currentConversationId
-        ? knowledgeApi.getClassConversationMessages(selectedClassId, currentConversationId)
-        : [],
-    enabled: selectedClassId !== null && !!currentConversationId,
-  });
-
-  useEffect(() => {
-    if (conversationMessages) {
-      setMessages(conversationMessages);
-    } else if (!currentConversationId) {
-      setMessages([]);
-    }
-  }, [conversationMessages, currentConversationId]);
 
   // Scroll to bottom on messages update
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isAsking]);
 
-  // Delete Conversation Mutation
-  const deleteConvMutation = useMutation({
-    mutationFn: (convId: string) =>
-      selectedClassId !== null ? knowledgeApi.deleteClassConversation(selectedClassId, convId) : Promise.resolve(),
+  // Clear Messages Mutation
+  const clearMessagesMutation = useMutation({
+    mutationFn: () =>
+      selectedClassId !== null ? knowledgeApi.clearClassMessages(selectedClassId) : Promise.resolve(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['class-conversations', selectedClassId] });
-      showToast('Đã xóa phiên trò chuyện.', 'success');
-      if (deletingConv?.id === currentConversationId) {
-        setCurrentConversationId(null);
-        setMessages([]);
-      }
-      setDeletingConv(null);
+      queryClient.invalidateQueries({ queryKey: ['class-messages', selectedClassId] });
+      showToast('Đã xóa sạch lịch sử trò chuyện.', 'success');
+      setIsClearConfirmOpen(false);
     },
     onError: (err) => showToast(err instanceof Error ? err.message : 'Xóa thất bại.', 'error'),
   });
@@ -126,62 +92,21 @@ export const ClassAssistantPage: React.FC = () => {
     const q = inputQuestion.trim();
     if (!q || selectedClassId === null || isAsking) return;
 
-    const tempUserMsg: ClassMessage = {
-      id: `temp-${Date.now()}`,
-      conversationId: currentConversationId || '',
-      role: 'user',
-      content: q,
-      citations: [],
-      isFromCache: false,
-      createdAt: new Date().toISOString(),
-    };
-
-    setMessages((prev) => [...prev, tempUserMsg]);
     setInputQuestion('');
     setIsAsking(true);
 
     try {
-      const res = await knowledgeApi.chatClass(selectedClassId, {
+      await knowledgeApi.chatClass(selectedClassId, {
         question: q,
-        conversationId: currentConversationId || undefined,
         selectedDocumentIds: selectedDocIds.length > 0 ? selectedDocIds : undefined,
       });
 
-      if (!currentConversationId) {
-        setCurrentConversationId(res.conversationId);
-      }
-
-      const assistantMsg: ClassMessage = {
-        id: `assistant-${Date.now()}`,
-        conversationId: res.conversationId,
-        role: 'assistant',
-        content: res.answer,
-        citations: res.citations,
-        isFromCache: res.isFromCache,
-        createdAt: res.createdAt,
-      };
-
-      setMessages((prev) => [...prev, assistantMsg]);
-      queryClient.invalidateQueries({ queryKey: ['class-conversations', selectedClassId] });
+      queryClient.invalidateQueries({ queryKey: ['class-messages', selectedClassId] });
     } catch (err) {
-      const errorMsg: ClassMessage = {
-        id: `error-${Date.now()}`,
-        conversationId: currentConversationId || '',
-        role: 'assistant',
-        content: err instanceof Error ? `Lỗi: ${err.message}` : 'Không thể kết nối đến Trợ lý AI.',
-        citations: [],
-        isFromCache: false,
-        createdAt: new Date().toISOString(),
-      };
-      setMessages((prev) => [...prev, errorMsg]);
+      showToast(err instanceof Error ? err.message : 'Không thể kết nối đến Trợ lý AI.', 'error');
     } finally {
       setIsAsking(false);
     }
-  };
-
-  const handleStartNewChat = () => {
-    setCurrentConversationId(null);
-    setMessages([]);
   };
 
   const toggleDocSelection = (id: string) => {
@@ -215,7 +140,7 @@ export const ClassAssistantPage: React.FC = () => {
           <p className="text-xs text-slate-500 mt-0.5">
             {isAdmin && selectedClassId === 0
               ? 'Tra cứu trên toàn bộ kho chunks tài liệu, giáo trình và quy chế của trung tâm.'
-              : 'Tra cứu trên toàn bộ giáo trình, kế hoạch bài dạy và mục tiêu học tập thuộc phạm vi lớp học được phân công.'}
+              : 'Tra cứu trên toàn bộ giáo trình, kế hoạch bài dạy và mục tiêu học tập thuộc phạm vi lớp học.'}
           </p>
         </div>
 
@@ -226,11 +151,7 @@ export const ClassAssistantPage: React.FC = () => {
           </label>
           <select
             value={selectedClassId === null ? '' : selectedClassId}
-            onChange={(e) => {
-              setSelectedClassId(Number(e.target.value));
-              setCurrentConversationId(null);
-              setMessages([]);
-            }}
+            onChange={(e) => setSelectedClassId(Number(e.target.value))}
             disabled={isClassesLoading && !isAdmin}
             className="w-full md:w-80 px-3 py-1.5 text-xs font-medium border border-slate-300 rounded bg-white focus:outline-none shadow-xs"
           >
@@ -250,176 +171,81 @@ export const ClassAssistantPage: React.FC = () => {
 
       {/* Main Two-Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 min-h-0">
-        {/* LEFT SIDEBAR (4 cols on lg, 3 on xl) */}
+        {/* LEFT SIDEBAR: Applicable Documents (4 cols on lg, 3 on xl) */}
         <div className="lg:col-span-4 xl:col-span-3 bg-white rounded border border-slate-200 shadow-xs flex flex-col min-h-0 overflow-hidden">
-          {/* Left Tabs */}
-          <div className="flex border-b border-slate-200 bg-slate-50 text-xs font-semibold shrink-0">
-            <button
-              type="button"
-              onClick={() => setActiveLeftTab('docs')}
-              className={`flex-1 py-3 text-center border-b-2 transition-colors flex items-center justify-center gap-1.5 ${
-                activeLeftTab === 'docs'
-                  ? 'border-[#0284c7] text-[#0284c7] bg-white font-bold'
-                  : 'border-transparent text-slate-500 hover:text-slate-800'
-              }`}
-            >
+          <div className="p-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between shrink-0">
+            <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
               <MaterialIcon name="description" />
-              Tài liệu ({classKnowledge?.documents.length || 0})
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveLeftTab('history')}
-              className={`flex-1 py-3 text-center border-b-2 transition-colors flex items-center justify-center gap-1.5 ${
-                activeLeftTab === 'history'
-                  ? 'border-[#0284c7] text-[#0284c7] bg-white font-bold'
-                  : 'border-transparent text-slate-500 hover:text-slate-800'
-              }`}
-            >
-              <MaterialIcon name="schedule" />
-              Lịch sử ({conversations.length})
-            </button>
+              Tài liệu học liệu ({classKnowledge?.documents.length || 0})
+            </span>
+            {classKnowledge && classKnowledge.documents.length > 0 && (
+              <button
+                type="button"
+                onClick={toggleSelectAllDocs}
+                className="text-[11px] text-[#0284c7] hover:underline font-medium"
+              >
+                {selectedDocIds.length === classKnowledge.documents.length ? 'Bỏ chọn' : 'Chọn tất cả'}
+              </button>
+            )}
           </div>
 
-          {/* TAB 1: Class Documents */}
-          {activeLeftTab === 'docs' && (
-            <div className="flex-1 overflow-y-auto p-3 space-y-3">
-              <div className="flex items-center justify-between text-xs text-slate-500 pb-2 border-b border-slate-100">
-                <span>Tài liệu áp dụng:</span>
-                {classKnowledge && classKnowledge.documents.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={toggleSelectAllDocs}
-                    className="text-[#0284c7] hover:underline font-medium"
+          <div className="flex-1 overflow-y-auto p-3 space-y-2">
+            {isKnowledgeLoading ? (
+              <div className="text-center py-8 text-xs text-slate-400">Đang nạp học liệu...</div>
+            ) : !classKnowledge || classKnowledge.documents.length === 0 ? (
+              <div className="text-center py-8 text-xs text-slate-400 space-y-1">
+                <p className="font-medium text-slate-600">Chưa có tài liệu nào sẵn sàng trong phạm vi này.</p>
+                <p className="text-[11px]">Admin có thể tải lên tài liệu trong phần Quản lý Chương trình học.</p>
+              </div>
+            ) : (
+              classKnowledge.documents.map((doc) => {
+                const isSelected = selectedDocIds.includes(doc.id);
+                return (
+                  <div
+                    key={doc.id}
+                    onClick={() => toggleDocSelection(doc.id)}
+                    className={`p-2.5 rounded border text-xs cursor-pointer transition-all flex items-start gap-2.5 ${
+                      isSelected
+                        ? 'border-[#0284c7] bg-sky-50/40'
+                        : 'border-slate-200 hover:bg-slate-50 opacity-70'
+                    }`}
                   >
-                    {selectedDocIds.length === classKnowledge.documents.length ? 'Bỏ chọn' : 'Chọn tất cả'}
-                  </button>
-                )}
-              </div>
-
-              {isKnowledgeLoading ? (
-                <div className="text-center py-8 text-xs text-slate-400">Đang nạp học liệu...</div>
-              ) : !classKnowledge || classKnowledge.documents.length === 0 ? (
-                <div className="text-center py-8 text-xs text-slate-400 space-y-1">
-                  <p className="font-medium text-slate-600">Chưa có tài liệu nào sẵn sàng trong phạm vi này.</p>
-                  <p className="text-[11px]">Admin có thể tải lên tài liệu trong phần Quản lý Chương trình học.</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {classKnowledge.documents.map((doc) => {
-                    const isSelected = selectedDocIds.includes(doc.id);
-                    return (
-                      <div
-                        key={doc.id}
-                        onClick={() => toggleDocSelection(doc.id)}
-                        className={`p-2.5 rounded border text-xs cursor-pointer transition-all flex items-start gap-2.5 ${
-                          isSelected
-                            ? 'border-[#0284c7] bg-sky-50/40'
-                            : 'border-slate-200 hover:bg-slate-50 opacity-70'
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => {}}
-                          className="mt-0.5 rounded text-[#0284c7] focus:ring-[#0284c7]"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className="px-1 py-0.2 rounded text-[10px] font-bold uppercase shrink-0 bg-slate-100 text-slate-700 border border-slate-200">
-                              {doc.documentType}
-                            </span>
-                            <span className="font-semibold text-slate-800 truncate" title={doc.title}>
-                              {doc.title}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-500">
-                            {doc.scope === KnowledgeScope.Global && (
-                              <span className="text-slate-600 font-medium">Tài liệu chung</span>
-                            )}
-                            {doc.scope === KnowledgeScope.Course && (
-                              <span className="text-slate-600 font-medium">Khóa: {doc.courseName}</span>
-                            )}
-                            {doc.scope === KnowledgeScope.Level && (
-                              <span className="text-slate-600 font-medium">Cấp độ: {doc.levelName}</span>
-                            )}
-                            {doc.scope === KnowledgeScope.Class && (
-                              <span className="text-slate-600 font-medium">Lớp riêng</span>
-                            )}
-                          </div>
-                        </div>
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => {}}
+                      className="mt-0.5 rounded text-[#0284c7] focus:ring-[#0284c7]"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="px-1 py-0.2 rounded text-[10px] font-bold uppercase shrink-0 bg-slate-100 text-slate-700 border border-slate-200">
+                          {doc.documentType}
+                        </span>
+                        <span className="font-semibold text-slate-800 truncate" title={doc.title}>
+                          {doc.title}
+                        </span>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
 
-          {/* TAB 2: Conversation History */}
-          {activeLeftTab === 'history' && (
-            <div className="flex-1 overflow-y-auto flex flex-col min-h-0">
-              <div className="p-3 border-b border-slate-100">
-                <button
-                  type="button"
-                  onClick={handleStartNewChat}
-                  className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded font-medium text-xs flex items-center justify-center gap-1.5 transition-colors border border-slate-200"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  Đoạn chat mới
-                </button>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-2 space-y-1">
-                {isConversationsLoading ? (
-                  <div className="text-center py-8 text-xs text-slate-400">Đang tải lịch sử...</div>
-                ) : conversations.length === 0 ? (
-                  <div className="text-center py-8 text-xs text-slate-400">Chưa có phiên trò chuyện nào.</div>
-                ) : (
-                  conversations.map((conv) => {
-                    const isActive = conv.id === currentConversationId;
-                    return (
-                      <div
-                        key={conv.id}
-                        className={`group p-2.5 rounded text-xs cursor-pointer flex items-center justify-between transition-colors ${
-                          isActive
-                            ? 'bg-[#0284c7] text-white font-medium'
-                            : 'hover:bg-slate-100 text-slate-700'
-                        }`}
-                        onClick={() => setCurrentConversationId(conv.id)}
-                      >
-                        <div className="flex-1 min-w-0 pr-2">
-                          <p className="truncate text-xs">{conv.title}</p>
-                          <p className={`text-[10px] mt-0.5 ${isActive ? 'text-sky-100' : 'text-slate-400'}`}>
-                            {new Date(conv.updatedAt).toLocaleDateString('vi-VN')} • {conv.messageCount} tin nhắn
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDeletingConv(conv);
-                          }}
-                          className={`p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity ${
-                            isActive
-                              ? 'text-white hover:bg-[#0369a1]'
-                              : 'text-slate-400 hover:text-rose-600 hover:bg-slate-200'
-                          }`}
-                          title="Xóa phiên"
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
+                      <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-500">
+                        {doc.scope === KnowledgeScope.Global && (
+                          <span className="text-slate-600 font-medium">Tài liệu chung</span>
+                        )}
+                        {doc.scope === KnowledgeScope.Course && (
+                          <span className="text-slate-600 font-medium">Khóa: {doc.courseName}</span>
+                        )}
+                        {doc.scope === KnowledgeScope.Level && (
+                          <span className="text-slate-600 font-medium">Cấp độ: {doc.levelName}</span>
+                        )}
+                        {doc.scope === KnowledgeScope.Class && (
+                          <span className="text-slate-600 font-medium">Lớp riêng</span>
+                        )}
                       </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-          )}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
         </div>
 
         {/* RIGHT MAIN CHAT WORKSPACE (8 cols on lg, 9 on xl) */}
@@ -440,14 +266,31 @@ export const ClassAssistantPage: React.FC = () => {
 
             <div className="flex items-center gap-2">
               <span className="text-xs text-slate-600 bg-white px-2.5 py-1 rounded border border-slate-200 shadow-2xs">
-                {selectedDocIds.length} tài liệu
+                {selectedDocIds.length} tài liệu áp dụng
               </span>
+              {messages.length > 0 && canChat && (
+                <button
+                  type="button"
+                  onClick={() => setIsClearConfirmOpen(true)}
+                  className="px-2.5 py-1 text-xs text-rose-600 hover:text-rose-700 bg-white hover:bg-rose-50 border border-rose-200 rounded transition-colors flex items-center gap-1 shadow-2xs"
+                  title="Xóa toàn bộ lịch sử trò chuyện của lớp này"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Xóa lịch sử
+                </button>
+              )}
             </div>
           </div>
 
           {/* Messages Stream */}
           <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
-            {messages.length === 0 ? (
+            {isMessagesLoading ? (
+              <div className="h-full flex items-center justify-center text-xs text-slate-400">
+                Đang tải lịch sử trò chuyện...
+              </div>
+            ) : messages.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-6 text-slate-400 space-y-3">
                 <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xl">
                   <MaterialIcon name="menu_book" />
@@ -475,20 +318,12 @@ export const ClassAssistantPage: React.FC = () => {
                           : 'bg-slate-50 border border-slate-200 text-slate-800'
                       }`}
                     >
-                      {/* Assistant Header & Cache Badge */}
+                      {/* Assistant Header */}
                       {!isUser && (
                         <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-slate-200/70">
                           <span className="text-[11px] font-bold text-slate-700">
                             {selectedClassId === 0 ? 'Trợ lý Trung tâm' : 'Trợ lý Học liệu'}
                           </span>
-                          {m.isFromCache && (
-                            <span
-                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-800 border border-emerald-200"
-                              title="Câu hỏi trùng khớp đã được lưu trong bộ nhớ đệm, phản hồi tức thì."
-                            >
-                              ⚡ Đã lưu trong bộ nhớ đệm
-                            </span>
-                          )}
                         </div>
                       )}
 
@@ -588,15 +423,15 @@ export const ClassAssistantPage: React.FC = () => {
         />
       )}
 
-      {/* Delete Conversation Confirm Dialog */}
-      {deletingConv && (
+      {/* Clear Chat History Confirm Dialog */}
+      {isClearConfirmOpen && (
         <ConfirmDialog
-          title="Xóa phiên hỏi đáp"
-          message={`Bạn có chắc muốn xóa phiên trò chuyện "${deletingConv.title}"?`}
-          confirmText="Xóa phiên"
+          title="Xóa toàn bộ lịch sử trò chuyện"
+          message="Bạn có chắc chắn muốn xóa toàn bộ lịch sử tin nhắn của lớp này? Thao tác này không thể hoàn tác."
+          confirmText="Xóa lịch sử"
           isDangerous={true}
-          onConfirm={() => deleteConvMutation.mutate(deletingConv.id)}
-          onCancel={() => setDeletingConv(null)}
+          onConfirm={() => clearMessagesMutation.mutate()}
+          onCancel={() => setIsClearConfirmOpen(false)}
         />
       )}
     </div>

@@ -14,6 +14,7 @@ from db import (
     delete_document_chunks,
     find_any_document_file,
     get_pdf_outline,
+    invalidate_semantic_cache_for_document,
     render_pdf_page_image,
     remove_uploaded_document,
     save_uploaded_document,
@@ -95,6 +96,7 @@ async def delete_knowledge_document(
     qdrant: AsyncQdrantClient = Depends(get_qdrant),
 ) -> Response:
     await delete_document_chunks(qdrant, settings.qdrant_collection_name, document_id)
+    await invalidate_semantic_cache_for_document(qdrant, settings.qdrant_cache_collection_name, document_id)
 
     target_path = find_any_document_file(settings, document_id)
     if target_path and target_path.is_file():

@@ -13,7 +13,11 @@ from api.chat import router as chat_router
 from api.clo_rubric import router as clo_rubric_router
 from api.documents import router as documents_router
 from core import Settings, get_settings
-from db import ensure_collection_exists, get_qdrant_client
+from db import (
+    ensure_cache_collection_exists,
+    ensure_collection_exists,
+    get_qdrant_client,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +31,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         application.state.qdrant = qdrant
         try:
             await ensure_collection_exists(qdrant, active_settings.qdrant_collection_name)
+            await ensure_cache_collection_exists(qdrant, active_settings.qdrant_cache_collection_name)
         except Exception:
             logger.warning("Chưa thể kết nối tới Qdrant khi khởi động. Sẽ thử lại khi có request.")
 

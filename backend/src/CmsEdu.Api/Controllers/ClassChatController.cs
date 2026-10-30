@@ -20,44 +20,13 @@ public class ClassChatController(IClassChatService chatService) : ControllerBase
         return Ok(await chatService.GetClassKnowledgeInfoAsync(classId, cancellationToken));
     }
 
-    [HttpGet("conversations")]
+    [HttpGet("messages")]
     [HasPermission(Permissions.ClassAssistant.View)]
-    public async Task<ActionResult<List<ClassConversationDto>>> GetConversations(
+    public async Task<ActionResult<List<ClassMessageDto>>> GetMessages(
         int classId,
         CancellationToken cancellationToken)
     {
-        return Ok(await chatService.GetConversationsAsync(classId, cancellationToken));
-    }
-
-    [HttpGet("conversations/{conversationId:guid}")]
-    [HasPermission(Permissions.ClassAssistant.View)]
-    public async Task<ActionResult<List<ClassMessageDto>>> GetConversationMessages(
-        int classId,
-        Guid conversationId,
-        CancellationToken cancellationToken)
-    {
-        return Ok(await chatService.GetConversationMessagesAsync(classId, conversationId, cancellationToken));
-    }
-
-    [HttpPost("conversations")]
-    [HasPermission(Permissions.ClassAssistant.Chat)]
-    public async Task<ActionResult<ClassConversationDto>> CreateConversation(
-        int classId,
-        [FromBody] CreateClassConversationRequest? body,
-        CancellationToken cancellationToken)
-    {
-        return Ok(await chatService.CreateConversationAsync(classId, body?.Title, cancellationToken));
-    }
-
-    [HttpDelete("conversations/{conversationId:guid}")]
-    [HasPermission(Permissions.ClassAssistant.Chat)]
-    public async Task<IActionResult> DeleteConversation(
-        int classId,
-        Guid conversationId,
-        CancellationToken cancellationToken)
-    {
-        await chatService.DeleteConversationAsync(classId, conversationId, cancellationToken);
-        return NoContent();
+        return Ok(await chatService.GetMessagesAsync(classId, cancellationToken));
     }
 
     [HttpPost("chat")]
@@ -69,6 +38,14 @@ public class ClassChatController(IClassChatService chatService) : ControllerBase
     {
         return Ok(await chatService.ChatAsync(classId, request, cancellationToken));
     }
-}
 
-public record CreateClassConversationRequest(string? Title);
+    [HttpDelete("messages")]
+    [HasPermission(Permissions.ClassAssistant.Chat)]
+    public async Task<IActionResult> ClearMessages(
+        int classId,
+        CancellationToken cancellationToken)
+    {
+        await chatService.ClearMessagesAsync(classId, cancellationToken);
+        return NoContent();
+    }
+}

@@ -10,6 +10,17 @@ RRF_LIMIT = 15
 
 
 @dataclass(frozen=True)
+class Citation:
+    chunk_id: UUID
+    document_id: UUID
+    document_name: str
+    label: str
+    page_number: int | None
+    section_title: str | None
+    score: float | None
+
+
+@dataclass(frozen=True)
 class SearchHit:
     chunk: DocumentChunk
     document_filename: str

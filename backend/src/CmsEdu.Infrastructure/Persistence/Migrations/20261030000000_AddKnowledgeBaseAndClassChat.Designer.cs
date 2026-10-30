@@ -261,42 +261,6 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                         });
                 });
 
-            modelBuilder.Entity("CmsEdu.Domain.Entities.ClassChatConversation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int?>("ClassId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("TeacherUserId")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClassId", "TeacherUserId");
-
-                    b.ToTable("ClassChatConversations", (string)null);
-                });
-
             modelBuilder.Entity("CmsEdu.Domain.Entities.ClassChatMessage", b =>
                 {
                     b.Property<Guid>("Id")
@@ -310,18 +274,18 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("ConversationId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int?>("ClassId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<bool>("IsFromCache")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
 
                     b.Property<string>("Role")
                         .IsRequired()
@@ -331,7 +295,7 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ConversationId", "CreatedAt");
+                    b.HasIndex("ClassId", "UserId", "CreatedAt");
 
                     b.ToTable("ClassChatMessages", (string)null);
                 });
@@ -759,58 +723,6 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                         {
                             t.HasCheckConstraint("CK_Payments_Amount", "[Amount] > 0");
                         });
-                });
-
-            modelBuilder.Entity("CmsEdu.Domain.Entities.RagAnswerCache", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Answer")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CacheKey")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(128)");
-
-                    b.Property<string>("CitationsJson")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ClassId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<int>("HitCount")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
-
-                    b.Property<DateTime>("LastAccessedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("NormalizedQuestion")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CacheKey")
-                        .IsUnique();
-
-                    b.HasIndex("ClassId");
-
-                    b.ToTable("RagAnswerCaches", (string)null);
                 });
 
             modelBuilder.Entity("CmsEdu.Domain.Entities.Session", b =>
@@ -1324,7 +1236,7 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                     b.Navigation("Level");
                 });
 
-            modelBuilder.Entity("CmsEdu.Domain.Entities.ClassChatConversation", b =>
+            modelBuilder.Entity("CmsEdu.Domain.Entities.ClassChatMessage", b =>
                 {
                     b.HasOne("CmsEdu.Domain.Entities.Class", "Class")
                         .WithMany()
@@ -1332,17 +1244,6 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Class");
-                });
-
-            modelBuilder.Entity("CmsEdu.Domain.Entities.ClassChatMessage", b =>
-                {
-                    b.HasOne("CmsEdu.Domain.Entities.ClassChatConversation", "Conversation")
-                        .WithMany("Messages")
-                        .HasForeignKey("ConversationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Conversation");
                 });
 
             modelBuilder.Entity("CmsEdu.Domain.Entities.Document", b =>
@@ -1554,11 +1455,6 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                     b.Navigation("Enrollments");
 
                     b.Navigation("Sessions");
-                });
-
-            modelBuilder.Entity("CmsEdu.Domain.Entities.ClassChatConversation", b =>
-                {
-                    b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("CmsEdu.Domain.Entities.Course", b =>

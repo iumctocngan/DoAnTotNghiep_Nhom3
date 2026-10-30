@@ -9,7 +9,11 @@ from generation.context import Citation, build_context, make_citation
 from generation.gemini import GeminiGenerationError, generate
 from generation.prompts import build_chat_prompt
 from generation.schemas import GeneratedAnswerDraft
-from retrieval import search_knowledge_context
+from retrieval import (
+    lookup_semantic_cache,
+    search_knowledge_context,
+    upsert_semantic_cache,
+)
 
 _CHAT_RETRIEVAL_TOP_K = 5
 
@@ -18,6 +22,7 @@ OUT_OF_SCOPE_ANSWER = (
     "Yêu cầu này nằm ngoài phạm vi tra cứu tài liệu của trợ lý RAG. "
     "Tôi có thể giúp tra cứu, tóm tắt hoặc giải thích nội dung có trong tài liệu."
 )
+
 
 @dataclass(frozen=True)
 class GroundedAnswer:
@@ -32,6 +37,13 @@ async def answer_question(
     document_ids: list[UUID] | None = None,
     history: list[dict] | None = None,
 ) -> GroundedAnswer:
+    # 1. Semantic Cache Lookup (Qdrant Cosine Similarity >= 0.95)
+    cached = await lookup_semantic_cache(question, settings, client, document_ids)
+    if cached is not None:
+        cached_answer, cached_citations = cached
+        return GroundedAnswer(answer=cached_answer, citations=cached_citations)
+
+    # 2. Cache Miss -> Hybrid Search + Reranker
     hits = await search_knowledge_context(
         question,
         _CHAT_RETRIEVAL_TOP_K,
@@ -63,5 +75,9 @@ async def answer_question(
 
     source_ids = [i for i in dict.fromkeys(draft.used_source_ids) if 1 <= i <= len(hits)]
     citations = [make_citation(hits[idx - 1]) for idx in source_ids]
+
+    # 3. Cache the successful grounded answer
+    if citations:
+        await upsert_semantic_cache(question, answer, citations, settings, client)
 
     return GroundedAnswer(answer=answer, citations=citations)

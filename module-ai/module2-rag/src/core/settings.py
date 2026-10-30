@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     api_v1_prefix: str = "/api/v1"
     qdrant_url: str = "http://localhost:6333"
     qdrant_collection_name: str = "document_chunks"
+    qdrant_cache_collection_name: str = "semantic_cache"
+    cache_similarity_threshold: float = 0.95
+    cache_ttl_days: int = 14
     storage_root: Path = Path("storage")
     jwt_issuer: str
     jwt_audience: str

@@ -63,6 +63,52 @@ async def ensure_collection_exists(
     logger.info("Đã tạo thành công Qdrant collection: %s", collection_name)
 
 
+async def ensure_cache_collection_exists(
+    client: AsyncQdrantClient,
+    collection_name: str,
+) -> None:
+    if await client.collection_exists(collection_name):
+        return
+
+    logger.info("Đang khởi tạo Qdrant Semantic Cache collection: %s", collection_name)
+    await client.create_collection(
+        collection_name=collection_name,
+        vectors_config=models.VectorParams(size=EMBEDDING_DIMENSION, distance=models.Distance.COSINE),
+    )
+    for field_name, schema in (
+        ("source_doc_ids", models.PayloadSchemaType.KEYWORD),
+        ("expires_at", models.PayloadSchemaType.DATETIME),
+    ):
+        await client.create_payload_index(
+            collection_name=collection_name,
+            field_name=field_name,
+            field_schema=schema,
+        )
+    logger.info("Đã tạo thành công Qdrant Semantic Cache collection: %s", collection_name)
+
+
+async def invalidate_semantic_cache_for_document(
+    client: AsyncQdrantClient,
+    collection_name: str,
+    document_id: UUID,
+) -> None:
+    if not await client.collection_exists(collection_name):
+        return
+    await client.delete(
+        collection_name=collection_name,
+        points_selector=models.FilterSelector(
+            filter=models.Filter(
+                must=[
+                    models.FieldCondition(
+                        key="source_doc_ids",
+                        match=models.MatchValue(value=str(document_id)),
+                    )
+                ]
+            )
+        ),
+    )
+
+
 async def delete_document_chunks(
     client: AsyncQdrantClient,
     collection_name: str,
