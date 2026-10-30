@@ -18,7 +18,7 @@ def validate_required_text(value: str) -> str:
 
 
 RequiredText = Annotated[str, AfterValidator(validate_required_text)]
-SelectedDocumentIds = Annotated[list[UUID], Field(min_length=1, max_length=50)]
+SelectedDocumentIds = Annotated[list[UUID], Field(min_length=1, max_length=100)]
 
 
 class IngestionResponse(BaseModel):
@@ -27,10 +27,15 @@ class IngestionResponse(BaseModel):
     chunk_count: int
 
 
+class ChatMessageItem(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str
+
+
 class ChatRequest(BaseModel):
     question: RequiredText = Field(min_length=1, max_length=2_000)
     document_ids: SelectedDocumentIds | None = None
-
+    history: list[ChatMessageItem] | None = None
 
 
 class CitationResponse(BaseModel):
@@ -52,7 +57,6 @@ class ChatResponse(BaseModel):
 
 
 class GenerateCloRubricRequest(BaseModel):
-    notebook_id: UUID
     document_id: UUID
     outcome_count: int = Field(default=3, ge=1, le=5)
     start_page: int | None = Field(default=None, ge=1)
@@ -70,4 +74,3 @@ class DocumentOutlineItem(BaseModel):
     title: str
     start_page: int
     end_page: int
-

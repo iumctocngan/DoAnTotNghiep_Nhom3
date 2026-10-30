@@ -1,13 +1,14 @@
 namespace CmsEdu.Domain.Entities;
 
-public class Notebook
+public class ClassChatConversation
 {
     public Guid Id { get; set; } = Guid.NewGuid();
+    public int? ClassId { get; set; }
+    public Class? Class { get; set; }
+    public string TeacherUserId { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
-    public string? Description { get; set; }
-    public string TeacherId { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-    public ICollection<Document> Documents { get; set; } = new List<Document>();
+    public ICollection<ClassChatMessage> Messages { get; set; } = new List<ClassChatMessage>();
 }

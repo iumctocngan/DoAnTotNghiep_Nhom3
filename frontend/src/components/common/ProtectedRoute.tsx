@@ -2,8 +2,11 @@ import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
-export const ProtectedRoute: React.FC<{ allowedRoles?: string[] }> = ({ allowedRoles }) => {
-  const { status, user } = useAuth();
+export const ProtectedRoute: React.FC<{
+  allowedRoles?: string[];
+  requiredPermission?: string;
+}> = ({ allowedRoles, requiredPermission }) => {
+  const { status, user, hasPermission } = useAuth();
   const location = useLocation();
 
   if (status === 'loading') {
@@ -22,6 +25,9 @@ export const ProtectedRoute: React.FC<{ allowedRoles?: string[] }> = ({ allowedR
     return <Navigate to="/" replace />;
   }
 
+  if (requiredPermission && !hasPermission(requiredPermission)) {
+    return <Navigate to="/" replace />;
+  }
+
   return <Outlet />;
 };
-

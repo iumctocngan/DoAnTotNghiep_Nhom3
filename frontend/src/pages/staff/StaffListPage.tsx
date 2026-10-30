@@ -15,7 +15,8 @@ import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { Pagination, PAGE_SIZE } from '../../components/common/Pagination';
 
 export const StaffListPage: React.FC = () => {
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, hasPermission } = useAuth();
+  const canManageStaff = hasPermission('staff.manage');
   const queryClient = useQueryClient();
 
   // Filter & Pagination state
@@ -108,13 +109,15 @@ export const StaffListPage: React.FC = () => {
           <h1>Quản lý nhân sự</h1>
         </div>
 
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={() => setIsCreateOpen(true)}
-        >
-          <MaterialIcon name="add" /> Thêm nhân viên
-        </button>
+        {canManageStaff && (
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => setIsCreateOpen(true)}
+          >
+            <MaterialIcon name="add" /> Thêm nhân viên
+          </button>
+        )}
       </div>
 
       {actionError && <div className="alert alert-danger">{actionError}</div>}
@@ -187,13 +190,13 @@ export const StaffListPage: React.FC = () => {
               <th>Số điện thoại</th>
               <th>Vai trò</th>
               <th>Trạng thái</th>
-              <th className="text-center">Hành động</th>
+              {canManageStaff && <th className="text-center">Hành động</th>}
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={7} className="text-center py-8 text-slate-400">
+                <td colSpan={canManageStaff ? 7 : 6} className="text-center py-8 text-slate-400">
                   Đang tải danh sách nhân viên...
                 </td>
               </tr>
@@ -216,64 +219,66 @@ export const StaffListPage: React.FC = () => {
                       <span className="badge badge-inactive">Ngừng hoạt động</span>
                     )}
                   </td>
-                  <td>
-                    <div className="staff-actions">
-                    <button
-                      type="button"
-                      className="btn btn-secondary px-2 py-1 text-xs"
-                      onClick={() => setEditingStaff(staff)}
-                      title="Sửa thông tin"
-                    >
-                      Sửa
-                    </button>
+                  {canManageStaff && (
+                    <td>
+                      <div className="staff-actions">
+                        <button
+                          type="button"
+                          className="btn btn-secondary px-2 py-1 text-xs"
+                          onClick={() => setEditingStaff(staff)}
+                          title="Sửa thông tin"
+                        >
+                          Sửa
+                        </button>
 
-                    <button
-                      type="button"
-                      className="btn btn-secondary px-2 py-1 text-xs"
-                      onClick={() => setChangingRoleStaff(staff)}
-                      title="Đổi vai trò"
-                      disabled={staff.id === currentUser?.userId}
-                    >
-                      Đổi vai trò
-                    </button>
+                        <button
+                          type="button"
+                          className="btn btn-secondary px-2 py-1 text-xs"
+                          onClick={() => setChangingRoleStaff(staff)}
+                          title="Đổi vai trò"
+                          disabled={staff.id === currentUser?.userId}
+                        >
+                          Đổi vai trò
+                        </button>
 
-                    <button
-                      type="button"
-                      className="btn btn-secondary px-2 py-1 text-xs"
-                      onClick={() => setResettingPasswordStaff(staff)}
-                      title="Đặt lại mật khẩu"
-                    >
-                      Đặt lại MK
-                    </button>
+                        <button
+                          type="button"
+                          className="btn btn-secondary px-2 py-1 text-xs"
+                          onClick={() => setResettingPasswordStaff(staff)}
+                          title="Đặt lại mật khẩu"
+                        >
+                          Đặt lại MK
+                        </button>
 
-                    {staff.status === 1 ? (
-                      <button
-                        type="button"
-                        className="btn btn-danger px-2 py-1 text-xs"
-                        onClick={() => handleToggleStatus(staff)}
-                        disabled={staff.id === currentUser?.userId || deactivateMutation.isPending}
-                        title="Ngừng hoạt động tài khoản"
-                      >
-                        Ngừng
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        className="btn btn-primary px-2 py-1 text-xs"
-                        onClick={() => handleToggleStatus(staff)}
-                        disabled={activateMutation.isPending}
-                        title="Kích hoạt lại tài khoản"
-                      >
-                        Mở khóa
-                      </button>
-                    )}
-                    </div>
-                  </td>
+                        {staff.status === 1 ? (
+                          <button
+                            type="button"
+                            className="btn btn-danger px-2 py-1 text-xs"
+                            onClick={() => handleToggleStatus(staff)}
+                            disabled={staff.id === currentUser?.userId || deactivateMutation.isPending}
+                            title="Ngừng hoạt động tài khoản"
+                          >
+                            Ngừng
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className="btn btn-primary px-2 py-1 text-xs"
+                            onClick={() => handleToggleStatus(staff)}
+                            disabled={activateMutation.isPending}
+                            title="Kích hoạt lại tài khoản"
+                          >
+                            Mở khóa
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={7} className="text-center py-8 text-slate-500">
+                <td colSpan={canManageStaff ? 7 : 6} className="text-center py-8 text-slate-500">
                   Không tìm thấy nhân viên nào phù hợp với điều kiện tìm kiếm.
                 </td>
               </tr>
@@ -336,3 +341,5 @@ export const StaffListPage: React.FC = () => {
     </div>
   );
 };
+
+export default StaffListPage;

@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from fastapi import APIRouter, Depends, HTTPException
 from qdrant_client import AsyncQdrantClient
 
@@ -13,21 +11,21 @@ from generation.gemini import GeminiConfigurationError, GeminiGenerationError
 router = APIRouter(tags=["chat"])
 
 
-@router.post("/notebooks/{notebook_id}/chat", response_model=ChatResponse)
-async def chat_with_notebook(
-    notebook_id: UUID,
+@router.post("/chat", response_model=ChatResponse)
+async def chat_general(
     body: ChatRequest,
     user: CurrentUser = Depends(get_current_user),
     settings: Settings = Depends(get_request_settings),
     qdrant: AsyncQdrantClient = Depends(get_qdrant),
 ) -> ChatResponse:
     try:
+        history_dicts = [h.model_dump() for h in body.history] if body.history else None
         result = await answer_question(
-            notebook_id,
-            body.question,
-            settings,
-            qdrant,
-            body.document_ids,
+            question=body.question,
+            settings=settings,
+            client=qdrant,
+            document_ids=body.document_ids,
+            history=history_dicts,
         )
     except GeminiConfigurationError as error:
         raise HTTPException(status_code=503, detail=str(error)) from error
@@ -44,7 +42,7 @@ async def chat_with_notebook(
             section_title=c.section_title,
             score=c.score,
             image_url=(
-                f"{settings.api_v1_prefix}/notebooks/{notebook_id}/documents/{c.document_id}/pages/{c.page_number}/image"
+                f"{settings.api_v1_prefix}/documents/{c.document_id}/pages/{c.page_number}/image"
                 if c.page_number is not None
                 else None
             ),
@@ -56,4 +54,3 @@ async def chat_with_notebook(
         answer=result.answer,
         citations=citations,
     )
-

@@ -2,13 +2,14 @@ using CmsEdu.Application.Common.Interfaces;
 using CmsEdu.Application.Curriculum;
 using CmsEdu.Application.Classes;
 using CmsEdu.Application.Enrollments;
-using CmsEdu.Application.Notebooks;
+using CmsEdu.Application.Knowledge;
 using CmsEdu.Application.Remarks;
 using CmsEdu.Application.Teachers;
 using CmsEdu.Infrastructure.Identity;
 using CmsEdu.Infrastructure.Persistence;
 using CmsEdu.Infrastructure.Persistence.Repositories;
 using CmsEdu.Infrastructure.Services;
+using CmsEdu.Infrastructure.Services.Knowledge;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -79,8 +80,8 @@ public static class DependencyInjection
         services.AddScoped<DichVuNhanXetHocVien>();
 
         services.AddHttpClient<IRagModuleClient, RagModuleClient>();
-        services.AddScoped<INotebookRepository, NotebookRepository>();
-        services.AddScoped<NotebookService>();
+        services.AddScoped<IKnowledgeDocumentService, KnowledgeDocumentService>();
+        services.AddScoped<IClassChatService, ClassChatService>();
 
         return services;
     }

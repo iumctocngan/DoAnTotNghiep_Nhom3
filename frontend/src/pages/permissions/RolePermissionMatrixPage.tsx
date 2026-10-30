@@ -4,6 +4,7 @@ import { permissionApi } from '../../api/permissionApi';
 import { MaterialIcon } from '../../components/common/MaterialIcon';
 import { useToast } from '../../components/common/ToastProvider';
 import { getRoleLabel } from '../../utils/role';
+import { useAuth } from '../../context/AuthContext';
 import type { UserRole } from '../../types/auth';
 
 const EDITABLE_ROLES: UserRole[] = ['Teacher', 'Accountant', 'CustomerCare'];
@@ -11,6 +12,7 @@ const EDITABLE_ROLES: UserRole[] = ['Teacher', 'Accountant', 'CustomerCare'];
 export const RolePermissionMatrixPage: React.FC = () => {
   const queryClient = useQueryClient();
   const showToast = useToast();
+  const { refreshSession } = useAuth();
 
   const [activeFilterGroup, setActiveFilterGroup] = useState<string>('ALL');
   const [searchKeyword, setSearchKeyword] = useState<string>('');
@@ -54,8 +56,9 @@ export const RolePermissionMatrixPage: React.FC = () => {
         )
       );
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['permissions', 'matrix'] });
+      await refreshSession();
       showToast('Đã lưu thành công ma trận phân quyền hệ thống.', 'success');
       setInitialMatrix({ ...matrixState });
     },

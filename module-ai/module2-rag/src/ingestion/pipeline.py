@@ -20,7 +20,6 @@ class DocumentContentError(ValueError):
 
 
 async def ingest_document(
-    notebook_id: UUID,
     document_id: UUID,
     document_filename: str,
     storage_path: Path,
@@ -41,7 +40,6 @@ async def ingest_document(
     points: list[models.PointStruct] = []
     for offset in range(0, len(drafts), _EMBEDDING_BATCH_SIZE):
         batch = drafts[offset : offset + _EMBEDDING_BATCH_SIZE]
-        # Dense được ghép section_title vào để có ngữ cảnh. Sparse chỉ dùng thân chunk để tiêu đề không làm phình TF.
         dense_vectors, sparse_vectors = await asyncio.gather(
             embed_documents([embedding_text(d) for d in batch]),
             embed_sparse_documents([d.text for d in batch]),
@@ -56,7 +54,6 @@ async def ingest_document(
                         "sparse": models.SparseVector(indices=indices, values=values),
                     },
                     payload={
-                        "notebook_id": str(notebook_id),
                         "document_id": str(document_id),
                         "document_filename": document_filename,
                         "document_type": document_type,

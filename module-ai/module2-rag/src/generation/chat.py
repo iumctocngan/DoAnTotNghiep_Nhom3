@@ -9,11 +9,11 @@ from generation.context import Citation, build_context, make_citation
 from generation.gemini import GeminiGenerationError, generate
 from generation.prompts import build_chat_prompt
 from generation.schemas import GeneratedAnswerDraft
-from retrieval import search_notebook_context
+from retrieval import search_knowledge_context
 
 _CHAT_RETRIEVAL_TOP_K = 5
 
-NO_EVIDENCE_ANSWER = "Tôi chưa tìm thấy thông tin phù hợp trong tài liệu của notebook này."
+NO_EVIDENCE_ANSWER = "Tôi chưa tìm thấy thông tin phù hợp trong tài liệu học liệu được phân phối."
 OUT_OF_SCOPE_ANSWER = (
     "Yêu cầu này nằm ngoài phạm vi tra cứu tài liệu của trợ lý RAG. "
     "Tôi có thể giúp tra cứu, tóm tắt hoặc giải thích nội dung có trong tài liệu."
@@ -26,14 +26,13 @@ class GroundedAnswer:
 
 
 async def answer_question(
-    notebook_id: UUID,
     question: str,
     settings: Settings,
     client: AsyncQdrantClient,
     document_ids: list[UUID] | None = None,
+    history: list[dict] | None = None,
 ) -> GroundedAnswer:
-    hits = await search_notebook_context(
-        notebook_id,
+    hits = await search_knowledge_context(
         question,
         _CHAT_RETRIEVAL_TOP_K,
         settings,
@@ -43,7 +42,7 @@ async def answer_question(
     if not hits:
         return GroundedAnswer(NO_EVIDENCE_ANSWER, [])
 
-    prompt = build_chat_prompt(question, build_context(hits))
+    prompt = build_chat_prompt(question, build_context(hits), history)
     raw_answer = await generate(
         prompt,
         api_key=settings.gemini_api_key,

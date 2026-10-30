@@ -34,7 +34,6 @@ def point_to_search_hit(point: models.ScoredPoint | models.Record) -> SearchHit:
         chunk=DocumentChunk(
             id=UUID(str(point.id)),
             document_id=UUID(payload["document_id"]),
-            notebook_id=UUID(payload["notebook_id"]),
             chunk_index=payload.get("chunk_index", 0),
             text=payload.get("text", ""),
             page_number=payload.get("page_number"),
@@ -50,14 +49,12 @@ def point_to_search_hit(point: models.ScoredPoint | models.Record) -> SearchHit:
 async def hybrid_search(
     client: AsyncQdrantClient,
     collection_name: str,
-    notebook_id: UUID,
     dense_vector: list[float],
     sparse_indices: list[int],
     sparse_values: list[float],
     document_ids: list[UUID] | None = None,
 ) -> list[SearchHit]:
-    notebook_filter = models.Filter(must=[_match("notebook_id", str(notebook_id))])
-    must_conditions = [_match("notebook_id", str(notebook_id))]
+    must_conditions: list[models.Condition] = []
     if document_ids:
         must_conditions.append(
             models.FieldCondition(
@@ -65,7 +62,13 @@ async def hybrid_search(
                 match=models.MatchAny(any=[str(d) for d in document_ids]),
             )
         )
-    scope = models.Filter(must=must_conditions)
+    scope = models.Filter(must=must_conditions) if must_conditions else None
+
+    sparse_params = (
+        models.SearchParams(idf=models.IdfCorpusParams(corpus=scope))
+        if scope
+        else models.SearchParams()
+    )
 
     response = await client.query_points(
         collection_name=collection_name,
@@ -82,7 +85,7 @@ async def hybrid_search(
                 using="sparse",
                 filter=scope,
                 limit=BRANCH_LIMIT,
-                params=models.SearchParams(idf=models.IdfCorpusParams(corpus=notebook_filter)),
+                params=sparse_params,
             ),
         ],
         query=models.RrfQuery(rrf=models.Rrf(k=60)),
@@ -94,13 +97,11 @@ async def hybrid_search(
 async def document_scope_chunks(
     client: AsyncQdrantClient,
     collection_name: str,
-    notebook_id: UUID,
     document_id: UUID,
     start_page: int | None = None,
     end_page: int | None = None,
 ) -> list[SearchHit]:
     must_conditions: list[models.Condition] = [
-        _match("notebook_id", str(notebook_id)),
         _match("document_id", str(document_id)),
     ]
     if start_page is not None or end_page is not None:
@@ -133,4 +134,3 @@ async def document_scope_chunks(
         (point_to_search_hit(r) for r in records),
         key=lambda hit: (hit.chunk.page_number or 0, hit.chunk.chunk_index),
     )
-

@@ -25,9 +25,8 @@ public static class DbInitializer
             Permissions.Teacher.Classes,
             Permissions.Assessments.View,
             Permissions.Assessments.Manage,
-            Permissions.Notebooks.View,
-            Permissions.Notebooks.Manage,
-            Permissions.Notebooks.Chat
+            Permissions.ClassAssistant.View,
+            Permissions.ClassAssistant.Chat
         },
         [UserRole.Accountant] = new List<string>
         {

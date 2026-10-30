@@ -10,9 +10,9 @@ import { ConfirmDialog } from '../common/ConfirmDialog';
 import { useToast } from '../common/ToastProvider';
 
 export const AppLayout: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, hasPermission } = useAuth();
   const viTri = useLocation();
-  const tenTrang: Record<string, string> = { 'hoc-vien': 'Học viên', 'nguoi-giam-ho': 'Người giám hộ', 'lop-hoc': 'Lớp học', 'ghi-danh': 'Ghi danh', sessions: 'Buổi học & Điểm danh', invoices: 'Học phí & Thu tiền', curriculum: 'Chương trình học', staff: 'Nhân sự', permissions: 'Ma trận phân quyền', teacher: 'Giảng dạy', notebooks: 'Học liệu thông minh' };
+  const tenTrang: Record<string, string> = { 'hoc-vien': 'Học viên', 'nguoi-giam-ho': 'Người giám hộ', 'lop-hoc': 'Lớp học', 'ghi-danh': 'Ghi danh', sessions: 'Buổi học & Điểm danh', invoices: 'Học phí & Thu tiền', curriculum: 'Chương trình học', staff: 'Nhân sự', permissions: 'Ma trận phân quyền', teacher: 'Giảng dạy', 'class-assistant': 'Trợ lý học liệu' };
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isLogoutConfirmationOpen, setIsLogoutConfirmationOpen] = useState(false);
@@ -84,12 +84,41 @@ export const AppLayout: React.FC = () => {
             Tổng quan
           </NavLink>
 
-          <div className="nhom-dieu-huong">Học sinh</div>
-          <NavLink to="/hoc-vien" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Hồ sơ học viên</NavLink>
-          {user?.role !== 'Teacher' && <NavLink to="/ghi-danh" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Ghi danh học viên</NavLink>}
-          <div className="nhom-dieu-huong">Vận hành</div>
-          <NavLink to="/lop-hoc" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Quản lý lớp học</NavLink>
-          {(user?.role === 'Admin' || user?.role === 'Teacher' || user?.role === 'CustomerCare') && (
+          {(hasPermission('students.view') || hasPermission('enrollments.view')) && (
+            <div className="nhom-dieu-huong">Học sinh</div>
+          )}
+          {hasPermission('students.view') && (
+            <NavLink
+              to="/hoc-vien"
+              className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+            >
+              Hồ sơ học viên
+            </NavLink>
+          )}
+          {hasPermission('enrollments.view') && (
+            <NavLink
+              to="/ghi-danh"
+              className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+            >
+              Ghi danh học viên
+            </NavLink>
+          )}
+
+          {(hasPermission('classes.view') ||
+            hasPermission('sessions.view') ||
+            hasPermission('invoices.view') ||
+            hasPermission('curriculum.view')) && (
+            <div className="nhom-dieu-huong">Vận hành</div>
+          )}
+          {hasPermission('classes.view') && (
+            <NavLink
+              to="/lop-hoc"
+              className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+            >
+              Quản lý lớp học
+            </NavLink>
+          )}
+          {hasPermission('sessions.view') && (
             <NavLink
               to="/sessions"
               className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
@@ -97,8 +126,7 @@ export const AppLayout: React.FC = () => {
               Buổi học & Điểm danh
             </NavLink>
           )}
-
-          {(user?.role === 'Admin' || user?.role === 'Accountant' || user?.role === 'CustomerCare') && (
+          {hasPermission('invoices.view') && (
             <NavLink
               to="/invoices"
               className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
@@ -106,56 +134,76 @@ export const AppLayout: React.FC = () => {
               Học phí & Thu tiền
             </NavLink>
           )}
-          <NavLink
-            to="/curriculum"
-            className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-          >
-            Chương trình học
-          </NavLink>
+          {hasPermission('curriculum.view') && (
+            <NavLink
+              to="/curriculum"
+              className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+            >
+              Chương trình học
+            </NavLink>
+          )}
 
-          {(user?.role === 'Teacher' || user?.role === 'Admin') && (
+          {(hasPermission('assessments.view') ||
+            hasPermission('teacher.classes') ||
+            hasPermission('assistant.view')) && (
             <>
-              <NavLink to="/assessments" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Đánh giá học sinh AI</NavLink>
-              <NavLink
-                to="/teacher/classes"
-                className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-              >
-                Lớp học phụ trách
-              </NavLink>
-              <NavLink
-                to="/teacher/schedule"
-                className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-              >
-                Lịch giảng dạy
-              </NavLink>
-              <NavLink
-                to="/notebooks"
-                className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-              >
-                Học liệu thông minh
-              </NavLink>
+              {hasPermission('assessments.view') && (
+                <NavLink
+                  to="/assessments"
+                  className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                >
+                  Đánh giá học sinh AI
+                </NavLink>
+              )}
+              {hasPermission('teacher.classes') && (
+                <>
+                  <NavLink
+                    to="/teacher/classes"
+                    className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                  >
+                    Lớp học phụ trách
+                  </NavLink>
+                  <NavLink
+                    to="/teacher/schedule"
+                    className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                  >
+                    Lịch giảng dạy
+                  </NavLink>
+                </>
+              )}
+              {hasPermission('assistant.view') && (
+                <NavLink
+                  to="/class-assistant"
+                  className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                >
+                  Trợ lý học liệu
+                </NavLink>
+              )}
             </>
           )}
 
-          {user?.role === 'Admin' && (
+          {(hasPermission('staff.view') || hasPermission('roles.manage')) && (
             <>
               <div className="nhom-dieu-huong">Hệ thống</div>
-              <NavLink
-                to="/staff"
-                className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-              >
-                Quản lý nhân sự
-              </NavLink>
-              <NavLink
-                to="/permissions"
-                className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-              >
-                Ma trận phân quyền
-              </NavLink>
+              {hasPermission('staff.view') && (
+                <NavLink
+                  to="/staff"
+                  className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                >
+                  Quản lý nhân sự
+                </NavLink>
+              )}
+              {hasPermission('roles.manage') && (
+                <NavLink
+                  to="/permissions"
+                  className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                >
+                  Ma trận phân quyền
+                </NavLink>
+              )}
             </>
           )}
         </nav>
-
       </aside>
       {isSidebarOpen && (
         <button
@@ -223,7 +271,6 @@ export const AppLayout: React.FC = () => {
                 >
                   Đổi mật khẩu
                 </button>
-
               </div>
             )}
           </div>

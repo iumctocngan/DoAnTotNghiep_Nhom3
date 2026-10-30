@@ -32,7 +32,6 @@ class CloRubricGenerationError(RuntimeError):
 
 
 async def generate_clo_rubric(
-    notebook_id: UUID,
     document_id: UUID,
     settings: Settings,
     client: AsyncQdrantClient,
@@ -43,7 +42,6 @@ async def generate_clo_rubric(
     hits = await document_scope_chunks(
         client,
         settings.qdrant_collection_name,
-        notebook_id,
         document_id,
         start_page=start_page,
         end_page=end_page,

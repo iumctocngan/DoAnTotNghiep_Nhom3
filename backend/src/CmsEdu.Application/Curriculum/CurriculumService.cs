@@ -2,6 +2,7 @@ using CmsEdu.Application.Common.Exceptions;
 using CmsEdu.Application.Common.Interfaces;
 using CmsEdu.Application.Common.Models;
 using CmsEdu.Domain.Entities;
+using CmsEdu.Domain.Enums;
 
 namespace CmsEdu.Application.Curriculum;
 
@@ -15,7 +16,13 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
         CancellationToken cancellationToken = default)
     {
         ValidatePaging(page, pageSize);
-        var result = await repository.GetCoursesAsync(search?.Trim(), isActive, page, pageSize, cancellationToken);
+        List<int>? allowedCourseIds = null;
+        if (currentUser.Role == UserRole.Teacher && !string.IsNullOrEmpty(currentUser.UserId))
+        {
+            allowedCourseIds = await repository.GetTeacherCourseIdsAsync(currentUser.UserId, cancellationToken);
+        }
+
+        var result = await repository.GetCoursesAsync(search?.Trim(), isActive, page, pageSize, allowedCourseIds, cancellationToken);
         return new PagedResult<CourseResponse>(
             result.Items.Select(ToResponse).ToList(),
             result.Page,
@@ -25,6 +32,13 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
 
     public async Task<CourseResponse> GetCourseAsync(int id, CancellationToken cancellationToken = default)
     {
+        if (currentUser.Role == UserRole.Teacher && !string.IsNullOrEmpty(currentUser.UserId))
+        {
+            var allowedCourseIds = await repository.GetTeacherCourseIdsAsync(currentUser.UserId, cancellationToken);
+            if (!allowedCourseIds.Contains(id))
+                throw new ForbiddenAccessException("Bạn không có quyền truy cập khóa học này.");
+        }
+
         var course = await repository.GetCourseAsync(id, cancellationToken)
             ?? throw new NotFoundException("Không tìm thấy khóa học.");
         return ToResponse(course);
@@ -106,8 +120,18 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
         if (await repository.GetCourseAsync(courseId, cancellationToken) is null)
             throw new NotFoundException("Không tìm thấy khóa học.");
 
+        List<int>? allowedLevelIds = null;
+        if (currentUser.Role == UserRole.Teacher && !string.IsNullOrEmpty(currentUser.UserId))
+        {
+            var allowedCourseIds = await repository.GetTeacherCourseIdsAsync(currentUser.UserId, cancellationToken);
+            if (!allowedCourseIds.Contains(courseId))
+                throw new ForbiddenAccessException("Bạn không có quyền truy cập khóa học này.");
+
+            allowedLevelIds = await repository.GetTeacherLevelIdsAsync(currentUser.UserId, cancellationToken);
+        }
+
         var result = await repository.GetLevelsAsync(
-            courseId, search?.Trim(), isActive, page, pageSize, cancellationToken);
+            courseId, search?.Trim(), isActive, page, pageSize, allowedLevelIds, cancellationToken);
         return new PagedResult<LevelResponse>(
             result.Items.Select(ToResponse).ToList(),
             result.Page,
@@ -117,6 +141,13 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
 
     public async Task<LevelResponse> GetLevelAsync(int id, CancellationToken cancellationToken = default)
     {
+        if (currentUser.Role == UserRole.Teacher && !string.IsNullOrEmpty(currentUser.UserId))
+        {
+            var allowedLevelIds = await repository.GetTeacherLevelIdsAsync(currentUser.UserId, cancellationToken);
+            if (!allowedLevelIds.Contains(id))
+                throw new ForbiddenAccessException("Bạn không có quyền truy cập cấp độ này.");
+        }
+
         var level = await repository.GetLevelAsync(id, cancellationToken)
             ?? throw new NotFoundException("Không tìm thấy cấp độ.");
         return ToResponse(level);
@@ -204,6 +235,13 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
         if (await repository.GetLevelAsync(levelId, cancellationToken) is null)
             throw new NotFoundException("Không tìm thấy cấp độ.");
 
+        if (currentUser.Role == UserRole.Teacher && !string.IsNullOrEmpty(currentUser.UserId))
+        {
+            var allowedLevelIds = await repository.GetTeacherLevelIdsAsync(currentUser.UserId, cancellationToken);
+            if (!allowedLevelIds.Contains(levelId))
+                throw new ForbiddenAccessException("Bạn không có quyền truy cập bài học thuộc cấp độ này.");
+        }
+
         var result = await repository.GetLessonsAsync(
             levelId, search?.Trim(), isActive, page, pageSize, cancellationToken);
         return new PagedResult<LessonResponse>(
@@ -217,6 +255,14 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
     {
         var lesson = await repository.GetLessonAsync(id, cancellationToken)
             ?? throw new NotFoundException("Không tìm thấy bài học.");
+
+        if (currentUser.Role == UserRole.Teacher && !string.IsNullOrEmpty(currentUser.UserId))
+        {
+            var allowedLevelIds = await repository.GetTeacherLevelIdsAsync(currentUser.UserId, cancellationToken);
+            if (!allowedLevelIds.Contains(lesson.LevelId))
+                throw new ForbiddenAccessException("Bạn không có quyền truy cập bài học này.");
+        }
+
         return ToResponse(lesson);
     }
 

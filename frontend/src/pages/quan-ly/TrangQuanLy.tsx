@@ -27,19 +27,24 @@ const cauHinh = {
 
 // Đọc đủ các trang để danh mục lựa chọn không bị mất dữ liệu sau 20 bản ghi.
 async function layDanhMuc(duongDan: string, thamSo: Record<string, unknown> = {}): Promise<BanGhi[]> {
+  try {
   const danhSach: BanGhi[] = [];
   for (let trang = 1; ; trang++) {
     const ketQua = await apiClient<TrangDuLieu | BanGhi[]>(duongDan, { params: { ...thamSo, page: trang, pageSize: 100 } });
     if (Array.isArray(ketQua)) return ketQua;
     danhSach.push(...ketQua.items);
     if (!ketQua.items.length || danhSach.length >= ketQua.totalItems) return danhSach;
+    }
+    return danhSach;
+  } catch {
+    return [];
   }
 }
 
 export function TrangQuanLy({ phanHe }: { phanHe: PhanHe }) {
   const { id } = useParams();
   const [thamSo] = useSearchParams();
-  const { user: nguoiDung } = useAuth();
+  const { user: nguoiDung, hasPermission } = useAuth();
   const boNho = useQueryClient();
   const [tuKhoa, datTuKhoa] = useState('');
   const tuKhoaCham = useDebouncedValue(tuKhoa, 300);
@@ -49,7 +54,7 @@ export function TrangQuanLy({ phanHe }: { phanHe: PhanHe }) {
   const [lenh, datLenh] = useState<LenhDuLieu | null>(null);
   const quanTri = nguoiDung?.role === 'Admin';
   const chamSoc = nguoiDung?.role === 'CustomerCare';
-  const giaoVien = nguoiDung?.role === 'Teacher';
+
   const thongTin = cauHinh[phanHe];
   const duongDan = phanHe === 'lien-ket' ? `/api/students/${id}/guardians` : phanHe === 'nhan-xet' ? `/api/enrollments/${id}/remarks` : thongTin.api;
   const phanTrangMayChu = ['hoc-vien', 'nguoi-giam-ho', 'nhan-xet'].includes(phanHe);
@@ -74,8 +79,36 @@ export function TrangQuanLy({ phanHe }: { phanHe: PhanHe }) {
     'lien-ket': [chon('guardianId', 'Người giám hộ', luaChon('nguoiGiamHo', 'fullName')), truong('relationship', 'Quan hệ với học viên'), chon('isPrimary', 'Liên hệ chính', coKhong, 'boolean')],
     'nhan-xet': [truong('maBuoiHoc', 'Mã buổi học (tùy chọn)', 'number', true), { ...truong('noiDung', 'Nội dung nhận xét', 'textarea'), toiDa: 1000 }],
   };
-  const duocTao = phanHe === 'lop-hoc' ? quanTri : phanHe === 'nhan-xet' ? quanTri || giaoVien : quanTri || chamSoc;
-  const duocSua = duocTao && phanHe !== 'ghi-danh';
+  const duocTao = (() => {
+    switch (phanHe) {
+      case 'hoc-vien': return hasPermission('students.create');
+      case 'lop-hoc': return hasPermission('classes.manage');
+      case 'nguoi-giam-ho': return hasPermission('guardians.manage');
+      case 'ghi-danh': return hasPermission('enrollments.manage');
+      case 'nhan-xet': return hasPermission('enrollments.remarks');
+      default: return quanTri || chamSoc;
+    }
+  })();
+  const duocSua = (() => {
+    switch (phanHe) {
+      case 'hoc-vien': return hasPermission('students.edit');
+      case 'lop-hoc': return hasPermission('classes.manage');
+      case 'nguoi-giam-ho': return hasPermission('guardians.manage');
+      case 'ghi-danh': return false;
+      case 'nhan-xet': return hasPermission('enrollments.remarks');
+      case 'lien-ket': return hasPermission('guardians.manage');
+      default: return quanTri || chamSoc;
+    }
+  })();
+  const duocXoa = (() => {
+    switch (phanHe) {
+      case 'hoc-vien': return hasPermission('students.delete');
+      case 'lop-hoc': return hasPermission('classes.delete');
+      case 'nguoi-giam-ho': return hasPermission('guardians.delete');
+      case 'ghi-danh': return hasPermission('enrollments.delete');
+      default: return quanTri;
+    }
+  })();
   const tatCa = Array.isArray(duLieu.data) ? duLieu.data.filter(dong => !tuKhoaCham || Object.values(dong).some(giaTri => String(giaTri ?? '').toLocaleLowerCase('vi').includes(tuKhoaCham.toLocaleLowerCase('vi')))) : duLieu.data?.items ?? [];
   const tongSo = Array.isArray(duLieu.data) ? tatCa.length : duLieu.data?.totalItems ?? 0;
   const cacDong = phanTrangMayChu ? tatCa : tatCa.slice((trang - 1) * PAGE_SIZE, trang * PAGE_SIZE);
@@ -104,9 +137,9 @@ export function TrangQuanLy({ phanHe }: { phanHe: PhanHe }) {
       <div className="table-container"><table className="data-table"><thead><tr>{thongTin.cot.map(([ten, nhan]) => <th key={ten}>{nhan}</th>)}<th>Thao tác</th></tr></thead><tbody>
         {cacDong.map(dong => <tr key={String(dong.id ?? dong.guardianId)}>{thongTin.cot.map(([ten]) => <td key={ten}>{hienThi(dong, ten)}</td>)}<td><div className="cac-thao-tac">
           {duocSua && (phanHe !== 'nhan-xet' || quanTri || dong.nguoiTao === nguoiDung?.userId) && <button className="btn btn-secondary" onClick={() => thaoTac('Cập nhật', '', dong, phanHe === 'lien-ket' ? cacTruong[phanHe].slice(1) : phanHe === 'nhan-xet' ? [{ ...truong('noiDung', 'Nội dung nhận xét', 'textarea'), toiDa: 1000 }] : cacTruong[phanHe], 'PUT')}>Sửa</button>}
-          {phanHe === 'hoc-vien' && <>{duocTao && !luuTru && <button className="btn btn-success" onClick={() => datLenh({ tieuDe: 'Gia hạn khóa học · 1 tháng = 4 buổi', duongDan: `/api/students/${dong.id}/renew`, phuongThuc: 'POST', truong: [truong('courseMonths', 'Số tháng gia hạn', 'number')], duLieu: { courseMonths: 1 } })}>Gia hạn</button>}<Link className="btn btn-secondary" to={`/hoc-vien/${dong.id}/nguoi-giam-ho`}>Người giám hộ</Link>{!giaoVien && <Link className="btn btn-secondary" to={`/ghi-danh?hocVienId=${dong.id}`}>Ghi danh</Link>}{quanTri && <button className="btn btn-secondary" onClick={() => thaoTac(luuTru ? 'Khôi phục học viên' : 'Lưu trữ học viên', luuTru ? '/restore' : '/archive', dong)}>{luuTru ? 'Khôi phục' : 'Lưu trữ'}</button>}</>}
-          {phanHe === 'lop-hoc' && !giaoVien && <Link className="btn btn-secondary" to={`/ghi-danh?lopId=${dong.id}`}>Ghi danh</Link>}
-          {quanTri && ['lop-hoc', 'nguoi-giam-ho'].includes(phanHe) && <button className="btn btn-danger" onClick={() => thaoTac('Xóa bản ghi', '', dong, undefined, 'DELETE')}>Xóa</button>}
+          {phanHe === 'hoc-vien' && <>{duocSua && !luuTru && <button className="btn btn-success" onClick={() => datLenh({ tieuDe: 'Gia hạn khóa học · 1 tháng = 4 buổi', duongDan: `/api/students/${dong.id}/renew`, phuongThuc: 'POST', truong: [truong('courseMonths', 'Số tháng gia hạn', 'number')], duLieu: { courseMonths: 1 } })}>Gia hạn</button>}{hasPermission('guardians.view') && <Link className="btn btn-secondary" to={`/hoc-vien/${dong.id}/nguoi-giam-ho`}>Người giám hộ</Link>}{hasPermission('enrollments.view') && <Link className="btn btn-secondary" to={`/ghi-danh?hocVienId=${dong.id}`}>Ghi danh</Link>}{duocXoa && <button className="btn btn-secondary" onClick={() => thaoTac(luuTru ? 'Khôi phục học viên' : 'Lưu trữ học viên', luuTru ? '/restore' : '/archive', dong)}>{luuTru ? 'Khôi phục' : 'Lưu trữ'}</button>}</>}
+          {phanHe === 'lop-hoc' && hasPermission('enrollments.view') && <Link className="btn btn-secondary" to={`/ghi-danh?lopId=${dong.id}`}>Ghi danh</Link>}
+          {duocXoa && ['lop-hoc', 'nguoi-giam-ho'].includes(phanHe) && <button className="btn btn-danger" onClick={() => thaoTac('Xóa bản ghi', '', dong, undefined, 'DELETE')}>Xóa</button>}
           {phanHe === 'lien-ket' && duocSua && <><button className="btn btn-secondary" disabled={!!dong.isPrimary} onClick={() => thaoTac('Đặt liên hệ chính', '/primary', dong, undefined, 'PUT')}>Đặt chính</button><button className="btn btn-danger" onClick={() => thaoTac('Gỡ liên kết người giám hộ', '', dong, undefined, 'DELETE')}>Gỡ liên kết</button></>}
           {phanHe === 'ghi-danh' && <>
             {(quanTri || chamSoc) && <Link className="btn btn-secondary" to={`/ghi-danh/${dong.id}/nhan-xet`}>Nhận xét</Link>}

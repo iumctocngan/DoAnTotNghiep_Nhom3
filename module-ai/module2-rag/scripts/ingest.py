@@ -19,7 +19,7 @@ from core import Settings
 from ingestion.pipeline import ingest_document
 from db import ensure_collection_exists, get_qdrant_client
 
-CLI_NOTEBOOK_ID = uuid.UUID("3fa85f64-5717-4562-b3fc-2c963f66afa6")
+CLI_NAMESPACE_ID = uuid.UUID("3fa85f64-5717-4562-b3fc-2c963f66afa6")
 SUPPORTED_EXTENSIONS = {".pdf", ".docx"}
 
 
@@ -44,12 +44,11 @@ async def run() -> None:
 
     print(f"📥 Bắt đầu nạp {len(paths)} tài liệu vào Qdrant từ: {raw_dir}")
     for path in paths:
-        doc_id = uuid.uuid5(CLI_NOTEBOOK_ID, path.name)
+        doc_id = uuid.uuid5(CLI_NAMESPACE_ID, path.name)
         doc_type = path.suffix.lower().lstrip(".")
         print(f"   • {path.name} ...", end=" ", flush=True)
 
         chunks_count = await ingest_document(
-            notebook_id=CLI_NOTEBOOK_ID,
             document_id=doc_id,
             document_filename=path.name,
             storage_path=path,
@@ -101,7 +100,6 @@ async def run() -> None:
     report_path.write_text(
         json.dumps(
             {
-                "notebook_id": str(CLI_NOTEBOOK_ID),
                 "documents": report_files,
                 "total_chunks": total_chunks,
             },

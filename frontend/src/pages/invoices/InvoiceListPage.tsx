@@ -13,7 +13,7 @@ import type { InvoiceResponse, InvoiceStatus, PaymentResponse } from '../../type
 import type { ApiError } from '../../types/auth';
 
 export const InvoiceListPage: React.FC = () => {
-  const { user } = useAuth();
+  const { hasPermission } = useAuth();
 
   const [activeTab, setActiveTab] = useState<'invoices' | 'payments' | 'debtors'>('invoices');
 
@@ -86,8 +86,8 @@ export const InvoiceListPage: React.FC = () => {
     placeholderData: keepPreviousData,
   });
 
-  const canManageInvoice = user?.role === 'Admin' || user?.role === 'Accountant';
-  const canViewPayments = user?.role === 'Admin' || user?.role === 'Accountant';
+  const canManageInvoice = hasPermission('invoices.manage');
+  const canViewPayments = hasPermission('invoices.payment');
   const totalInvoicePages = pagedInvoices ? Math.ceil(pagedInvoices.totalItems / pageSize) : 1;
   const totalPaymentPages = pagedPayments ? Math.ceil(pagedPayments.totalItems / pageSize) : 1;
   const totalDebtorPages = pagedDebtors ? Math.ceil(pagedDebtors.totalItems / pageSize) : 1;
@@ -247,7 +247,7 @@ export const InvoiceListPage: React.FC = () => {
                         <td>{renderInvoiceBadge(inv.trangThai)}</td>
                         <td className="text-center whitespace-nowrap">
                           <div className="inline-flex items-center gap-1.5">
-                            {canManageInvoice && inv.trangThai !== 2 && inv.conNo > 0 && (
+                            {canViewPayments && inv.trangThai !== 2 && inv.conNo > 0 && (
                               <button
                                 type="button"
                                 className="btn btn-secondary text-xs !py-1 !px-2.5 text-emerald-700 font-semibold border-emerald-300 hover:bg-emerald-50"
@@ -367,7 +367,7 @@ export const InvoiceListPage: React.FC = () => {
                       </td>
                       <td className="text-xs text-slate-500">{p.createdBy}</td>
                       <td className="text-center whitespace-nowrap">
-                        {canManageInvoice && p.status === 1 && (
+                        {canViewPayments && p.status === 1 && (
                           <button
                             type="button"
                             className="btn btn-secondary text-xs !py-1 !px-2 text-red-600 hover:text-red-800"

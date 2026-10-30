@@ -8,14 +8,16 @@ import type { CourseResponse, LessonResponse, LevelResponse } from '../../types/
 import { CourseModal } from './CourseModal';
 import { LevelModal } from './LevelModal';
 import { LessonModal } from './LessonModal';
+import { KnowledgeBaseSection } from './KnowledgeBaseSection';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { Pagination, PAGE_SIZE } from '../../components/common/Pagination';
 
 export const CurriculumPage: React.FC = () => {
-  const { user } = useAuth();
-  const isAdmin = user?.role === 'Admin';
+  const { hasPermission } = useAuth();
+  const isAdmin = hasPermission('curriculum.manage');
   const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState<'curriculum' | 'knowledge'>('curriculum');
 
   // Navigation hierarchy state
   const [selectedCourse, setSelectedCourse] = useState<CourseResponse | null>(null);
@@ -188,7 +190,38 @@ export const CurriculumPage: React.FC = () => {
 
       </div>
 
+      {/* Navigation Tabs */}
+      <div className="flex border-b border-slate-200 mb-6 gap-6">
+        <button
+          type="button"
+          onClick={() => setActiveTab('curriculum')}
+          className={`pb-3 text-sm font-semibold border-b-2 transition-colors ${
+            activeTab === 'curriculum'
+              ? 'border-[#0284c7] text-[#0284c7]'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          Cấu trúc Chương trình học
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('knowledge')}
+          className={`pb-3 text-sm font-semibold border-b-2 transition-colors ${
+            activeTab === 'knowledge'
+              ? 'border-[#0284c7] text-[#0284c7]'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          Kho Tri thức & Học liệu
+        </button>
+      </div>
+
       {actionError && <div className="alert alert-danger">{actionError}</div>}
+
+      {activeTab === 'knowledge' ? (
+        <KnowledgeBaseSection />
+      ) : (
+        <>
 
       {/* VIEW 1: COURSES VIEW (Khi chưa chọn Course) */}
       {!selectedCourse && (
@@ -583,6 +616,9 @@ export const CurriculumPage: React.FC = () => {
           </div>
           {lessonsData && <Pagination totalItems={lessonsData.totalItems} page={lessonPage} onPageChange={setLessonPage} itemLabel="mục" hideSinglePage />}
         </div>
+      )}
+
+        </>
       )}
 
       {/* Modals */}

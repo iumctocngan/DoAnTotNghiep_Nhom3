@@ -133,10 +133,10 @@ def print_terminal_report(results: list[dict], elapsed: float):
     print(sep)
 
 
-async def _async_collect_missing(missing_items: list[dict], top_k: int, notebook_id: UUID, settings) -> dict:
+async def _async_collect_missing(missing_items: list[dict], top_k: int, settings) -> dict:
     from generation.chat import answer_question
     from qdrant_client import AsyncQdrantClient
-    from retrieval import search_notebook_context
+    from retrieval import search_knowledge_context
 
     client = AsyncQdrantClient(url=settings.qdrant_url)
     results = {}
@@ -144,11 +144,11 @@ async def _async_collect_missing(missing_items: list[dict], top_k: int, notebook
         qid = item["ma_cau_hoi"]
         q = item["cau_hoi"]
         print(f"[{idx:02d}/{len(missing_items)}] {qid}: Đang sinh câu trả lời RAG...", end=" ", flush=True)
-        retrieved_hits = await search_notebook_context(
-            notebook_id, q, top_k=top_k, settings=settings, client=client
+        retrieved_hits = await search_knowledge_context(
+            q, top_k=top_k, settings=settings, client=client
         )
         contexts = [h.chunk.text for h in retrieved_hits] or ["Tôi chưa tìm thấy thông tin phù hợp."]
-        rag_answer = await answer_question(notebook_id, q, settings, client)
+        rag_answer = await answer_question(question=q, settings=settings, client=client)
         results[qid] = {
             "user_input": q,
             "retrieved_contexts": contexts,
@@ -166,10 +166,10 @@ def run_evaluation(top_k: int = 5):
     from core import get_settings
     settings = get_settings()
 
-    ingest_report_path = os.path.join(os.path.dirname(__file__), "..", "data", "processed", "ingest-report.json")
-    with open(ingest_report_path, "r", encoding="utf-8") as f:
-        ingest_data = json.load(f)
-    notebook_id = UUID(ingest_data["notebook_id"])
+
+
+
+
 
     dataset = load_dataset()
     total_q = len(dataset)
@@ -189,7 +189,7 @@ def run_evaluation(top_k: int = 5):
     missing = [item for item in dataset if item["ma_cau_hoi"] not in cached_map]
     if missing:
         print(f"Cần thu thập {len(missing)} câu trả lời RAG chưa có trong cache...")
-        new_collected = asyncio.run(_async_collect_missing(missing, top_k, notebook_id, settings))
+        new_collected = asyncio.run(_async_collect_missing(missing, top_k, settings))
         cached_map.update(new_collected)
         with open(CACHE_JSON, "w", encoding="utf-8") as f:
             json.dump(list(cached_map.values()), f, ensure_ascii=False, indent=2)
@@ -222,7 +222,7 @@ def run_evaluation(top_k: int = 5):
 
     # Kiểm tra RESULTS_JSON để phục hồi câu đã chấm trước đó
     evaluated_map = {}
-    if os.path.exists(RESULTS_JSON):
+    if use_cache and os.path.exists(RESULTS_JSON):
         try:
             with open(RESULTS_JSON, "r", encoding="utf-8") as f:
                 old_results = json.load(f)

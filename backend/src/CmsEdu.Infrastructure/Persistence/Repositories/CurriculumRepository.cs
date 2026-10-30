@@ -15,9 +15,16 @@ public class CurriculumRepository(AppDbContext dbContext) : ICurriculumRepositor
         bool? isActive,
         int page,
         int pageSize,
+        IEnumerable<int>? allowedIds = null,
         CancellationToken cancellationToken = default)
     {
         var query = dbContext.Courses.AsNoTracking();
+        if (allowedIds is not null)
+        {
+            var ids = allowedIds.ToList();
+            query = query.Where(course => ids.Contains(course.Id));
+        }
+
         if (!string.IsNullOrWhiteSpace(search))
             query = query.Where(course => course.Code.Contains(search) || course.Name.Contains(search));
         if (isActive is not null)
@@ -56,11 +63,19 @@ public class CurriculumRepository(AppDbContext dbContext) : ICurriculumRepositor
         bool? isActive,
         int page,
         int pageSize,
+        IEnumerable<int>? allowedIds = null,
         CancellationToken cancellationToken = default)
     {
         var query = dbContext.Levels
             .AsNoTracking()
             .Where(level => level.CourseId == courseId);
+
+        if (allowedIds is not null)
+        {
+            var ids = allowedIds.ToList();
+            query = query.Where(level => ids.Contains(level.Id));
+        }
+
         if (!string.IsNullOrWhiteSpace(search))
             query = query.Where(level => level.Code.Contains(search) || level.Name.Contains(search));
         if (isActive is not null)
@@ -92,6 +107,26 @@ public class CurriculumRepository(AppDbContext dbContext) : ICurriculumRepositor
         return SaveAsync(
             level, userId, action, description,
             "Mã cấp độ hoặc thứ tự cấp độ đã tồn tại trong khóa học này.", cancellationToken);
+    }
+
+    public async Task<List<int>> GetTeacherCourseIdsAsync(string teacherUserId, CancellationToken ct = default)
+    {
+        return await dbContext.Classes
+            .AsNoTracking()
+            .Where(c => c.MainTeacherUserId == teacherUserId)
+            .Select(c => c.Level.CourseId)
+            .Distinct()
+            .ToListAsync(ct);
+    }
+
+    public async Task<List<int>> GetTeacherLevelIdsAsync(string teacherUserId, CancellationToken ct = default)
+    {
+        return await dbContext.Classes
+            .AsNoTracking()
+            .Where(c => c.MainTeacherUserId == teacherUserId)
+            .Select(c => c.LevelId)
+            .Distinct()
+            .ToListAsync(ct);
     }
 
     public async Task<PagedResult<Lesson>> GetLessonsAsync(

@@ -65,11 +65,10 @@ public static class Permissions
         public const string Manage = "assessments.manage";
     }
 
-    public static class Notebooks
+    public static class ClassAssistant
     {
-        public const string View = "notebooks.view";
-        public const string Manage = "notebooks.manage";
-        public const string Chat = "notebooks.chat";
+        public const string View = "assistant.view";
+        public const string Chat = "assistant.chat";
     }
 
     public static class Staff
@@ -128,10 +127,9 @@ public static class Permissions
         new(Assessments.View, "Xem đánh giá AI & Rubric", "Đánh giá học sinh AI", "Xem báo cáo học tập, CLO và Rubric"),
         new(Assessments.Manage, "Chấm điểm & Duyệt nhận xét AI", "Đánh giá học sinh AI", "Tạo Rubric, chấm điểm bài và duyệt nhận xét AI"),
 
-        // Học liệu & RAG AI
-        new(Notebooks.View, "Xem học liệu AI", "Học liệu thông minh", "Xem danh sách không gian học liệu"),
-        new(Notebooks.Manage, "Quản lý học liệu", "Học liệu thông minh", "Tạo không gian học liệu và tải lên tài liệu"),
-        new(Notebooks.Chat, "Hỏi đáp AI & Trợ lý", "Học liệu thông minh", "Trò chuyện và hỏi đáp AI với tài liệu"),
+        // Trợ lý học liệu AI
+        new(ClassAssistant.View, "Truy cập Trợ lý học liệu", "Trợ lý học liệu AI", "Truy cập không gian Trợ lý học liệu và tra cứu tài liệu"),
+        new(ClassAssistant.Chat, "Hỏi đáp AI với học liệu", "Trợ lý học liệu AI", "Gửi câu hỏi và trò chuyện hỏi đáp AI với tài liệu"),
 
         // Quản lý nhân sự & Phân quyền
         new(Staff.View, "Xem nhân sự", "Quản trị hệ thống", "Xem danh sách nhân viên trung tâm"),

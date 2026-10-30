@@ -35,7 +35,6 @@ async def generate_clo_rubric_content(
 ) -> Response:
     try:
         generated = await generate_clo_rubric(
-            body.notebook_id,
             body.document_id,
             settings,
             qdrant,

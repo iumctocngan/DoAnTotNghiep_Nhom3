@@ -16,8 +16,7 @@ import { InvoiceListPage } from './pages/invoices/InvoiceListPage';
 import { ToastProvider } from './components/common/ToastProvider';
 import { TrangQuanLy } from './pages/quan-ly/TrangQuanLy';
 import { AssessmentPage } from './pages/teacher/AssessmentPage';
-import { NotebooksListPage } from './pages/notebooks/NotebooksListPage';
-import { NotebookDetailPage } from './pages/notebooks/NotebookDetailPage';
+import { ClassAssistantPage } from './pages/assistant/ClassAssistantPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -35,52 +34,81 @@ export const App: React.FC = () => {
         <AuthProvider>
           <BrowserRouter>
             <Routes>
-            {/* Tuyến công khai */}
-            <Route path="/login" element={<LoginPage />} />
+              {/* Tuyến công khai */}
+              <Route path="/login" element={<LoginPage />} />
 
-            {/* Tuyến bảo vệ: Yêu cầu đăng nhập */}
-            <Route element={<ProtectedRoute />}>
-              <Route element={<AppLayout />}>
-                <Route path="/" element={<DashboardPage />} />
-                <Route path="/hoc-vien" element={<TrangQuanLy key="hoc-vien" phanHe="hoc-vien" />} />
-                <Route path="/hoc-vien/:id/nguoi-giam-ho" element={<TrangQuanLy key="lien-ket" phanHe="lien-ket" />} />
-                <Route path="/lop-hoc" element={<TrangQuanLy key="lop-hoc" phanHe="lop-hoc" />} />
-                <Route element={<ProtectedRoute allowedRoles={['Admin', 'CustomerCare']} />}>
-                  <Route path="/nguoi-giam-ho" element={<TrangQuanLy key="nguoi-giam-ho" phanHe="nguoi-giam-ho" />} />
-                </Route>
-                <Route element={<ProtectedRoute allowedRoles={['Admin', 'Accountant', 'CustomerCare']} />}>
-                  <Route path="/ghi-danh" element={<TrangQuanLy key="ghi-danh" phanHe="ghi-danh" />} />
-                </Route>
-                <Route element={<ProtectedRoute allowedRoles={['Admin', 'Teacher', 'CustomerCare']} />}>
-                  <Route path="/ghi-danh/:id/nhan-xet" element={<TrangQuanLy key="nhan-xet" phanHe="nhan-xet" />} />
-                </Route>
+              {/* Tuyến bảo vệ: Yêu cầu đăng nhập */}
+              <Route element={<ProtectedRoute />}>
+                <Route element={<AppLayout />}>
+                  <Route path="/" element={<DashboardPage />} />
 
-                {/* Quản lý buổi học & Điểm danh (HuceLongK) */}
-                <Route element={<ProtectedRoute allowedRoles={['Admin', 'Teacher', 'CustomerCare']} />}>
-                  <Route path="/sessions" element={<SessionListPage />} />
-                </Route>
+                  {/* Quản lý học viên & người giám hộ */}
+                  <Route element={<ProtectedRoute requiredPermission="students.view" />}>
+                    <Route path="/hoc-vien" element={<TrangQuanLy key="hoc-vien" phanHe="hoc-vien" />} />
+                    <Route path="/hoc-vien/:id/nguoi-giam-ho" element={<TrangQuanLy key="lien-ket" phanHe="lien-ket" />} />
+                  </Route>
 
-                {/* Quản lý học phí & Phiếu thu (HuceLongK) */}
-                <Route element={<ProtectedRoute allowedRoles={['Admin', 'Accountant', 'CustomerCare']} />}>
-                  <Route path="/invoices" element={<InvoiceListPage />} />
-                </Route>
-                <Route path="/curriculum" element={<CurriculumPage />} />
-                <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
-                  <Route path="/staff" element={<StaffListPage />} />
-                  <Route path="/permissions" element={<RolePermissionMatrixPage />} />
-                </Route>
-                <Route element={<ProtectedRoute allowedRoles={['Admin', 'Teacher']} />}>
-                  <Route path="/teacher/classes" element={<TeacherClassesPage />} />
-                  <Route path="/assessments" element={<AssessmentPage />} />
-                  <Route path="/teacher/schedule" element={<TeacherSchedulePage />} />
-                  <Route path="/notebooks" element={<NotebooksListPage />} />
-                  <Route path="/notebooks/:id" element={<NotebookDetailPage />} />
+                  <Route element={<ProtectedRoute requiredPermission="guardians.view" />}>
+                    <Route path="/nguoi-giam-ho" element={<TrangQuanLy key="nguoi-giam-ho" phanHe="nguoi-giam-ho" />} />
+                  </Route>
+
+                  {/* Vận hành: Lớp học & Ghi danh */}
+                  <Route element={<ProtectedRoute requiredPermission="classes.view" />}>
+                    <Route path="/lop-hoc" element={<TrangQuanLy key="lop-hoc" phanHe="lop-hoc" />} />
+                  </Route>
+
+                  <Route element={<ProtectedRoute requiredPermission="enrollments.view" />}>
+                    <Route path="/ghi-danh" element={<TrangQuanLy key="ghi-danh" phanHe="ghi-danh" />} />
+                  </Route>
+
+                  <Route element={<ProtectedRoute requiredPermission="enrollments.remarks" />}>
+                    <Route path="/ghi-danh/:id/nhan-xet" element={<TrangQuanLy key="nhan-xet" phanHe="nhan-xet" />} />
+                  </Route>
+
+                  {/* Buổi học & Điểm danh */}
+                  <Route element={<ProtectedRoute requiredPermission="sessions.view" />}>
+                    <Route path="/sessions" element={<SessionListPage />} />
+                  </Route>
+
+                  {/* Học phí & Hóa đơn */}
+                  <Route element={<ProtectedRoute requiredPermission="invoices.view" />}>
+                    <Route path="/invoices" element={<InvoiceListPage />} />
+                  </Route>
+
+                  {/* Chương trình học */}
+                  <Route element={<ProtectedRoute requiredPermission="curriculum.view" />}>
+                    <Route path="/curriculum" element={<CurriculumPage />} />
+                  </Route>
+
+                  {/* Quản lý hệ thống */}
+                  <Route element={<ProtectedRoute requiredPermission="staff.view" />}>
+                    <Route path="/staff" element={<StaffListPage />} />
+                  </Route>
+
+                  <Route element={<ProtectedRoute requiredPermission="roles.manage" />}>
+                    <Route path="/permissions" element={<RolePermissionMatrixPage />} />
+                  </Route>
+
+                  {/* Giảng dạy & Đánh giá AI */}
+                  <Route element={<ProtectedRoute requiredPermission="teacher.classes" />}>
+                    <Route path="/teacher/classes" element={<TeacherClassesPage />} />
+                    <Route path="/teacher/schedule" element={<TeacherSchedulePage />} />
+                  </Route>
+
+                  <Route element={<ProtectedRoute requiredPermission="assessments.view" />}>
+                    <Route path="/assessments" element={<AssessmentPage />} />
+                  </Route>
+
+                  {/* Trợ lý học liệu AI */}
+                  <Route element={<ProtectedRoute requiredPermission="assistant.view" />}>
+                    <Route path="/class-assistant" element={<ClassAssistantPage />} />
+                    <Route path="/notebooks" element={<Navigate to="/class-assistant" replace />} />
+                  </Route>
                 </Route>
               </Route>
-            </Route>
 
-            {/* Điều hướng mặc định */}
-            <Route path="*" element={<Navigate to="/" replace />} />
+              {/* Điều hướng mặc định */}
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </BrowserRouter>
         </AuthProvider>

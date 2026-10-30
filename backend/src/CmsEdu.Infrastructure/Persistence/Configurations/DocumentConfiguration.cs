@@ -1,4 +1,5 @@
 using CmsEdu.Domain.Entities;
+using CmsEdu.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -11,6 +12,9 @@ public class DocumentConfiguration : IEntityTypeConfiguration<Document>
         builder.ToTable("Documents");
 
         builder.HasKey(d => d.Id);
+
+        builder.Property(d => d.Title)
+            .HasMaxLength(255);
 
         builder.Property(d => d.FileName)
             .HasMaxLength(255)
@@ -37,8 +41,36 @@ public class DocumentConfiguration : IEntityTypeConfiguration<Document>
         builder.Property(d => d.ErrorMessage)
             .HasMaxLength(500);
 
+        builder.Property(d => d.Scope)
+            .HasConversion<int>()
+            .HasDefaultValue(KnowledgeScope.Global)
+            .IsRequired();
+
+        builder.Property(d => d.UploadedByUserId)
+            .HasMaxLength(450);
+
         builder.Property(d => d.CreatedAt)
             .HasDefaultValueSql("GETUTCDATE()")
             .IsRequired();
+
+        builder.HasOne(d => d.Course)
+            .WithMany()
+            .HasForeignKey(d => d.CourseId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne(d => d.Level)
+            .WithMany()
+            .HasForeignKey(d => d.LevelId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne(d => d.Class)
+            .WithMany()
+            .HasForeignKey(d => d.ClassId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasIndex(d => new { d.Scope, d.CourseId, d.LevelId, d.ClassId });
     }
 }

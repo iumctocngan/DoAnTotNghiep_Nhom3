@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 class DocumentChunk:
     id: UUID
     document_id: UUID
-    notebook_id: UUID
     chunk_index: int
     text: str
     page_number: int | None = None
@@ -53,7 +52,6 @@ async def ensure_collection_exists(
         },
     )
     for field_name, schema in (
-        ("notebook_id", models.UuidIndexParams(type=models.UuidIndexType.UUID, is_tenant=True)),
         ("document_id", models.PayloadSchemaType.UUID),
         ("page_number", models.PayloadSchemaType.INTEGER),
     ):
@@ -75,19 +73,6 @@ async def delete_document_chunks(
     await client.delete(
         collection_name=collection_name,
         points_selector=_field_filter("document_id", document_id),
-    )
-
-
-async def delete_notebook_chunks(
-    client: AsyncQdrantClient,
-    collection_name: str,
-    notebook_id: UUID,
-) -> None:
-    if not await client.collection_exists(collection_name):
-        return
-    await client.delete(
-        collection_name=collection_name,
-        points_selector=_field_filter("notebook_id", notebook_id),
     )
 
 

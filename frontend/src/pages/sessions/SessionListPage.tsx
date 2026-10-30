@@ -13,7 +13,7 @@ import type { SessionResponse } from '../../types/session';
 import type { ApiError } from '../../types/auth';
 
 export const SessionListPage: React.FC = () => {
-  const { user } = useAuth();
+  const { hasPermission } = useAuth();
   const queryClient = useQueryClient();
   const showToast = useToast();
 
@@ -85,8 +85,8 @@ export const SessionListPage: React.FC = () => {
     },
   });
 
-  const isAdmin = user?.role === 'Admin';
-  const canAttendance = user?.role === 'Admin' || user?.role === 'Teacher';
+  const canManageSession = hasPermission('sessions.manage');
+  const canAttendance = hasPermission('sessions.attendance');
   const totalPages = pagedData ? Math.ceil(pagedData.totalItems / pageSize) : 1;
 
   const handleCreate = () => {
@@ -107,7 +107,7 @@ export const SessionListPage: React.FC = () => {
           <h1 className="text-xl font-bold text-slate-900">Quản lý Buổi học & Điểm danh</h1>
         </div>
 
-        {isAdmin && (
+        {canManageSession && (
           <button type="button" className="btn btn-primary" onClick={handleCreate}>
             <MaterialIcon name="add" /> Thêm buổi học mới
           </button>
@@ -263,7 +263,7 @@ export const SessionListPage: React.FC = () => {
                           </button>
                         )}
 
-                        {isAdmin && s.status === 1 && (
+                        {canManageSession && s.status === 1 && (
                           <>
                             <button
                               type="button"

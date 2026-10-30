@@ -39,57 +39,34 @@ public class RagModuleClient(
         catch { return false; }
     }
 
-    public async Task<bool> IngestDocumentAsync(Guid notebookId, Guid documentId, string fileName, Stream fileStream, CancellationToken ct)
+    // Standalone / Class Knowledge Base operations
+    public async Task<bool> IngestKnowledgeDocumentAsync(Guid documentId, string fileName, Stream fileStream, CancellationToken ct)
     {
         using var content = new MultipartFormDataContent();
         content.Add(new StreamContent(fileStream), "file", fileName);
         content.Add(new StringContent(documentId.ToString()), "document_id");
-        using var req = CreateRequest(HttpMethod.Post, $"/api/v1/notebooks/{notebookId}/documents/ingest", content);
+        using var req = CreateRequest(HttpMethod.Post, "/api/v1/documents/ingest", content);
         return (await client.SendAsync(req, ct)).IsSuccessStatusCode;
     }
 
-    public Task<bool> DeleteDocumentAsync(Guid notebookId, Guid documentId, CancellationToken ct) =>
-        SendDeleteAsync($"/api/v1/notebooks/{notebookId}/documents/{documentId}", ct);
+    public Task<bool> DeleteKnowledgeDocumentAsync(Guid documentId, CancellationToken ct) =>
+        SendDeleteAsync($"/api/v1/documents/{documentId}", ct);
 
-    public Task<bool> DeleteNotebookAsync(Guid notebookId, CancellationToken ct) =>
-        SendDeleteAsync($"/api/v1/notebooks/{notebookId}", ct);
-
-    public async Task<ChatResponseDto> ChatAsync(Guid notebookId, ChatRequestDto requestDto, CancellationToken ct)
+    public async Task<ChatResponseDto> ScopedChatAsync(ChatRequestDto requestDto, CancellationToken ct)
     {
         var content = new StringContent(JsonSerializer.Serialize(requestDto, JsonOptions), Encoding.UTF8, "application/json");
-        using var req = CreateRequest(HttpMethod.Post, $"/api/v1/notebooks/{notebookId}/chat", content);
+        using var req = CreateRequest(HttpMethod.Post, "/api/v1/chat", content);
         var res = await client.SendAsync(req, ct);
         res.EnsureSuccessStatusCode();
         var body = await res.Content.ReadAsStringAsync(ct);
         return JsonSerializer.Deserialize<ChatResponseDto>(body, JsonOptions) ?? new("Không nhận được câu trả lời từ hệ thống RAG.", []);
     }
 
-    public async Task<(byte[] Bytes, string FileName)> GenerateCloRubricAsync(CloRubricRequestDto requestDto, CancellationToken ct)
+    public async Task<Stream> GetKnowledgeDocumentPageImageStreamAsync(Guid documentId, int page, CancellationToken ct)
     {
-        var payload = requestDto with { OutcomeCount = requestDto.OutcomeCount ?? 3 };
-        var content = new StringContent(JsonSerializer.Serialize(payload, JsonOptions), Encoding.UTF8, "application/json");
-        using var req = CreateRequest(HttpMethod.Post, "/api/v1/clo-rubric/generate", content);
-        var res = await client.SendAsync(req, ct);
-        res.EnsureSuccessStatusCode();
-        var bytes = await res.Content.ReadAsByteArrayAsync(ct);
-        var fn = res.Content.Headers.ContentDisposition?.FileName?.Trim('"');
-        return (bytes, !string.IsNullOrWhiteSpace(fn) ? fn : $"clo-rubric-{requestDto.DocumentId}.xlsx");
-    }
-
-    public async Task<Stream> GetPageImageStreamAsync(Guid notebookId, Guid documentId, int page, CancellationToken ct)
-    {
-        using var req = CreateRequest(HttpMethod.Get, $"/api/v1/notebooks/{notebookId}/documents/{documentId}/pages/{page}/image");
+        using var req = CreateRequest(HttpMethod.Get, $"/api/v1/documents/{documentId}/pages/{page}/image");
         var res = await client.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
         res.EnsureSuccessStatusCode();
         return await res.Content.ReadAsStreamAsync(ct);
-    }
-
-    public async Task<List<DocumentOutlineItemDto>> GetDocumentOutlineAsync(Guid notebookId, Guid documentId, CancellationToken ct)
-    {
-        using var req = CreateRequest(HttpMethod.Get, $"/api/v1/notebooks/{notebookId}/documents/{documentId}/outline");
-        var res = await client.SendAsync(req, ct);
-        if (!res.IsSuccessStatusCode) return [];
-        var body = await res.Content.ReadAsStringAsync(ct);
-        return JsonSerializer.Deserialize<List<DocumentOutlineItemDto>>(body, JsonOptions) ?? [];
     }
 }

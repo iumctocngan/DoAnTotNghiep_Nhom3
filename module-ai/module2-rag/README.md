@@ -7,7 +7,7 @@ Dịch vụ RAG (Retrieval-Augmented Generation) phục vụ hỏi đáp thông 
 ## 1. Giới thiệu tổng quan & Tính năng chính
 
 - **Hỏi đáp giáo trình có dẫn chứng (Grounded Document Q&A)**: 
-  - Tra cứu nhanh nội dung sách, bài tập chuyên đề toán tư duy theo từng notebook học tập.
+  - Tra cứu nhanh nội dung sách, bài tập chuyên đề toán tư duy theo kho tài liệu học liệu.
   - Trả lời chính xác, kèm số trang trích dẫn và văn bản nguồn làm minh chứng trực tiếp; chủ động báo `insufficient_evidence` hoặc `out_of_scope` khi câu hỏi nằm ngoài phạm vi tài liệu để chống ảo giác (hallucination).
 - **Tự động sinh Chuẩn đầu ra (CLO) & Ma trận Rubric**: 
   - Quét phạm vi bài học (in-context window lớn), trích xuất mục tiêu và phân loại hành vi theo 6 cấp độ thang đo tư duy Bloom.
@@ -20,7 +20,7 @@ Dịch vụ RAG (Retrieval-Augmented Generation) phục vụ hỏi đáp thông 
 | Thành phần | Công nghệ / Thư viện | Vai trò |
 |---|---|---|
 | **API Framework** | FastAPI, Uvicorn, Pydantic v2 | Xây dựng RESTful API async hiệu năng cao, kiểm định schema chặt chẽ |
-| **Vector Database** | Qdrant v1.19+ | Lưu trữ vector đa chiều kết hợp Sparse BM25 index, hỗ trợ Multi-tenant cô lập đồ thị HNSW theo `notebook_id` |
+| **Vector Database** | Qdrant v1.19+ | Lưu trữ vector đa chiều kết hợp Sparse BM25 index, lọc payload theo `document_id` |
 | **Dense Embedding** | `intfloat/multilingual-e5-small` | Mô hình ngôn ngữ đa ngữ (384 dimensions) tối ưu biểu diễn ngữ nghĩa tiếng Việt |
 | **Sparse BM25** | `fastembed` (`Qdrant/bm25`) | Đánh chỉ mục từ khóa từ vựng tiếng Việt (loại bỏ stemmer tiếng Anh) |
 | **Reranker** | `cross-encoder/mmarco-mMiniLMv2-L12-H384-v1` | Chấm điểm tương quan chéo giữa câu hỏi và từng chunk ứng viên để chọn ra top kết quả phù hợp nhất |
@@ -41,7 +41,7 @@ Hệ thống được thiết kế theo 2 pipeline cốt lõi:
 3. **Mã hóa kép (Dual Embedding)**:
    - Tạo vector ngữ nghĩa dense với tiền tố `passage: ` qua mô hình E5 đa ngữ.
    - Tạo vector từ khóa sparse BM25 qua FastEmbed.
-4. **Lưu trữ đa khách thuê (Multi-tenant Upsert)**: Đẩy vector vào Qdrant collection `document_chunks` với payload index `notebook_id` (cô lập tìm kiếm theo notebook).
+4. **Lưu trữ vector index (Upsert)**: Đẩy vector vào Qdrant collection `document_chunks` với payload index `document_id` (hỗ trợ lọc tìm kiếm theo tài liệu được chỉ định).
 
 ### 3.2. Luồng Truy xuất & Sinh nội dung (Retrieval & Generation Pipeline)
 1. **Tìm kiếm lai (Hybrid Search)**: Nhận câu hỏi người dùng $\to$ Tạo vector truy vấn (`query: ` + sparse BM25) $\to$ Truy vấn song song Prefetch Top 30 Dense + Top 30 Sparse trong Qdrant.

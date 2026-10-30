@@ -7,8 +7,7 @@ from retrieval.queries import SearchHit, hybrid_search
 from retrieval.reranker import rerank_candidates
 
 
-async def search_notebook_context(
-    notebook_id: UUID,
+async def search_knowledge_context(
     query: str,
     top_k: int,
     settings: Settings,
@@ -19,7 +18,6 @@ async def search_notebook_context(
     candidates = await hybrid_search(
         client,
         settings.qdrant_collection_name,
-        notebook_id,
         dense_vector,
         sparse_indices,
         sparse_values,
