@@ -26,8 +26,7 @@ public class LevelConfiguration : IEntityTypeConfiguration<Level>
         builder.HasIndex(l => new { l.CourseId, l.Code })
             .IsUnique();
 
-        builder.HasIndex(l => new { l.CourseId, l.SortOrder })
-            .IsUnique();
+        builder.HasIndex(l => new { l.CourseId, l.SortOrder });
 
         builder.HasOne(l => l.Course)
             .WithMany(c => c.Levels)

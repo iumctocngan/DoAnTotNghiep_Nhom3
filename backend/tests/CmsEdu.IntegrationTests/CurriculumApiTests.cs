@@ -48,36 +48,34 @@ public class CurriculumApiTests
 
         var levelResponse = await adminClient.PostAsJsonAsync(
             "/api/levels",
-            new LevelRequest(course.Id, "BEGINNER", "Beginner", 1));
+            new LevelRequest(course.Id, "BEGINNER", "Beginner"));
         Assert.Equal(HttpStatusCode.Created, levelResponse.StatusCode);
         var level = (await levelResponse.Content.ReadFromJsonAsync<LevelResponse>())!;
-        Assert.Equal(HttpStatusCode.Conflict, (await adminClient.PostAsJsonAsync(
-            "/api/levels", new LevelRequest(course.Id, "OTHER", "Duplicate order", 1))).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await adminClient.PutAsJsonAsync(
             $"/api/levels/{level.Id}",
-            new LevelRequest(course.Id, "BEGINNER", "Beginner Updated", 1))).StatusCode);
+            new LevelRequest(course.Id, "BEGINNER", "Beginner Updated"))).StatusCode);
         Assert.Equal(HttpStatusCode.Conflict, (await adminClient.PutAsJsonAsync(
             $"/api/levels/{level.Id}",
-            new LevelRequest(otherCourse.Id, "BEGINNER", "Beginner Updated", 1))).StatusCode);
+            new LevelRequest(otherCourse.Id, "BEGINNER", "Beginner Updated"))).StatusCode);
 
         Assert.StartsWith("CD", level.Code);
         var otherLevelResponse = await adminClient.PostAsJsonAsync(
             "/api/levels",
-            new LevelRequest(course.Id, "ADVANCED", "Advanced", 2));
+            new LevelRequest(course.Id, "ADVANCED", "Advanced"));
         var otherLevel = (await otherLevelResponse.Content.ReadFromJsonAsync<LevelResponse>())!;
 
         var lessonResponse = await adminClient.PostAsJsonAsync(
             "/api/lessons",
-            new LessonRequest(level.Id, "LESSON01", "Greetings", "Basic greetings", 1));
+            new LessonRequest(level.Id, "LESSON01", "Greetings", "Basic greetings"));
         Assert.Equal(HttpStatusCode.Created, lessonResponse.StatusCode);
         var lesson = (await lessonResponse.Content.ReadFromJsonAsync<LessonResponse>())!;
         Assert.Equal("BH001", lesson.Code);
         Assert.Equal(HttpStatusCode.OK, (await adminClient.PutAsJsonAsync(
             $"/api/lessons/{lesson.Id}",
-            new LessonRequest(level.Id, "LESSON01", "Greetings Updated", "Basic greetings", 1))).StatusCode);
+            new LessonRequest(level.Id, "LESSON01", "Greetings Updated", "Basic greetings"))).StatusCode);
         Assert.Equal(HttpStatusCode.Conflict, (await adminClient.PutAsJsonAsync(
             $"/api/lessons/{lesson.Id}",
-            new LessonRequest(otherLevel.Id, "LESSON01", "Greetings Updated", "Basic greetings", 1))).StatusCode);
+            new LessonRequest(otherLevel.Id, "LESSON01", "Greetings Updated", "Basic greetings"))).StatusCode);
 
         Assert.Single((await adminClient.GetFromJsonAsync<PagedResult<CourseResponse>>(
             "/api/courses?search=ENGLISH"))!.Items);

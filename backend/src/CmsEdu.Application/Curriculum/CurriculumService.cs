@@ -107,6 +107,22 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
             cancellationToken);
     }
 
+    public async Task ActivateCourseAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var course = await repository.GetCourseAsync(id, cancellationToken)
+            ?? throw new NotFoundException("Không tìm thấy khóa học.");
+        if (course.IsActive)
+            return;
+
+        course.IsActive = true;
+        await repository.SaveCourseAsync(
+            course,
+            currentUser.UserId,
+            "Course.Activate",
+            $"Activated course {course.Code}.",
+            cancellationToken);
+    }
+
     public async Task<PagedResult<LevelResponse>> GetLevelsAsync(
         int courseId,
         string? search,
@@ -160,12 +176,16 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
         var data = Validate(request);
         await EnsureActiveCourseAsync(request.CourseId, cancellationToken);
 
+        var sortOrder = request.SortOrder.HasValue && request.SortOrder.Value > 0
+            ? request.SortOrder.Value
+            : await repository.GetNextLevelSortOrderAsync(request.CourseId, cancellationToken);
+
         var level = new Level
         {
             CourseId = request.CourseId,
             Code = data.Code,
             Name = data.Name,
-            SortOrder = request.SortOrder,
+            SortOrder = sortOrder,
             IsActive = true
         };
 
@@ -194,7 +214,10 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
 
         level.Code = data.Code;
         level.Name = data.Name;
-        level.SortOrder = request.SortOrder;
+        if (request.SortOrder.HasValue && request.SortOrder.Value > 0)
+        {
+            level.SortOrder = request.SortOrder.Value;
+        }
 
         await repository.SaveLevelAsync(
             level,
@@ -219,6 +242,24 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
             currentUser.UserId,
             "Level.Deactivate",
             $"Deactivated level {level.Code}.",
+            cancellationToken);
+    }
+
+    public async Task ActivateLevelAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var level = await repository.GetLevelAsync(id, cancellationToken)
+            ?? throw new NotFoundException("Không tìm thấy cấp độ.");
+        if (level.IsActive)
+            return;
+
+        await EnsureActiveCourseAsync(level.CourseId, cancellationToken);
+
+        level.IsActive = true;
+        await repository.SaveLevelAsync(
+            level,
+            currentUser.UserId,
+            "Level.Activate",
+            $"Activated level {level.Code}.",
             cancellationToken);
     }
 
@@ -273,13 +314,17 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
         var data = Validate(request);
         await EnsureActiveLevelAsync(request.LevelId, cancellationToken);
 
+        var sortOrder = request.SortOrder.HasValue && request.SortOrder.Value > 0
+            ? request.SortOrder.Value
+            : await repository.GetNextLessonSortOrderAsync(request.LevelId, cancellationToken);
+
         var lesson = new Lesson
         {
             LevelId = request.LevelId,
             Code = data.Code,
             Name = data.Name,
             Objective = data.Objective,
-            SortOrder = request.SortOrder,
+            SortOrder = sortOrder,
             IsActive = true
         };
 
@@ -309,7 +354,10 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
         lesson.Code = data.Code;
         lesson.Name = data.Name;
         lesson.Objective = data.Objective;
-        lesson.SortOrder = request.SortOrder;
+        if (request.SortOrder.HasValue && request.SortOrder.Value > 0)
+        {
+            lesson.SortOrder = request.SortOrder.Value;
+        }
 
         await repository.SaveLessonAsync(
             lesson,
@@ -334,6 +382,24 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
             currentUser.UserId,
             "Lesson.Deactivate",
             $"Deactivated lesson {lesson.Code}.",
+            cancellationToken);
+    }
+
+    public async Task ActivateLessonAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var lesson = await repository.GetLessonAsync(id, cancellationToken)
+            ?? throw new NotFoundException("Không tìm thấy bài học.");
+        if (lesson.IsActive)
+            return;
+
+        await EnsureActiveLevelAsync(lesson.LevelId, cancellationToken);
+
+        lesson.IsActive = true;
+        await repository.SaveLessonAsync(
+            lesson,
+            currentUser.UserId,
+            "Lesson.Activate",
+            $"Activated lesson {lesson.Code}.",
             cancellationToken);
     }
 
@@ -362,8 +428,6 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
             throw new ValidationException("Mã cấp độ là bắt buộc và không được vượt quá 50 ký tự.");
         if (string.IsNullOrWhiteSpace(name) || name.Length > 100)
             throw new ValidationException("Tên cấp độ là bắt buộc và không được vượt quá 100 ký tự.");
-        if (request.SortOrder < 1)
-            throw new ValidationException("Thứ tự cấp độ phải từ 1 trở lên.");
 
         return (code, name);
     }
@@ -381,8 +445,6 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
             throw new ValidationException("Tên bài học là bắt buộc và không được vượt quá 100 ký tự.");
         if (objective?.Length > 500)
             throw new ValidationException("Mục tiêu bài học không được vượt quá 500 ký tự.");
-        if (request.SortOrder < 1)
-            throw new ValidationException("Thứ tự bài học phải từ 1 trở lên.");
 
         return (code, name, objective);
     }

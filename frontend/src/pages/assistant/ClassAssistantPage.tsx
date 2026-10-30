@@ -139,7 +139,7 @@ export const ClassAssistantPage: React.FC = () => {
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
             {isAdmin && selectedClassId === 0
-              ? 'Tra cứu trên toàn bộ kho chunks tài liệu, giáo trình và quy chế của trung tâm.'
+              ? 'Tra cứu trên toàn bộ tài liệu, giáo trình và quy chế của trung tâm.'
               : 'Tra cứu trên toàn bộ giáo trình, kế hoạch bài dạy và mục tiêu học tập thuộc phạm vi lớp học.'}
           </p>
         </div>
@@ -157,7 +157,7 @@ export const ClassAssistantPage: React.FC = () => {
           >
             {isAdmin && (
               <option value="0">
-                🌐 Toàn bộ Trung tâm (Kho chunks tổng hợp)
+                Toàn bộ Trung tâm
               </option>
             )}
             {classes.map((cls) => (
@@ -193,9 +193,13 @@ export const ClassAssistantPage: React.FC = () => {
             {isKnowledgeLoading ? (
               <div className="text-center py-8 text-xs text-slate-400">Đang nạp học liệu...</div>
             ) : !classKnowledge || classKnowledge.documents.length === 0 ? (
-              <div className="text-center py-8 text-xs text-slate-400 space-y-1">
-                <p className="font-medium text-slate-600">Chưa có tài liệu nào sẵn sàng trong phạm vi này.</p>
-                <p className="text-[11px]">Admin có thể tải lên tài liệu trong phần Quản lý Chương trình học.</p>
+              <div className="text-center py-8 px-3">
+                <h4 className="font-semibold text-slate-700 text-sm">
+                  Chưa có tài liệu nào sẵn sàng trong phạm vi này.
+                </h4>
+                <p className="text-xs text-slate-400 mt-1">
+                  Admin có thể tải lên tài liệu trong phần Quản lý Chương trình học.
+                </p>
               </div>
             ) : (
               classKnowledge.documents.map((doc) => {
@@ -256,11 +260,11 @@ export const ClassAssistantPage: React.FC = () => {
               <span className={`w-2.5 h-2.5 rounded-full ${selectedClassId === 0 ? 'bg-sky-500' : 'bg-emerald-500'}`}></span>
               <span className="text-sm font-bold text-slate-800">
                 {selectedClassId === 0
-                  ? '🌐 Toàn bộ Trung tâm'
+                  ? 'Toàn bộ Trung tâm'
                   : (classKnowledge ? `${classKnowledge.className} (${classKnowledge.classCode})` : 'Chọn lớp giảng dạy')}
               </span>
               <span className="text-xs text-slate-500 hidden sm:inline">
-                • {selectedClassId === 0 ? 'Tra cứu trên toàn bộ kho chunks tri thức' : `${classKnowledge?.courseName} / ${classKnowledge?.levelName}`}
+                • {selectedClassId === 0 ? 'Tra cứu trên toàn bộ kho tri thức' : `${classKnowledge?.courseName} / ${classKnowledge?.levelName}`}
               </span>
             </div>
 
@@ -301,7 +305,7 @@ export const ClassAssistantPage: React.FC = () => {
                   </h3>
                   <p className="text-xs text-slate-400 max-w-md mt-1">
                     {selectedClassId === 0
-                      ? 'Admin có thể đặt bất kỳ câu hỏi nào trên toàn bộ kho chunks tài liệu, giáo trình và quy chế của trung tâm.'
+                      ? 'Admin có thể đặt bất kỳ câu hỏi nào trên toàn bộ tài liệu, giáo trình và quy chế của trung tâm.'
                       : 'Thầy/cô có thể tra cứu nội dung bài học, chuẩn đầu ra (CLO), hoặc các phương pháp giải toán trong kho tài liệu lớp.'}
                   </p>
                 </div>
@@ -375,7 +379,7 @@ export const ClassAssistantPage: React.FC = () => {
                   <div className="w-4 h-4 border-2 border-[#0284c7] border-t-transparent rounded-full animate-spin"></div>
                   <span>
                     {selectedClassId === 0
-                      ? 'Trợ lý đang tra cứu toàn bộ kho chunks tri thức...'
+                      ? 'Trợ lý đang tra cứu toàn bộ kho tri thức...'
                       : 'Trợ lý đang tra cứu học liệu lớp học...'}
                   </span>
                 </div>

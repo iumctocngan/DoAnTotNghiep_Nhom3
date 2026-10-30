@@ -29,8 +29,7 @@ public class LessonConfiguration : IEntityTypeConfiguration<Lesson>
         builder.HasIndex(ls => new { ls.LevelId, ls.Code })
             .IsUnique();
 
-        builder.HasIndex(ls => new { ls.LevelId, ls.SortOrder })
-            .IsUnique();
+        builder.HasIndex(ls => new { ls.LevelId, ls.SortOrder });
 
         builder.HasOne(ls => ls.Level)
             .WithMany(l => l.Lessons)

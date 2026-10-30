@@ -97,6 +97,14 @@ public class CurriculumRepository(AppDbContext dbContext) : ICurriculumRepositor
         return dbContext.Levels.SingleOrDefaultAsync(level => level.Id == id, cancellationToken);
     }
 
+    public async Task<int> GetNextLevelSortOrderAsync(int courseId, CancellationToken cancellationToken = default)
+    {
+        var max = await dbContext.Levels
+            .Where(l => l.CourseId == courseId)
+            .MaxAsync(l => (int?)l.SortOrder, cancellationToken);
+        return (max ?? 0) + 1;
+    }
+
     public Task SaveLevelAsync(
         Level level,
         string? userId,
@@ -106,7 +114,7 @@ public class CurriculumRepository(AppDbContext dbContext) : ICurriculumRepositor
     {
         return SaveAsync(
             level, userId, action, description,
-            "Mã cấp độ hoặc thứ tự cấp độ đã tồn tại trong khóa học này.", cancellationToken);
+            "Mã cấp độ đã tồn tại trong khóa học này.", cancellationToken);
     }
 
     public async Task<List<int>> GetTeacherCourseIdsAsync(string teacherUserId, CancellationToken ct = default)
@@ -161,6 +169,14 @@ public class CurriculumRepository(AppDbContext dbContext) : ICurriculumRepositor
         return dbContext.Lessons.SingleOrDefaultAsync(lesson => lesson.Id == id, cancellationToken);
     }
 
+    public async Task<int> GetNextLessonSortOrderAsync(int levelId, CancellationToken cancellationToken = default)
+    {
+        var max = await dbContext.Lessons
+            .Where(ls => ls.LevelId == levelId)
+            .MaxAsync(ls => (int?)ls.SortOrder, cancellationToken);
+        return (max ?? 0) + 1;
+    }
+
     public Task SaveLessonAsync(
         Lesson lesson,
         string? userId,
@@ -170,7 +186,7 @@ public class CurriculumRepository(AppDbContext dbContext) : ICurriculumRepositor
     {
         return SaveAsync(
             lesson, userId, action, description,
-            "Mã bài học hoặc thứ tự bài học đã tồn tại trong cấp độ này.", cancellationToken);
+            "Mã bài học đã tồn tại trong cấp độ này.", cancellationToken);
     }
 
     private async Task SaveAsync<TEntity>(

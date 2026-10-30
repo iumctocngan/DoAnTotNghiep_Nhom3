@@ -66,4 +66,14 @@ public class LevelsController(CurriculumService curriculumService, AppDbContext 
         await curriculumService.DeactivateLevelAsync(id, cancellationToken);
         return NoContent();
     }
+
+    [HttpPost("{id:int}/activate")]
+    [HasPermission(Permissions.Curriculum.Manage)]
+    public async Task<IActionResult> ActivateLevel(
+        int id,
+        CancellationToken cancellationToken = default)
+    {
+        await curriculumService.ActivateLevelAsync(id, cancellationToken);
+        return NoContent();
+    }
 }

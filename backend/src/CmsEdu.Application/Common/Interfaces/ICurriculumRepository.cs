@@ -33,6 +33,8 @@ public interface ICurriculumRepository
 
     Task<Level?> GetLevelAsync(int id, CancellationToken cancellationToken = default);
 
+    Task<int> GetNextLevelSortOrderAsync(int courseId, CancellationToken cancellationToken = default);
+
     Task SaveLevelAsync(
         Level level,
         string? userId,
@@ -49,6 +51,8 @@ public interface ICurriculumRepository
         CancellationToken cancellationToken = default);
 
     Task<Lesson?> GetLessonAsync(int id, CancellationToken cancellationToken = default);
+
+    Task<int> GetNextLessonSortOrderAsync(int levelId, CancellationToken cancellationToken = default);
 
     Task SaveLessonAsync(
         Lesson lesson,

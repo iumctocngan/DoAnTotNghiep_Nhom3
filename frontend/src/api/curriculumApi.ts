@@ -20,6 +20,7 @@ export const curriculumApi = {
   updateCourse: (id: number, body: CourseRequest) =>
     apiClient<CourseResponse>(`/api/courses/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
   deactivateCourse: (id: number) => apiClient<void>(`/api/courses/${id}/deactivate`, { method: 'POST' }),
+  activateCourse: (id: number) => apiClient<void>(`/api/courses/${id}/activate`, { method: 'POST' }),
 
   // LEVELS
   getLevels: (courseId: number, params?: CurriculumFilterParams) =>
@@ -32,6 +33,7 @@ export const curriculumApi = {
   updateLevel: (id: number, body: LevelRequest) =>
     apiClient<LevelResponse>(`/api/levels/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
   deactivateLevel: (id: number) => apiClient<void>(`/api/levels/${id}/deactivate`, { method: 'POST' }),
+  activateLevel: (id: number) => apiClient<void>(`/api/levels/${id}/activate`, { method: 'POST' }),
 
   // LESSONS
   getLessons: (levelId: number, params?: CurriculumFilterParams) =>
@@ -44,4 +46,5 @@ export const curriculumApi = {
   updateLesson: (id: number, body: LessonRequest) =>
     apiClient<LessonResponse>(`/api/lessons/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
   deactivateLesson: (id: number) => apiClient<void>(`/api/lessons/${id}/deactivate`, { method: 'POST' }),
+  activateLesson: (id: number) => apiClient<void>(`/api/lessons/${id}/activate`, { method: 'POST' }),
 };

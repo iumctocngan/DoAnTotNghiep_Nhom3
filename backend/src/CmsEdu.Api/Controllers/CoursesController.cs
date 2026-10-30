@@ -65,4 +65,14 @@ public class CoursesController(CurriculumService curriculumService, AppDbContext
         await curriculumService.DeactivateCourseAsync(id, cancellationToken);
         return NoContent();
     }
+
+    [HttpPost("{id:int}/activate")]
+    [HasPermission(Permissions.Curriculum.Manage)]
+    public async Task<IActionResult> ActivateCourse(
+        int id,
+        CancellationToken cancellationToken = default)
+    {
+        await curriculumService.ActivateCourseAsync(id, cancellationToken);
+        return NoContent();
+    }
 }

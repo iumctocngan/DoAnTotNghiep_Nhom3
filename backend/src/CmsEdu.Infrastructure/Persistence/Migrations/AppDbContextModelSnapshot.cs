@@ -267,17 +267,12 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                     b.Property<string>("CitationsJson")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int?>("ClassId")
                         .HasColumnType("int");
 
-                    b.Property<string>("UserId")
+                    b.Property<string>("Content")
                         .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -289,6 +284,11 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                         .HasMaxLength(20)
                         .IsUnicode(false)
                         .HasColumnType("varchar(20)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
@@ -606,8 +606,7 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                     b.HasIndex("LevelId", "Code")
                         .IsUnique();
 
-                    b.HasIndex("LevelId", "SortOrder")
-                        .IsUnique();
+                    b.HasIndex("LevelId", "SortOrder");
 
                     b.ToTable("Lessons", (string)null);
                 });
@@ -646,8 +645,7 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                     b.HasIndex("CourseId", "Code")
                         .IsUnique();
 
-                    b.HasIndex("CourseId", "SortOrder")
-                        .IsUnique();
+                    b.HasIndex("CourseId", "SortOrder");
 
                     b.ToTable("Levels", (string)null);
                 });

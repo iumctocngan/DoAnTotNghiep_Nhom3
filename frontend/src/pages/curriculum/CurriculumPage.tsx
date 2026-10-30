@@ -42,7 +42,14 @@ export const CurriculumPage: React.FC = () => {
   const [editingLesson, setEditingLesson] = useState<LessonResponse | null>(null);
 
   const [actionError, setActionError] = useState<string | null>(null);
-  const [confirmation, setConfirmation] = useState<{ message: string; action: () => void } | null>(null);
+  const [confirmation, setConfirmation] = useState<{
+    title: string;
+    message: string;
+    confirmText: string;
+    isDangerous?: boolean;
+    confirmVariant?: 'primary' | 'danger' | 'success';
+    action: () => void;
+  } | null>(null);
 
   // 1. Fetch Courses
   const {
@@ -86,7 +93,19 @@ export const CurriculumPage: React.FC = () => {
     enabled: !!selectedLevel,
   });
 
-  // Deactivate mutations
+  // Course mutations
+  const activateCourseMutation = useMutation({
+    mutationFn: (id: number) => curriculumApi.activateCourse(id),
+    onSuccess: () => {
+      setActionError(null);
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+    },
+    onError: (err: unknown) => {
+      const apiErr = err as ApiError;
+      setActionError(apiErr.message || 'Kích hoạt lại khóa học thất bại.');
+    },
+  });
+
   const deactivateCourseMutation = useMutation({
     mutationFn: (id: number) => curriculumApi.deactivateCourse(id),
     onSuccess: () => {
@@ -96,6 +115,18 @@ export const CurriculumPage: React.FC = () => {
     onError: (err: unknown) => {
       const apiErr = err as ApiError;
       setActionError(apiErr.message || 'Ngừng áp dụng khóa học thất bại.');
+    },
+  });
+
+  const activateLevelMutation = useMutation({
+    mutationFn: (id: number) => curriculumApi.activateLevel(id),
+    onSuccess: () => {
+      setActionError(null);
+      queryClient.invalidateQueries({ queryKey: ['levels', selectedCourse?.id] });
+    },
+    onError: (err: unknown) => {
+      const apiErr = err as ApiError;
+      setActionError(apiErr.message || 'Kích hoạt lại cấp độ thất bại.');
     },
   });
 
@@ -111,6 +142,18 @@ export const CurriculumPage: React.FC = () => {
     },
   });
 
+  const activateLessonMutation = useMutation({
+    mutationFn: (id: number) => curriculumApi.activateLesson(id),
+    onSuccess: () => {
+      setActionError(null);
+      queryClient.invalidateQueries({ queryKey: ['lessons', selectedLevel?.id] });
+    },
+    onError: (err: unknown) => {
+      const apiErr = err as ApiError;
+      setActionError(apiErr.message || 'Kích hoạt lại bài học thất bại.');
+    },
+  });
+
   const deactivateLessonMutation = useMutation({
     mutationFn: (id: number) => curriculumApi.deactivateLesson(id),
     onSuccess: () => {
@@ -123,26 +166,74 @@ export const CurriculumPage: React.FC = () => {
     },
   });
 
+  const handleActivateCourse = (c: CourseResponse) => {
+    setActionError(null);
+    setConfirmation({
+      title: 'Xác nhận kích hoạt lại',
+      message: `Bạn có chắc chắn muốn kích hoạt lại khóa học "${c.name}" (${c.code})?`,
+      confirmText: 'Kích hoạt lại',
+      isDangerous: false,
+      confirmVariant: 'success',
+      action: () => activateCourseMutation.mutate(c.id),
+    });
+  };
+
   const handleDeactivateCourse = (c: CourseResponse) => {
     setActionError(null);
     setConfirmation({
+      title: 'Xác nhận ngừng áp dụng',
       message: `Bạn có chắc chắn muốn ngừng áp dụng khóa học "${c.name}" (${c.code})? Danh mục đã dùng sẽ không bị xóa, chỉ chuyển sang không hoạt động.`,
+      confirmText: 'Ngừng áp dụng',
+      isDangerous: true,
+      confirmVariant: 'danger',
       action: () => deactivateCourseMutation.mutate(c.id),
+    });
+  };
+
+  const handleActivateLevel = (l: LevelResponse) => {
+    setActionError(null);
+    setConfirmation({
+      title: 'Xác nhận kích hoạt lại',
+      message: `Bạn có chắc chắn muốn kích hoạt lại cấp độ "${l.name}" (${l.code})?`,
+      confirmText: 'Kích hoạt lại',
+      isDangerous: false,
+      confirmVariant: 'success',
+      action: () => activateLevelMutation.mutate(l.id),
     });
   };
 
   const handleDeactivateLevel = (l: LevelResponse) => {
     setActionError(null);
     setConfirmation({
+      title: 'Xác nhận ngừng áp dụng',
       message: `Bạn có chắc chắn muốn ngừng áp dụng cấp độ "${l.name}" (${l.code})?`,
+      confirmText: 'Ngừng áp dụng',
+      isDangerous: true,
+      confirmVariant: 'danger',
       action: () => deactivateLevelMutation.mutate(l.id),
+    });
+  };
+
+  const handleActivateLesson = (les: LessonResponse) => {
+    setActionError(null);
+    setConfirmation({
+      title: 'Xác nhận kích hoạt lại',
+      message: `Bạn có chắc chắn muốn kích hoạt lại bài học "${les.name}" (${les.code})?`,
+      confirmText: 'Kích hoạt lại',
+      isDangerous: false,
+      confirmVariant: 'success',
+      action: () => activateLessonMutation.mutate(les.id),
     });
   };
 
   const handleDeactivateLesson = (les: LessonResponse) => {
     setActionError(null);
     setConfirmation({
+      title: 'Xác nhận ngừng áp dụng',
       message: `Bạn có chắc chắn muốn ngừng áp dụng bài học "${les.name}" (${les.code})?`,
+      confirmText: 'Ngừng áp dụng',
+      isDangerous: true,
+      confirmVariant: 'danger',
       action: () => deactivateLessonMutation.mutate(les.id),
     });
   };
@@ -337,14 +428,23 @@ export const CurriculumPage: React.FC = () => {
                             >
                               Sửa
                             </button>
-                            {course.isActive && (
+                            {course.isActive ? (
                               <button
                                 type="button"
                                 className="btn btn-danger px-2 py-1 text-xs"
                                 onClick={() => handleDeactivateCourse(course)}
-                                disabled={deactivateCourseMutation.isPending}
+                                disabled={deactivateCourseMutation.isPending || activateCourseMutation.isPending}
                               >
                                 Ngừng áp dụng
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                className="btn btn-success px-2 py-1 text-xs"
+                                onClick={() => handleActivateCourse(course)}
+                                disabled={deactivateCourseMutation.isPending || activateCourseMutation.isPending}
+                              >
+                                Kích hoạt lại
                               </button>
                             )}
                           </>
@@ -466,14 +566,24 @@ export const CurriculumPage: React.FC = () => {
                             >
                               Sửa
                             </button>
-                            {level.isActive && (
+                            {level.isActive ? (
                               <button
                                 type="button"
                                 className="btn btn-danger px-2 py-1 text-xs"
                                 onClick={() => handleDeactivateLevel(level)}
-                                disabled={deactivateLevelMutation.isPending}
+                                disabled={deactivateLevelMutation.isPending || activateLevelMutation.isPending}
                               >
                                 Ngừng áp dụng
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                className="btn btn-success px-2 py-1 text-xs"
+                                onClick={() => handleActivateLevel(level)}
+                                disabled={deactivateLevelMutation.isPending || activateLevelMutation.isPending || !selectedCourse.isActive}
+                                title={!selectedCourse.isActive ? 'Không thể kích hoạt cấp độ khi khóa học đang ngừng áp dụng' : ''}
+                              >
+                                Kích hoạt lại
                               </button>
                             )}
                           </>
@@ -590,14 +700,24 @@ export const CurriculumPage: React.FC = () => {
                           >
                             Sửa
                           </button>
-                          {lesson.isActive && (
+                          {lesson.isActive ? (
                             <button
                               type="button"
                               className="btn btn-danger px-2 py-1 text-xs"
                               onClick={() => handleDeactivateLesson(lesson)}
-                              disabled={deactivateLessonMutation.isPending}
+                              disabled={deactivateLessonMutation.isPending || activateLessonMutation.isPending}
                             >
                               Ngừng áp dụng
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              className="btn btn-success px-2 py-1 text-xs"
+                              onClick={() => handleActivateLesson(lesson)}
+                              disabled={activateLessonMutation.isPending || deactivateLessonMutation.isPending || !selectedLevel.isActive || !selectedCourse.isActive}
+                              title={!selectedLevel.isActive || !selectedCourse.isActive ? 'Không thể kích hoạt bài học khi cấp độ hoặc khóa học đang ngừng áp dụng' : ''}
+                            >
+                              Kích hoạt lại
                             </button>
                           )}
                         </td>
@@ -657,9 +777,11 @@ export const CurriculumPage: React.FC = () => {
 
       {confirmation && (
         <ConfirmDialog
-          title="Xác nhận ngừng áp dụng"
+          title={confirmation.title}
           message={confirmation.message}
-          confirmText="Ngừng áp dụng"
+          confirmText={confirmation.confirmText}
+          isDangerous={confirmation.isDangerous}
+          confirmVariant={confirmation.confirmVariant}
           onCancel={() => setConfirmation(null)}
           onConfirm={() => {
             confirmation.action();

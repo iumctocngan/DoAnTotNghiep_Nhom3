@@ -66,4 +66,14 @@ public class LessonsController(CurriculumService curriculumService, AppDbContext
         await curriculumService.DeactivateLessonAsync(id, cancellationToken);
         return NoContent();
     }
+
+    [HttpPost("{id:int}/activate")]
+    [HasPermission(Permissions.Curriculum.Manage)]
+    public async Task<IActionResult> ActivateLesson(
+        int id,
+        CancellationToken cancellationToken = default)
+    {
+        await curriculumService.ActivateLessonAsync(id, cancellationToken);
+        return NoContent();
+    }
 }

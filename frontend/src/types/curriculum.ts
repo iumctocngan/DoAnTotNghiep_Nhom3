@@ -27,7 +27,7 @@ export interface LevelRequest {
   courseId: number;
   code: string;
   name: string;
-  sortOrder: number;
+  sortOrder?: number;
 }
 
 export interface LessonResponse {
@@ -45,7 +45,7 @@ export interface LessonRequest {
   code: string;
   name: string;
   objective?: string | null;
-  sortOrder: number;
+  sortOrder?: number;
 }
 
 export interface CurriculumFilterParams {

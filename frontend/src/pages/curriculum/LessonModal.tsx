@@ -22,7 +22,6 @@ export const LessonModal: React.FC<LessonModalProps> = ({
   const [code, setCode] = useState('');
   const [name, setName] = useState('');
   const [objective, setObjective] = useState('');
-  const [sortOrder, setSortOrder] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -31,12 +30,10 @@ export const LessonModal: React.FC<LessonModalProps> = ({
       setCode(lesson.code);
       setName(lesson.name);
       setObjective(lesson.objective || '');
-      setSortOrder(lesson.sortOrder);
     } else {
       setCode('AUTO');
       setName('');
       setObjective('');
-      setSortOrder(1);
     }
     setError(null);
   }, [lesson, isOpen]);
@@ -59,7 +56,6 @@ export const LessonModal: React.FC<LessonModalProps> = ({
         code: code.trim().toUpperCase(),
         name: name.trim(),
         objective: objective.trim() || null,
-        sortOrder: Number(sortOrder) || 1,
       };
 
       if (lesson) {
@@ -80,64 +76,49 @@ export const LessonModal: React.FC<LessonModalProps> = ({
 
   return (
     <Modal title={lesson ? `Sửa bài học (${lesson.code})` : 'Tạo bài học mới'} onClose={onClose} closeDisabled={isSubmitting}>
+      {error && <div className="alert alert-danger">{error}</div>}
 
-        {error && <div className="alert alert-danger">{error}</div>}
+      <form onSubmit={handleSubmit}>
+        <div className="mb-3">
+          <label htmlFor="lessonName">Tên bài học *</label>
+          <input
+            id="lessonName"
+            type="text"
+            placeholder="VD: Nhận biết hình học phẳng"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            disabled={isSubmitting}
+            required
+          />
+        </div>
 
-        <form onSubmit={handleSubmit}>
+        <div className="mb-5">
+          <label htmlFor="lessonObjective">Mục tiêu bài học</label>
+          <textarea
+            id="lessonObjective"
+            rows={4}
+            className="min-h-[100px]"
+            placeholder="Mục tiêu kiến thức, kỹ năng đạt được..."
+            value={objective}
+            onChange={(e) => setObjective(e.target.value)}
+            disabled={isSubmitting}
+          />
+        </div>
 
-          <div className="mb-3">
-            <label htmlFor="lessonName">Tên bài học *</label>
-            <input
-              id="lessonName"
-              type="text"
-              placeholder="VD: Nhận biết hình học phẳng"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              disabled={isSubmitting}
-              required
-            />
-          </div>
-
-          <div className="mb-3">
-            <label htmlFor="lessonObjective">Mục tiêu bài học</label>
-            <textarea
-              id="lessonObjective"
-              rows={4}
-              className="min-h-[100px]"
-              placeholder="Mục tiêu kiến thức, kỹ năng đạt được..."
-              value={objective}
-              onChange={(e) => setObjective(e.target.value)}
-              disabled={isSubmitting}
-            />
-          </div>
-
-          <div className="mb-5">
-            <label htmlFor="lessonSortOrder">Thứ tự bài học *</label>
-            <input
-              id="lessonSortOrder"
-              type="number"
-              min={1}
-              value={sortOrder}
-              onChange={(e) => setSortOrder(Number(e.target.value))}
-              disabled={isSubmitting}
-              required
-            />
-          </div>
-
-          <div className="modal-footer">
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={onClose}
-              disabled={isSubmitting}
-            >
-              Hủy
-            </button>
-            <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
-              {isSubmitting ? 'Đang lưu...' : lesson ? 'Cập nhật' : 'Tạo mới'}
-            </button>
-          </div>
-        </form>
+        <div className="modal-footer">
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={onClose}
+            disabled={isSubmitting}
+          >
+            Hủy
+          </button>
+          <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+            {isSubmitting ? 'Đang lưu...' : lesson ? 'Cập nhật' : 'Tạo mới'}
+          </button>
+        </div>
+      </form>
     </Modal>
   );
 };
