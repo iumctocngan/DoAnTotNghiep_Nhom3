@@ -36,6 +36,7 @@ class ChatRequest(BaseModel):
     question: RequiredText = Field(min_length=1, max_length=2_000)
     document_ids: SelectedDocumentIds | None = None
     history: list[ChatMessageItem] | None = None
+    conversation_id: UUID | None = None
 
 
 class CitationResponse(BaseModel):

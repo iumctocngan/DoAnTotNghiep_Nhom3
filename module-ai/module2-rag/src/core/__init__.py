@@ -1,6 +1,7 @@
 from core.embeddings import (
     EMBEDDING_DIMENSION,
     EMBEDDING_MODEL,
+    embed_dense_query,
     embed_documents,
     embed_hybrid_query,
     embed_sparse_documents,
@@ -13,6 +14,7 @@ __all__ = [
     "EMBEDDING_MODEL",
     "Settings",
     "get_settings",
+    "embed_dense_query",
     "embed_documents",
     "embed_hybrid_query",
     "embed_sparse_documents",

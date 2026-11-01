@@ -27,6 +27,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<Document> Documents => Set<Document>();
+    public DbSet<ClassChatConversation> ClassChatConversations => Set<ClassChatConversation>();
     public DbSet<ClassChatMessage> ClassChatMessages => Set<ClassChatMessage>();
 
     protected override void OnModelCreating(ModelBuilder builder)

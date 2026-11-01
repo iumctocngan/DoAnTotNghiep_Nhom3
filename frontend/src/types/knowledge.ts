@@ -47,9 +47,19 @@ export interface ClassKnowledgeInfo {
   documents: KnowledgeDocument[];
 }
 
+export interface ClassConversation {
+  id: string;
+  classId?: number | null;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  messageCount: number;
+}
+
 export interface ClassMessage {
   id: string;
   classId?: number | null;
+  conversationId?: string | null;
   role: 'user' | 'assistant';
   content: string;
   citations: Citation[];
@@ -61,11 +71,13 @@ export interface ClassChatResult {
   answer: string;
   citations: Citation[];
   createdAt: string;
+  conversationId?: string | null;
 }
 
 export interface ChatClassRequest {
   question: string;
   selectedDocumentIds?: string[];
+  conversationId?: string | null;
 }
 
 export interface UploadKnowledgeDocumentRequest {

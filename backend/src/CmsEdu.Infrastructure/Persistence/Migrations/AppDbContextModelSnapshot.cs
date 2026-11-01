@@ -258,6 +258,42 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("CmsEdu.Domain.Entities.ClassChatConversation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("ClassId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClassId", "UserId", "UpdatedAt");
+
+                    b.ToTable("ClassChatConversations", (string)null);
+                });
+
             modelBuilder.Entity("CmsEdu.Domain.Entities.ClassChatMessage", b =>
                 {
                     b.Property<Guid>("Id")
@@ -273,6 +309,9 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("ConversationId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -291,6 +330,8 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ConversationId", "CreatedAt");
 
                     b.HasIndex("ClassId", "UserId", "CreatedAt");
 
@@ -1231,7 +1272,7 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                     b.Navigation("Level");
                 });
 
-            modelBuilder.Entity("CmsEdu.Domain.Entities.ClassChatMessage", b =>
+            modelBuilder.Entity("CmsEdu.Domain.Entities.ClassChatConversation", b =>
                 {
                     b.HasOne("CmsEdu.Domain.Entities.Class", "Class")
                         .WithMany()
@@ -1239,6 +1280,23 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Class");
+                });
+
+            modelBuilder.Entity("CmsEdu.Domain.Entities.ClassChatMessage", b =>
+                {
+                    b.HasOne("CmsEdu.Domain.Entities.Class", "Class")
+                        .WithMany()
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("CmsEdu.Domain.Entities.ClassChatConversation", "Conversation")
+                        .WithMany("Messages")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Class");
+
+                    b.Navigation("Conversation");
                 });
 
             modelBuilder.Entity("CmsEdu.Domain.Entities.Document", b =>
@@ -1450,6 +1508,11 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                     b.Navigation("Enrollments");
 
                     b.Navigation("Sessions");
+                });
+
+            modelBuilder.Entity("CmsEdu.Domain.Entities.ClassChatConversation", b =>
+                {
+                    b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("CmsEdu.Domain.Entities.Course", b =>

@@ -107,6 +107,157 @@ public class ClassChatService(
             docDtos);
     }
 
+    public async Task<List<ClassConversationDto>> GetConversationsAsync(int classId, CancellationToken ct)
+    {
+        var userId = GetUserId();
+        var effectiveClassId = classId == 0 ? (int?)null : classId;
+        if (classId == 0)
+        {
+            if (!IsAdmin())
+                throw new ForbiddenAccessException("Chỉ Quản trị viên mới có quyền tra cứu toàn bộ kho học liệu trung tâm.");
+        }
+        else
+        {
+            await EnsureClassAccessAsync(classId, ct);
+        }
+
+        return await dbContext.ClassChatConversations
+            .AsNoTracking()
+            .Where(c => c.ClassId == effectiveClassId && c.UserId == userId)
+            .OrderByDescending(c => c.UpdatedAt)
+            .Select(c => new ClassConversationDto(
+                c.Id,
+                c.ClassId,
+                c.Title,
+                c.CreatedAt,
+                c.UpdatedAt,
+                c.Messages.Count))
+            .ToListAsync(ct);
+    }
+
+    public async Task<ClassConversationDto> CreateConversationAsync(int classId, CreateConversationRequestDto request, CancellationToken ct)
+    {
+        var userId = GetUserId();
+        var effectiveClassId = classId == 0 ? (int?)null : classId;
+        if (classId == 0)
+        {
+            if (!IsAdmin())
+                throw new ForbiddenAccessException("Chỉ Quản trị viên mới có quyền tra cứu toàn bộ kho học liệu trung tâm.");
+        }
+        else
+        {
+            await EnsureClassAccessAsync(classId, ct);
+        }
+
+        var title = string.IsNullOrWhiteSpace(request?.Title) ? "Cuộc trò chuyện mới" : request.Title.Trim();
+        if (title.Length > 255)
+            title = title[..252] + "...";
+
+        var conv = new ClassChatConversation
+        {
+            ClassId = effectiveClassId,
+            UserId = userId,
+            Title = title,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        dbContext.ClassChatConversations.Add(conv);
+        await dbContext.SaveChangesAsync(ct);
+
+        return new ClassConversationDto(conv.Id, conv.ClassId, conv.Title, conv.CreatedAt, conv.UpdatedAt, 0);
+    }
+
+    public async Task<ClassConversationDto> UpdateConversationTitleAsync(int classId, Guid conversationId, UpdateConversationTitleRequestDto request, CancellationToken ct)
+    {
+        var userId = GetUserId();
+        if (string.IsNullOrWhiteSpace(request.Title))
+            throw new ValidationException("Tiêu đề cuộc trò chuyện không được để trống.");
+
+        var effectiveClassId = classId == 0 ? (int?)null : classId;
+        if (classId == 0)
+        {
+            if (!IsAdmin())
+                throw new ForbiddenAccessException("Chỉ Quản trị viên mới có quyền tra cứu toàn bộ kho học liệu trung tâm.");
+        }
+        else
+        {
+            await EnsureClassAccessAsync(classId, ct);
+        }
+
+        var conv = await dbContext.ClassChatConversations
+            .Include(c => c.Messages)
+            .FirstOrDefaultAsync(c => c.Id == conversationId && c.UserId == userId && c.ClassId == effectiveClassId, ct)
+            ?? throw new NotFoundException("Không tìm thấy cuộc trò chuyện.");
+
+        var title = request.Title.Trim();
+        if (title.Length > 255)
+            title = title[..252] + "...";
+
+        conv.Title = title;
+        conv.UpdatedAt = DateTime.UtcNow;
+
+        await dbContext.SaveChangesAsync(ct);
+
+        return new ClassConversationDto(conv.Id, conv.ClassId, conv.Title, conv.CreatedAt, conv.UpdatedAt, conv.Messages.Count);
+    }
+
+    public async Task DeleteConversationAsync(int classId, Guid conversationId, CancellationToken ct)
+    {
+        var userId = GetUserId();
+        var effectiveClassId = classId == 0 ? (int?)null : classId;
+        if (classId == 0)
+        {
+            if (!IsAdmin())
+                throw new ForbiddenAccessException("Chỉ Quản trị viên mới có quyền tra cứu toàn bộ kho học liệu trung tâm.");
+        }
+        else
+        {
+            await EnsureClassAccessAsync(classId, ct);
+        }
+
+        var conv = await dbContext.ClassChatConversations
+            .FirstOrDefaultAsync(c => c.Id == conversationId && c.UserId == userId && c.ClassId == effectiveClassId, ct)
+            ?? throw new NotFoundException("Không tìm thấy cuộc trò chuyện.");
+
+        dbContext.ClassChatConversations.Remove(conv);
+        await dbContext.SaveChangesAsync(ct);
+    }
+
+    public async Task<List<ClassMessageDto>> GetConversationMessagesAsync(int classId, Guid conversationId, CancellationToken ct)
+    {
+        var userId = GetUserId();
+        var effectiveClassId = classId == 0 ? (int?)null : classId;
+        if (classId == 0)
+        {
+            if (!IsAdmin())
+                throw new ForbiddenAccessException("Chỉ Quản trị viên mới có quyền tra cứu toàn bộ kho học liệu trung tâm.");
+        }
+        else
+        {
+            await EnsureClassAccessAsync(classId, ct);
+        }
+
+        var conv = await dbContext.ClassChatConversations
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == conversationId && c.UserId == userId && c.ClassId == effectiveClassId, ct)
+            ?? throw new NotFoundException("Không tìm thấy cuộc trò chuyện.");
+
+        return await dbContext.ClassChatMessages
+            .AsNoTracking()
+            .Where(m => m.ConversationId == conversationId)
+            .OrderBy(m => m.CreatedAt)
+            .Select(m => new ClassMessageDto(
+                m.Id,
+                m.ClassId,
+                m.ConversationId,
+                m.Role,
+                m.Content,
+                DeserializeCitations(m.CitationsJson),
+                m.CreatedAt))
+            .ToListAsync(ct);
+    }
+
     public async Task<List<ClassMessageDto>> GetMessagesAsync(int classId, CancellationToken ct)
     {
         var userId = GetUserId();
@@ -134,6 +285,7 @@ public class ClassChatService(
             .Select(m => new ClassMessageDto(
                 m.Id,
                 m.ClassId,
+                m.ConversationId,
                 m.Role,
                 m.Content,
                 DeserializeCitations(m.CitationsJson),
@@ -181,6 +333,34 @@ public class ClassChatService(
 
         var effectiveClassId = classId == 0 ? (int?)null : classId;
 
+        // Determine or create Conversation
+        ClassChatConversation? conv = null;
+        if (request.ConversationId.HasValue && request.ConversationId.Value != Guid.Empty)
+        {
+            conv = await dbContext.ClassChatConversations
+                .FirstOrDefaultAsync(c => c.Id == request.ConversationId.Value && c.UserId == userId && c.ClassId == effectiveClassId, ct);
+        }
+
+        if (conv == null)
+        {
+            var autoTitle = request.Question.Trim();
+            if (autoTitle.Length > 40)
+                autoTitle = autoTitle[..37] + "...";
+
+            conv = new ClassChatConversation
+            {
+                ClassId = effectiveClassId,
+                UserId = userId,
+                Title = autoTitle,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            dbContext.ClassChatConversations.Add(conv);
+            await dbContext.SaveChangesAsync(ct);
+        }
+
+        var targetConversationId = conv.Id;
+
         if (availableDocs.Count == 0)
         {
             var noDocMsg = classId == 0
@@ -189,6 +369,7 @@ public class ClassChatService(
 
             var userMsg = new ClassChatMessage
             {
+                ConversationId = targetConversationId,
                 ClassId = effectiveClassId,
                 UserId = userId,
                 Role = "user",
@@ -197,12 +378,14 @@ public class ClassChatService(
             };
             var botMsg = new ClassChatMessage
             {
+                ConversationId = targetConversationId,
                 ClassId = effectiveClassId,
                 UserId = userId,
                 Role = "assistant",
                 Content = noDocMsg,
                 CreatedAt = DateTime.UtcNow.AddMilliseconds(50)
             };
+            conv.UpdatedAt = DateTime.UtcNow;
             dbContext.ClassChatMessages.AddRange(userMsg, botMsg);
             await dbContext.SaveChangesAsync(ct);
 
@@ -210,7 +393,8 @@ public class ClassChatService(
                 request.Question.Trim(),
                 noDocMsg,
                 [],
-                DateTime.UtcNow);
+                DateTime.UtcNow,
+                targetConversationId);
         }
 
         // Filter by user selection if requested
@@ -225,12 +409,12 @@ public class ClassChatService(
 
         var sortedDocIds = targetDocIds.OrderBy(id => id).ToList();
 
-        // 2. Query recent history for context
+        // 2. Query recent history OF THIS CONVERSATION for context
         var recentHistory = await dbContext.ClassChatMessages
             .AsNoTracking()
-            .Where(m => m.ClassId == effectiveClassId && m.UserId == userId)
+            .Where(m => m.ConversationId == targetConversationId)
             .OrderByDescending(m => m.CreatedAt)
-            .Take(10)
+            .Take(20)
             .OrderBy(m => m.CreatedAt)
             .Select(m => new ChatMessageItemDto(m.Role, m.Content))
             .ToListAsync(ct);
@@ -238,7 +422,8 @@ public class ClassChatService(
         var chatRequest = new ChatRequestDto(
             request.Question.Trim(),
             sortedDocIds,
-            recentHistory);
+            recentHistory,
+            targetConversationId);
 
         // 3. Query RAG Module (Module 2 performs Semantic Cache via Qdrant)
         var ragResponse = await ragClient.ScopedChatAsync(chatRequest, ct);
@@ -254,6 +439,7 @@ public class ClassChatService(
 
         var userMsgEntity = new ClassChatMessage
         {
+            ConversationId = targetConversationId,
             ClassId = effectiveClassId,
             UserId = userId,
             Role = "user",
@@ -263,6 +449,7 @@ public class ClassChatService(
 
         var botMsgEntity = new ClassChatMessage
         {
+            ConversationId = targetConversationId,
             ClassId = effectiveClassId,
             UserId = userId,
             Role = "assistant",
@@ -271,6 +458,7 @@ public class ClassChatService(
             CreatedAt = DateTime.UtcNow.AddMilliseconds(50)
         };
 
+        conv.UpdatedAt = DateTime.UtcNow;
         dbContext.ClassChatMessages.AddRange(userMsgEntity, botMsgEntity);
         await dbContext.SaveChangesAsync(ct);
 
@@ -278,7 +466,8 @@ public class ClassChatService(
             request.Question.Trim(),
             ragResponse.Answer,
             formattedCitations,
-            DateTime.UtcNow);
+            DateTime.UtcNow,
+            targetConversationId);
     }
 
     public async Task ClearMessagesAsync(int classId, CancellationToken ct)
@@ -292,15 +481,25 @@ public class ClassChatService(
         if (classId > 0)
             await EnsureClassAccessAsync(classId, ct);
 
-        var messages = await dbContext.ClassChatMessages
+        var convs = await dbContext.ClassChatConversations
+            .Where(c => c.ClassId == effectiveClassId && c.UserId == userId)
+            .ToListAsync(ct);
+
+        if (convs.Count != 0)
+        {
+            dbContext.ClassChatConversations.RemoveRange(convs);
+        }
+
+        var legacyMessages = await dbContext.ClassChatMessages
             .Where(m => m.ClassId == effectiveClassId && m.UserId == userId)
             .ToListAsync(ct);
 
-        if (messages.Count != 0)
+        if (legacyMessages.Count != 0)
         {
-            dbContext.ClassChatMessages.RemoveRange(messages);
-            await dbContext.SaveChangesAsync(ct);
+            dbContext.ClassChatMessages.RemoveRange(legacyMessages);
         }
+
+        await dbContext.SaveChangesAsync(ct);
     }
 
     private async Task<Class> EnsureClassAccessAsync(int classId, CancellationToken ct)

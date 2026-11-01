@@ -10,7 +10,7 @@ from qdrant_client import AsyncQdrantClient, models
 from core import Settings, embed_documents, embed_sparse_documents
 from ingestion.chunking import build_chunks, embedding_text
 from ingestion.loaders import extract_document
-from db import delete_document_chunks, ensure_collection_exists, upsert_document_chunks
+from db import delete_document_chunks, ensure_collection_exists, invalidate_semantic_cache_for_document, upsert_document_chunks
 
 _EMBEDDING_BATCH_SIZE = 16
 
@@ -68,5 +68,6 @@ async def ingest_document(
 
     await ensure_collection_exists(client, settings.qdrant_collection_name)
     await delete_document_chunks(client, settings.qdrant_collection_name, document_id)
+    await invalidate_semantic_cache_for_document(client, settings.qdrant_cache_collection_name, document_id)
     await upsert_document_chunks(client, settings.qdrant_collection_name, points)
     return len(points)

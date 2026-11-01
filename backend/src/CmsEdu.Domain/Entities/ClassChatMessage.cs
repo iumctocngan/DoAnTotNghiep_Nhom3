@@ -3,6 +3,8 @@ namespace CmsEdu.Domain.Entities;
 public class ClassChatMessage
 {
     public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid? ConversationId { get; set; }
+    public ClassChatConversation? Conversation { get; set; }
     public int? ClassId { get; set; }
     public Class? Class { get; set; }
     public string UserId { get; set; } = string.Empty;

@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from dataclasses import dataclass
 from functools import lru_cache
 import logging
@@ -129,3 +130,28 @@ async def upsert_document_chunks(
 ) -> None:
     if points:
         await client.upsert(collection_name=collection_name, points=points)
+
+async def cleanup_expired_semantic_cache(
+    client: AsyncQdrantClient,
+    collection_name: str,
+) -> None:
+    if not await client.collection_exists(collection_name):
+        return
+    now_iso = datetime.now(timezone.utc).isoformat()
+    try:
+        await client.delete(
+            collection_name=collection_name,
+            points_selector=models.FilterSelector(
+                filter=models.Filter(
+                    must=[
+                        models.FieldCondition(
+                            key="expires_at",
+                            range=models.DatetimeRange(lte=now_iso),
+                        )
+                    ]
+                )
+            ),
+        )
+    except Exception as err:
+        logger.warning("Lỗi dọn dẹp điểm Semantic Cache hết hạn: %s", err)
+

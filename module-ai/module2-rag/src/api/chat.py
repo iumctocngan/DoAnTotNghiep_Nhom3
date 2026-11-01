@@ -26,6 +26,7 @@ async def chat_general(
             client=qdrant,
             document_ids=body.document_ids,
             history=history_dicts,
+            conversation_id=body.conversation_id,
         )
     except GeminiConfigurationError as error:
         raise HTTPException(status_code=503, detail=str(error)) from error

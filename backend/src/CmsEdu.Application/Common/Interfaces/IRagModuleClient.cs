@@ -5,7 +5,8 @@ public record ChatMessageItemDto(string Role, string Content);
 public record ChatRequestDto(
     string Question,
     List<Guid>? DocumentIds,
-    List<ChatMessageItemDto>? History = null);
+    List<ChatMessageItemDto>? History = null,
+    Guid? ConversationId = null);
 
 public record CitationDto(
     Guid ChunkId,

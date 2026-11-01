@@ -62,6 +62,14 @@ async def embed_sparse_documents(texts: list[str]) -> list[tuple[list[int], list
     return await asyncio.to_thread(_encode_sparse, texts)
 
 
+async def embed_dense_query(
+    query: str, model_name: str = EMBEDDING_MODEL
+) -> list[float]:
+    cleaned = query.strip()
+    vectors = await asyncio.to_thread(_encode_dense, model_name, [f"{QUERY_PREFIX}{cleaned}"])
+    return vectors[0]
+
+
 async def embed_hybrid_query(
     query: str, model_name: str = EMBEDDING_MODEL
 ) -> tuple[list[float], list[int], list[float]]:

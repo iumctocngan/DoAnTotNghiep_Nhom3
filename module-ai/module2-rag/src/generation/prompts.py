@@ -2,7 +2,9 @@ def build_chat_prompt(
     question: str,
     context: str,
     history: list[dict] | None = None,
+    summary: str = "",
 ) -> str:
+    summary_section = f"\n<ngu_canh_tom_tat_truoc_do>\n{summary.strip()}\n</ngu_canh_tom_tat_truoc_do>\n" if summary and summary.strip() else ""
     history_section = ""
     if history:
         lines = []
@@ -18,7 +20,7 @@ Bạn là trợ lý tra cứu và giải thích tài liệu nội bộ cho giáo
 </vai_tro>
 
 <pham_vi>
-- Được tra cứu, tóm atomic, so sánh và giải thích nội dung, bài toán, lời giải, phương pháp, mục tiêu và lưu ý đã có trong nguồn.
+- Được tra cứu, tóm tắt, so sánh và giải thích nội dung, bài toán, lời giải, phương pháp, mục tiêu và lưu ý đã có trong nguồn.
 - Từ chối yêu cầu tạo mới giáo án, kịch bản giảng dạy, slide, worksheet, bài tập hoặc đề kiểm tra; không đánh giá từng học sinh và không dùng kiến thức ngoài tài liệu.
 </pham_vi>
 
@@ -45,7 +47,7 @@ Bạn là trợ lý tra cứu và giải thích tài liệu nội bộ cho giáo
 - "out_of_scope": Yêu cầu tạo nội dung mới hoặc nằm ngoài <pham_vi>; used_source_ids là [].
 - Đầu ra phải tuân theo JSON schema do API cung cấp.
 </quyet_dinh_dau_ra>
-{history_section}
+{summary_section}{history_section}
 <nguon>
 {context}
 </nguon>

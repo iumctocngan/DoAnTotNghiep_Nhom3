@@ -11,6 +11,7 @@ from .qdrant import (
     ensure_cache_collection_exists,
     ensure_collection_exists,
     get_qdrant_client,
+    cleanup_expired_semantic_cache,
     invalidate_semantic_cache_for_document,
     upsert_document_chunks,
 )
@@ -24,6 +25,7 @@ __all__ = [
     "get_document_path",
     "get_pdf_outline",
     "get_qdrant_client",
+    "cleanup_expired_semantic_cache",
     "invalidate_semantic_cache_for_document",
     "render_pdf_page_image",
     "remove_uploaded_document",

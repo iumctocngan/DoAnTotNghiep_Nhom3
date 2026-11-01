@@ -1,6 +1,7 @@
 import { apiClient } from './apiClient';
 import type {
   ClassChatResult,
+  ClassConversation,
   ClassKnowledgeInfo,
   ClassMessage,
   KnowledgeDocument,
@@ -39,6 +40,29 @@ export const knowledgeApi = {
   getClassKnowledgeInfo: (classId: number): Promise<ClassKnowledgeInfo> =>
     apiClient<ClassKnowledgeInfo>(`/api/classes/${classId}/knowledge/info`),
 
+  getClassConversations: (classId: number): Promise<ClassConversation[]> =>
+    apiClient<ClassConversation[]>(`/api/classes/${classId}/knowledge/conversations`),
+
+  createClassConversation: (classId: number, data?: { title?: string }): Promise<ClassConversation> =>
+    apiClient<ClassConversation>(`/api/classes/${classId}/knowledge/conversations`, {
+      method: 'POST',
+      body: JSON.stringify(data ?? {}),
+    }),
+
+  updateClassConversationTitle: (classId: number, conversationId: string, title: string): Promise<ClassConversation> =>
+    apiClient<ClassConversation>(`/api/classes/${classId}/knowledge/conversations/${conversationId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ title }),
+    }),
+
+  deleteClassConversation: (classId: number, conversationId: string): Promise<void> =>
+    apiClient<void>(`/api/classes/${classId}/knowledge/conversations/${conversationId}`, {
+      method: 'DELETE',
+    }),
+
+  getClassConversationMessages: (classId: number, conversationId: string): Promise<ClassMessage[]> =>
+    apiClient<ClassMessage[]>(`/api/classes/${classId}/knowledge/conversations/${conversationId}/messages`),
+
   getClassMessages: (classId: number): Promise<ClassMessage[]> =>
     apiClient<ClassMessage[]>(`/api/classes/${classId}/knowledge/messages`),
 
@@ -52,6 +76,7 @@ export const knowledgeApi = {
     data: {
       question: string;
       selectedDocumentIds?: string[];
+      conversationId?: string | null;
     }
   ): Promise<ClassChatResult> =>
     apiClient<ClassChatResult>(`/api/classes/${classId}/knowledge/chat`, {

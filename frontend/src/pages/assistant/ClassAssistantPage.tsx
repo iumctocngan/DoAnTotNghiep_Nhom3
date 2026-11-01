@@ -7,7 +7,7 @@ import { useToast } from '../../components/common/ToastProvider';
 import { MaterialIcon } from '../../components/common/MaterialIcon';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { CitationPreviewModal } from './CitationPreviewModal';
-import { KnowledgeScope, type Citation } from '../../types/knowledge';
+import { KnowledgeScope, type Citation, type ClassConversation } from '../../types/knowledge';
 
 export const ClassAssistantPage: React.FC = () => {
   const showToast = useToast();
@@ -20,6 +20,13 @@ export const ClassAssistantPage: React.FC = () => {
   // Active Scope/Class State: 0 = Toàn bộ trung tâm (Admin only), >0 = Lớp cụ thể
   const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
 
+  // Left Panel Tab: 'conversations' | 'docs'
+  const [activeLeftTab, setActiveLeftTab] = useState<'conversations' | 'docs'>('conversations');
+
+  // Active Conversation State (null = New Chat)
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  const [isNewChatMode, setIsNewChatMode] = useState(false);
+
   // Filter Selected Documents
   const [selectedDocIds, setSelectedDocIds] = useState<string[]>([]);
 
@@ -27,9 +34,11 @@ export const ClassAssistantPage: React.FC = () => {
   const [inputQuestion, setInputQuestion] = useState('');
   const [isAsking, setIsAsking] = useState(false);
 
-  // Modals
+  // Modals / Dialogs
   const [activeCitation, setActiveCitation] = useState<Citation | null>(null);
-  const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false);
+  const [deletingConv, setDeletingConv] = useState<ClassConversation | null>(null);
+  const [editingConv, setEditingConv] = useState<ClassConversation | null>(null);
+  const [editTitleInput, setEditTitleInput] = useState('');
 
   // 1. Fetch Classes
   const { data: classes = [], isLoading: isClassesLoading } = useQuery({
@@ -48,6 +57,12 @@ export const ClassAssistantPage: React.FC = () => {
     }
   }, [isAdmin, classes, selectedClassId]);
 
+  // Reset conversation selection when changing class
+  useEffect(() => {
+    setCurrentConversationId(null);
+    setIsNewChatMode(false);
+  }, [selectedClassId]);
+
   // 2. Fetch Class/Center Knowledge Info (Inherited Documents)
   const { data: classKnowledge, isLoading: isKnowledgeLoading } = useQuery({
     queryKey: ['class-knowledge-info', selectedClassId],
@@ -62,11 +77,28 @@ export const ClassAssistantPage: React.FC = () => {
     }
   }, [classKnowledge]);
 
-  // 3. Fetch Persistent Messages of Selected Class
-  const { data: messages = [], isLoading: isMessagesLoading } = useQuery({
-    queryKey: ['class-messages', selectedClassId],
-    queryFn: () => (selectedClassId !== null ? knowledgeApi.getClassMessages(selectedClassId) : []),
+  // 3. Fetch Conversations of Selected Class
+  const { data: conversations = [], isLoading: isConversationsLoading } = useQuery({
+    queryKey: ['class-conversations', selectedClassId],
+    queryFn: () => (selectedClassId !== null ? knowledgeApi.getClassConversations(selectedClassId) : []),
     enabled: selectedClassId !== null,
+  });
+
+  // Auto-select first conversation if exists and none selected (and not in new chat mode)
+  useEffect(() => {
+    if (!isNewChatMode && conversations.length > 0 && currentConversationId === null) {
+      setCurrentConversationId(conversations[0].id);
+    }
+  }, [conversations, currentConversationId, isNewChatMode]);
+
+  // 4. Fetch Messages of Active Conversation
+  const { data: messages = [], isLoading: isMessagesLoading } = useQuery({
+    queryKey: ['class-conversation-messages', selectedClassId, currentConversationId],
+    queryFn: () =>
+      selectedClassId !== null && currentConversationId
+        ? knowledgeApi.getClassConversationMessages(selectedClassId, currentConversationId)
+        : [],
+    enabled: selectedClassId !== null && currentConversationId !== null,
   });
 
   // Scroll to bottom on messages update
@@ -74,17 +106,42 @@ export const ClassAssistantPage: React.FC = () => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isAsking]);
 
-  // Clear Messages Mutation
-  const clearMessagesMutation = useMutation({
-    mutationFn: () =>
-      selectedClassId !== null ? knowledgeApi.clearClassMessages(selectedClassId) : Promise.resolve(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['class-messages', selectedClassId] });
-      showToast('Đã xóa sạch lịch sử trò chuyện.', 'success');
-      setIsClearConfirmOpen(false);
+  // Delete Conversation Mutation
+  const deleteConvMutation = useMutation({
+    mutationFn: (convId: string) =>
+      selectedClassId !== null ? knowledgeApi.deleteClassConversation(selectedClassId, convId) : Promise.resolve(),
+    onSuccess: (_, convId) => {
+      queryClient.invalidateQueries({ queryKey: ['class-conversations', selectedClassId] });
+      showToast('Đã xóa phiên trò chuyện.', 'success');
+      if (currentConversationId === convId) {
+        setCurrentConversationId(null);
+        setIsNewChatMode(false);
+      }
+      setDeletingConv(null);
     },
     onError: (err) => showToast(err instanceof Error ? err.message : 'Xóa thất bại.', 'error'),
   });
+
+  // Rename Conversation Mutation
+  const renameConvMutation = useMutation({
+    mutationFn: ({ convId, title }: { convId: string; title: string }) =>
+      selectedClassId !== null
+        ? knowledgeApi.updateClassConversationTitle(selectedClassId, convId, title)
+        : Promise.resolve({} as ClassConversation),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['class-conversations', selectedClassId] });
+      showToast('Đã cập nhật tiêu đề.', 'success');
+      setEditingConv(null);
+    },
+    onError: (err) => showToast(err instanceof Error ? err.message : 'Đổi tên thất bại.', 'error'),
+  });
+
+  // Create New Empty Conversation
+  const handleStartNewChat = () => {
+    setIsNewChatMode(true);
+    setCurrentConversationId(null);
+    setInputQuestion('');
+  };
 
   // Handle Send Question
   const handleSend = async (e?: React.FormEvent) => {
@@ -96,12 +153,22 @@ export const ClassAssistantPage: React.FC = () => {
     setIsAsking(true);
 
     try {
-      await knowledgeApi.chatClass(selectedClassId, {
+      const res = await knowledgeApi.chatClass(selectedClassId, {
         question: q,
         selectedDocumentIds: selectedDocIds.length > 0 ? selectedDocIds : undefined,
+        conversationId: currentConversationId,
       });
 
-      queryClient.invalidateQueries({ queryKey: ['class-messages', selectedClassId] });
+      // Update active conversation ID if it was newly created
+      if (res.conversationId && res.conversationId !== currentConversationId) {
+        setCurrentConversationId(res.conversationId);
+        setIsNewChatMode(false);
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ['class-conversations', selectedClassId] });
+      await queryClient.invalidateQueries({
+        queryKey: ['class-conversation-messages', selectedClassId, res.conversationId || currentConversationId],
+      });
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Không thể kết nối đến Trợ lý AI.', 'error');
     } finally {
@@ -123,6 +190,8 @@ export const ClassAssistantPage: React.FC = () => {
       setSelectedDocIds(classKnowledge.documents.map((d) => d.id));
     }
   };
+
+  const currentConv = conversations.find((c) => c.id === currentConversationId);
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-4 flex flex-col h-[calc(100vh-4rem)]">
@@ -171,118 +240,246 @@ export const ClassAssistantPage: React.FC = () => {
 
       {/* Main Two-Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 min-h-0">
-        {/* LEFT SIDEBAR: Applicable Documents (4 cols on lg, 3 on xl) */}
+        {/* LEFT SIDEBAR: Conversations & Documents (4 cols on lg, 3 on xl) */}
         <div className="lg:col-span-4 xl:col-span-3 bg-white rounded border border-slate-200 shadow-xs flex flex-col min-h-0 overflow-hidden">
-          <div className="p-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between shrink-0">
-            <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-              <MaterialIcon name="description" />
-              Tài liệu học liệu ({classKnowledge?.documents.length || 0})
-            </span>
-            {classKnowledge && classKnowledge.documents.length > 0 && (
-              <button
-                type="button"
-                onClick={toggleSelectAllDocs}
-                className="text-[11px] text-[#0284c7] hover:underline font-medium"
-              >
-                {selectedDocIds.length === classKnowledge.documents.length ? 'Bỏ chọn' : 'Chọn tất cả'}
-              </button>
-            )}
+          {/* Tab Switcher: Conversations vs Documents */}
+          <div className="flex border-b border-slate-200 bg-slate-50 shrink-0">
+            <button
+              type="button"
+              onClick={() => setActiveLeftTab('conversations')}
+              className={`flex-1 py-2.5 px-3 text-xs font-bold flex items-center justify-center gap-1.5 border-b-2 transition-all ${
+                activeLeftTab === 'conversations'
+                  ? 'border-[#0284c7] text-[#0284c7] bg-white'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-100/70'
+              }`}
+            >
+              <MaterialIcon name="chat" className="text-sm" />
+              <span>Phiên chat ({conversations.length})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveLeftTab('docs')}
+              className={`flex-1 py-2.5 px-3 text-xs font-bold flex items-center justify-center gap-1.5 border-b-2 transition-all ${
+                activeLeftTab === 'docs'
+                  ? 'border-[#0284c7] text-[#0284c7] bg-white'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-100/70'
+              }`}
+            >
+              <MaterialIcon name="description" className="text-sm" />
+              <span>Học liệu ({classKnowledge?.documents.length || 0})</span>
+            </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-3 space-y-2">
-            {isKnowledgeLoading ? (
-              <div className="text-center py-8 text-xs text-slate-400">Đang nạp học liệu...</div>
-            ) : !classKnowledge || classKnowledge.documents.length === 0 ? (
-              <div className="text-center py-8 px-3">
-                <h4 className="font-semibold text-slate-700 text-sm">
-                  Chưa có tài liệu nào sẵn sàng trong phạm vi này.
-                </h4>
-                <p className="text-xs text-slate-400 mt-1">
-                  Admin có thể tải lên tài liệu trong phần Quản lý Chương trình học.
-                </p>
+          {/* TAB 1: CONVERSATIONS LIST */}
+          {activeLeftTab === 'conversations' && (
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              {/* New Chat Button */}
+              <div className="p-3 border-b border-slate-100 bg-white shrink-0">
+                <button
+                  type="button"
+                  onClick={handleStartNewChat}
+                  disabled={!canChat || selectedClassId === null}
+                  className="w-full py-2 px-3 bg-[#0284c7] hover:bg-sky-700 text-white rounded text-xs font-semibold flex items-center justify-center gap-1.5 shadow-2xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <MaterialIcon name="add" className="text-sm" />
+                  <span>Cuộc trò chuyện mới</span>
+                </button>
               </div>
-            ) : (
-              classKnowledge.documents.map((doc) => {
-                const isSelected = selectedDocIds.includes(doc.id);
-                return (
-                  <div
-                    key={doc.id}
-                    onClick={() => toggleDocSelection(doc.id)}
-                    className={`p-2.5 rounded border text-xs cursor-pointer transition-all flex items-start gap-2.5 ${
-                      isSelected
-                        ? 'border-[#0284c7] bg-sky-50/40'
-                        : 'border-slate-200 hover:bg-slate-50 opacity-70'
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => {}}
-                      className="mt-0.5 rounded text-[#0284c7] focus:ring-[#0284c7]"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="px-1 py-0.2 rounded text-[10px] font-bold uppercase shrink-0 bg-slate-100 text-slate-700 border border-slate-200">
-                          {doc.documentType}
-                        </span>
-                        <span className="font-semibold text-slate-800 truncate" title={doc.title}>
-                          {doc.title}
-                        </span>
-                      </div>
 
-                      <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-500">
-                        {doc.scope === KnowledgeScope.Global && (
-                          <span className="text-slate-600 font-medium">Tài liệu chung</span>
-                        )}
-                        {doc.scope === KnowledgeScope.Course && (
-                          <span className="text-slate-600 font-medium">Khóa: {doc.courseName}</span>
-                        )}
-                        {doc.scope === KnowledgeScope.Level && (
-                          <span className="text-slate-600 font-medium">Cấp độ: {doc.levelName}</span>
-                        )}
-                        {doc.scope === KnowledgeScope.Class && (
-                          <span className="text-slate-600 font-medium">Lớp riêng</span>
-                        )}
-                      </div>
-                    </div>
+              {/* Conversations Stream */}
+              <div className="flex-1 overflow-y-auto p-2 space-y-1">
+                {isConversationsLoading ? (
+                  <div className="text-center py-8 text-xs text-slate-400">Đang tải danh sách...</div>
+                ) : conversations.length === 0 ? (
+                  <div className="text-center py-8 px-3 text-slate-400">
+                    <MaterialIcon name="chat_bubble_outline" className="text-3xl text-slate-300 mx-auto mb-2" />
+                    <p className="text-xs font-medium text-slate-600">Chưa có phiên trò chuyện nào</p>
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Bấm &quot;Cuộc trò chuyện mới&quot; hoặc gõ câu hỏi để bắt đầu.
+                    </p>
                   </div>
-                );
-              })
-            )}
-          </div>
+                ) : (
+                  conversations.map((c) => {
+                    const isActive = c.id === currentConversationId;
+                    return (
+                      <div
+                        key={c.id}
+                        onClick={() => {
+                          setIsNewChatMode(false);
+                          setCurrentConversationId(c.id);
+                        }}
+                        className={`group relative p-2.5 rounded border text-xs cursor-pointer transition-all flex items-start justify-between gap-2 ${
+                          isActive
+                            ? 'border-[#0284c7] bg-sky-50/50 shadow-2xs'
+                            : 'border-slate-100 hover:border-slate-300 hover:bg-slate-50'
+                        }`}
+                      >
+                        <div className="flex-1 min-w-0 pr-1">
+                          <p
+                            className={`font-semibold truncate text-[12px] ${
+                              isActive ? 'text-[#0284c7]' : 'text-slate-800'
+                            }`}
+                            title={c.title}
+                          >
+                            {c.title}
+                          </p>
+                          <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1.5">
+                            <span>{c.messageCount} tin nhắn</span>
+                            <span>•</span>
+                            <span>
+                              {new Date(c.updatedAt).toLocaleTimeString('vi-VN', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </span>
+                          </p>
+                        </div>
+
+                        {/* Actions: Rename & Delete */}
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingConv(c);
+                              setEditTitleInput(c.title);
+                            }}
+                            className="p-1 text-slate-400 hover:text-slate-700 hover:bg-white rounded transition-colors"
+                            title="Đổi tên phiên"
+                          >
+                            <MaterialIcon name="edit" className="text-xs" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeletingConv(c);
+                            }}
+                            className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
+                            title="Xóa phiên này"
+                          >
+                            <MaterialIcon name="delete" className="text-xs" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: DOCUMENTS SELECTION */}
+          {activeLeftTab === 'docs' && (
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              <div className="p-2.5 border-b border-slate-100 bg-slate-50 flex items-center justify-between shrink-0">
+                <span className="text-[11px] font-semibold text-slate-600">Áp dụng trong phạm vi</span>
+                {classKnowledge && classKnowledge.documents.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={toggleSelectAllDocs}
+                    className="text-[11px] text-[#0284c7] hover:underline font-medium"
+                  >
+                    {selectedDocIds.length === classKnowledge.documents.length ? 'Bỏ chọn' : 'Chọn tất cả'}
+                  </button>
+                )}
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-2.5 space-y-2">
+                {isKnowledgeLoading ? (
+                  <div className="text-center py-8 text-xs text-slate-400">Đang nạp học liệu...</div>
+                ) : !classKnowledge || classKnowledge.documents.length === 0 ? (
+                  <div className="text-center py-8 px-3">
+                    <h4 className="font-semibold text-slate-700 text-xs">Chưa có tài liệu nào sẵn sàng.</h4>
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Admin có thể tải lên tài liệu trong phần Quản lý Chương trình học.
+                    </p>
+                  </div>
+                ) : (
+                  classKnowledge.documents.map((doc) => {
+                    const isSelected = selectedDocIds.includes(doc.id);
+                    return (
+                      <div
+                        key={doc.id}
+                        onClick={() => toggleDocSelection(doc.id)}
+                        className={`p-2.5 rounded border text-xs cursor-pointer transition-all flex items-start gap-2.5 ${
+                          isSelected
+                            ? 'border-[#0284c7] bg-sky-50/40'
+                            : 'border-slate-200 hover:bg-slate-50 opacity-70'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => {}}
+                          className="mt-0.5 rounded text-[#0284c7] focus:ring-[#0284c7]"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="px-1 py-0.2 rounded text-[10px] font-bold uppercase shrink-0 bg-slate-100 text-slate-700 border border-slate-200">
+                              {doc.documentType}
+                            </span>
+                            <span className="font-semibold text-slate-800 truncate" title={doc.title}>
+                              {doc.title}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-500">
+                            {doc.scope === KnowledgeScope.Global && (
+                              <span className="text-slate-600 font-medium">Tài liệu chung</span>
+                            )}
+                            {doc.scope === KnowledgeScope.Course && (
+                              <span className="text-slate-600 font-medium">Khóa: {doc.courseName}</span>
+                            )}
+                            {doc.scope === KnowledgeScope.Level && (
+                              <span className="text-slate-600 font-medium">Cấp độ: {doc.levelName}</span>
+                            )}
+                            {doc.scope === KnowledgeScope.Class && (
+                              <span className="text-slate-600 font-medium">Lớp riêng</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* RIGHT MAIN CHAT WORKSPACE (8 cols on lg, 9 on xl) */}
         <div className="lg:col-span-8 xl:col-span-9 bg-white rounded border border-slate-200 shadow-xs flex flex-col min-h-0 overflow-hidden">
           {/* Chat Workspace Header */}
           <div className="px-5 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-2">
-              <span className={`w-2.5 h-2.5 rounded-full ${selectedClassId === 0 ? 'bg-sky-500' : 'bg-emerald-500'}`}></span>
-              <span className="text-sm font-bold text-slate-800">
-                {selectedClassId === 0
-                  ? 'Toàn bộ Trung tâm'
-                  : (classKnowledge ? `${classKnowledge.className} (${classKnowledge.classCode})` : 'Chọn lớp giảng dạy')}
-              </span>
-              <span className="text-xs text-slate-500 hidden sm:inline">
-                • {selectedClassId === 0 ? 'Tra cứu trên toàn bộ kho tri thức' : `${classKnowledge?.courseName} / ${classKnowledge?.levelName}`}
-              </span>
+            <div className="flex items-center gap-2 min-w-0">
+              <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${selectedClassId === 0 ? 'bg-sky-500' : 'bg-emerald-500'}`}></span>
+              <div className="min-w-0">
+                <span className="text-sm font-bold text-slate-800 truncate block">
+                  {currentConv ? currentConv.title : 'Cuộc trò chuyện mới'}
+                </span>
+                <span className="text-[11px] text-slate-500 truncate block">
+                  {selectedClassId === 0
+                    ? 'Trợ lý Tri thức Toàn Trung tâm'
+                    : classKnowledge
+                    ? `${classKnowledge.className} (${classKnowledge.classCode}) • ${classKnowledge.courseName}`
+                    : 'Chọn lớp'}
+                </span>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <span className="text-xs text-slate-600 bg-white px-2.5 py-1 rounded border border-slate-200 shadow-2xs">
                 {selectedDocIds.length} tài liệu áp dụng
               </span>
-              {messages.length > 0 && canChat && (
+              {currentConversationId && canChat && (
                 <button
                   type="button"
-                  onClick={() => setIsClearConfirmOpen(true)}
-                  className="px-2.5 py-1 text-xs text-rose-600 hover:text-rose-700 bg-white hover:bg-rose-50 border border-rose-200 rounded transition-colors flex items-center gap-1 shadow-2xs"
-                  title="Xóa toàn bộ lịch sử trò chuyện của lớp này"
+                  onClick={handleStartNewChat}
+                  className="px-2.5 py-1 text-xs text-[#0284c7] hover:bg-sky-50 border border-sky-200 rounded transition-colors flex items-center gap-1 shadow-2xs font-medium"
                 >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                  Xóa lịch sử
+                  <MaterialIcon name="add" className="text-sm" />
+                  <span>Chat mới</span>
                 </button>
               )}
             </div>
@@ -292,7 +489,7 @@ export const ClassAssistantPage: React.FC = () => {
           <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
             {isMessagesLoading ? (
               <div className="h-full flex items-center justify-center text-xs text-slate-400">
-                Đang tải lịch sử trò chuyện...
+                Đang tải tin nhắn...
               </div>
             ) : messages.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-6 text-slate-400 space-y-3">
@@ -427,16 +624,52 @@ export const ClassAssistantPage: React.FC = () => {
         />
       )}
 
-      {/* Clear Chat History Confirm Dialog */}
-      {isClearConfirmOpen && (
+      {/* Delete Conversation Confirm Dialog */}
+      {deletingConv && (
         <ConfirmDialog
-          title="Xóa toàn bộ lịch sử trò chuyện"
-          message="Bạn có chắc chắn muốn xóa toàn bộ lịch sử tin nhắn của lớp này? Thao tác này không thể hoàn tác."
-          confirmText="Xóa lịch sử"
+          title="Xóa phiên trò chuyện"
+          message={`Bạn có chắc chắn muốn xóa phiên "${deletingConv.title}"? Toàn bộ tin nhắn trong phiên này sẽ bị xóa và không thể hoàn tác.`}
+          confirmText="Xóa phiên"
           isDangerous={true}
-          onConfirm={() => clearMessagesMutation.mutate()}
-          onCancel={() => setIsClearConfirmOpen(false)}
+          onConfirm={() => deleteConvMutation.mutate(deletingConv.id)}
+          onCancel={() => setDeletingConv(null)}
         />
+      )}
+
+      {/* Rename Conversation Modal */}
+      {editingConv && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-sm w-full p-5 space-y-4">
+            <h3 className="text-sm font-bold text-slate-800">Đổi tên phiên trò chuyện</h3>
+            <input
+              type="text"
+              value={editTitleInput}
+              onChange={(e) => setEditTitleInput(e.target.value)}
+              className="w-full px-3 py-2 text-xs border border-slate-300 rounded focus:border-[#0284c7] outline-none"
+              placeholder="Nhập tiêu đề mới..."
+              autoFocus
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setEditingConv(null)}
+                className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                disabled={!editTitleInput.trim() || renameConvMutation.isPending}
+                onClick={() =>
+                  renameConvMutation.mutate({ convId: editingConv.id, title: editTitleInput.trim() })
+                }
+                className="px-3 py-1.5 text-xs bg-[#0284c7] hover:bg-sky-700 text-white rounded font-medium disabled:opacity-50"
+              >
+                Lưu
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

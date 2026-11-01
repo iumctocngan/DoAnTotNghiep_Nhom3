@@ -12,14 +12,14 @@ def render_pdf_page_image(
     if cache_path.is_file():
         return cache_path
 
-    doc = pymupdf.open(pdf_path)
-    if page_number < 1 or page_number > len(doc):
-        raise ValueError(f"Trang {page_number} không hợp lệ (tài liệu có {len(doc)} trang).")
+    with pymupdf.open(pdf_path) as doc:
+        if page_number < 1 or page_number > len(doc):
+            raise ValueError(f"Trang {page_number} không hợp lệ (tài liệu có {len(doc)} trang).")
 
-    page = doc.load_page(page_number - 1)
-    pix = page.get_pixmap(dpi=dpi)
-    cache_dir.mkdir(parents=True, exist_ok=True)
-    pix.save(cache_path)
+        page = doc.load_page(page_number - 1)
+        pix = page.get_pixmap(dpi=dpi)
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        pix.save(cache_path)
     return cache_path
 
 

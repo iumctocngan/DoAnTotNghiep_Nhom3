@@ -33,7 +33,7 @@ async def generate(
     prompt: str,
     *,
     api_key: str | list[str],
-    response_schema: type[BaseModel],
+    response_schema: type[BaseModel] | None = None,
     models: tuple[str, ...] = DEFAULT_MODELS,
     request_timeout_ms: int = 45_000,
 ) -> str:
@@ -58,13 +58,17 @@ async def generate(
         key_quota_exhausted = False
         for model in models:
             try:
+                cfg_args = {}
+                if response_schema is not None:
+                    cfg_args["response_mime_type"] = "application/json"
+                    cfg_args["response_schema"] = response_schema
+                else:
+                    cfg_args["response_mime_type"] = "text/plain"
+
                 response = await client.aio.models.generate_content(
                     model=model,
                     contents=prompt,
-                    config=types.GenerateContentConfig(
-                        response_mime_type="application/json",
-                        response_schema=response_schema,
-                    ),
+                    config=types.GenerateContentConfig(**cfg_args),
                 )
                 answer = (response.text or "").strip()
                 if answer:
