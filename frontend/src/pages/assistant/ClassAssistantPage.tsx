@@ -84,12 +84,26 @@ export const ClassAssistantPage: React.FC = () => {
     enabled: selectedClassId !== null,
   });
 
-  // Auto-select first conversation if exists and none selected (and not in new chat mode)
+  // Auto-select first conversation if exists and none selected or invalid (and not in new chat mode)
   useEffect(() => {
-    if (!isNewChatMode && conversations.length > 0 && currentConversationId === null) {
+    if (isConversationsLoading) return;
+
+    if (isNewChatMode) {
+      return;
+    }
+
+    if (conversations.length === 0) {
+      if (currentConversationId !== null) {
+        setCurrentConversationId(null);
+      }
+      return;
+    }
+
+    const currentExists = conversations.some((c) => c.id === currentConversationId);
+    if (!currentConversationId || !currentExists) {
       setCurrentConversationId(conversations[0].id);
     }
-  }, [conversations, currentConversationId, isNewChatMode]);
+  }, [conversations, currentConversationId, isNewChatMode, isConversationsLoading]);
 
   // 4. Fetch Messages of Active Conversation
   const { data: messages = [], isLoading: isMessagesLoading } = useQuery({
@@ -111,12 +125,29 @@ export const ClassAssistantPage: React.FC = () => {
     mutationFn: (convId: string) =>
       selectedClassId !== null ? knowledgeApi.deleteClassConversation(selectedClassId, convId) : Promise.resolve(),
     onSuccess: (_, convId) => {
-      queryClient.invalidateQueries({ queryKey: ['class-conversations', selectedClassId] });
-      showToast('Đã xóa phiên trò chuyện.', 'success');
+      queryClient.setQueryData<ClassConversation[]>(
+        ['class-conversations', selectedClassId],
+        (old) => (old ? old.filter((c) => c.id !== convId) : [])
+      );
+
+      queryClient.removeQueries({
+        queryKey: ['class-conversation-messages', selectedClassId, convId],
+      });
+
       if (currentConversationId === convId) {
-        setCurrentConversationId(null);
-        setIsNewChatMode(false);
+        const remaining = (conversations || []).filter((c) => c.id !== convId);
+        if (remaining.length > 0) {
+          setCurrentConversationId(remaining[0].id);
+          setIsNewChatMode(false);
+        } else {
+          setCurrentConversationId(null);
+          setIsNewChatMode(true);
+        }
       }
+
+      queryClient.invalidateQueries({ queryKey: ['class-conversations', selectedClassId] });
+
+      showToast('Đã xóa phiên trò chuyện.', 'success');
       setDeletingConv(null);
     },
     onError: (err) => showToast(err instanceof Error ? err.message : 'Xóa thất bại.', 'error'),
@@ -128,7 +159,11 @@ export const ClassAssistantPage: React.FC = () => {
       selectedClassId !== null
         ? knowledgeApi.updateClassConversationTitle(selectedClassId, convId, title)
         : Promise.resolve({} as ClassConversation),
-    onSuccess: () => {
+    onSuccess: (updated) => {
+      queryClient.setQueryData<ClassConversation[]>(
+        ['class-conversations', selectedClassId],
+        (old) => (old ? old.map((c) => (c.id === updated.id ? updated : c)) : [])
+      );
       queryClient.invalidateQueries({ queryKey: ['class-conversations', selectedClassId] });
       showToast('Đã cập nhật tiêu đề.', 'success');
       setEditingConv(null);
@@ -339,23 +374,27 @@ export const ClassAssistantPage: React.FC = () => {
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                           <button
                             type="button"
+                            disabled={isAsking}
                             onClick={(e) => {
                               e.stopPropagation();
+                              if (isAsking) return;
                               setEditingConv(c);
                               setEditTitleInput(c.title);
                             }}
-                            className="p-1 text-slate-400 hover:text-slate-700 hover:bg-white rounded transition-colors"
+                            className="p-1 text-slate-400 hover:text-slate-700 hover:bg-white rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                             title="Đổi tên phiên"
                           >
                             <MaterialIcon name="edit" className="text-xs" />
                           </button>
                           <button
                             type="button"
+                            disabled={isAsking}
                             onClick={(e) => {
                               e.stopPropagation();
+                              if (isAsking) return;
                               setDeletingConv(c);
                             }}
-                            className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
+                            className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                             title="Xóa phiên này"
                           >
                             <MaterialIcon name="delete" className="text-xs" />
@@ -631,6 +670,7 @@ export const ClassAssistantPage: React.FC = () => {
           message={`Bạn có chắc chắn muốn xóa phiên "${deletingConv.title}"? Toàn bộ tin nhắn trong phiên này sẽ bị xóa và không thể hoàn tác.`}
           confirmText="Xóa phiên"
           isDangerous={true}
+          isPending={deleteConvMutation.isPending}
           onConfirm={() => deleteConvMutation.mutate(deletingConv.id)}
           onCancel={() => setDeletingConv(null)}
         />

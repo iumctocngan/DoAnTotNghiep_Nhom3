@@ -27,6 +27,8 @@ async def chat_general(
             document_ids=body.document_ids,
             history=history_dicts,
             conversation_id=body.conversation_id,
+            summary=body.summary,
+            summary_processed_count=body.summary_processed_count,
         )
     except GeminiConfigurationError as error:
         raise HTTPException(status_code=503, detail=str(error)) from error
@@ -54,4 +56,6 @@ async def chat_general(
     return ChatResponse(
         answer=result.answer,
         citations=citations,
+        new_summary=result.new_summary,
+        new_summary_processed_count=result.new_summary_processed_count,
     )

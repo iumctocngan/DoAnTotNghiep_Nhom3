@@ -34,6 +34,10 @@ async def lookup_semantic_cache(
     document_ids: list[UUID] | None = None,
 ) -> tuple[str, list[Citation]] | None:
     """Tra cứu câu hỏi tương đồng ngữ nghĩa trong Qdrant Cache collection."""
+    if not document_ids:
+        logger.info("Bỏ qua tra cứu Semantic Cache: Không có danh sách document_ids được ủy quyền.")
+        return None
+
     try:
         dense_vector = await embed_dense_query(question)
         now_iso = datetime.now(timezone.utc).isoformat()
@@ -50,11 +54,11 @@ async def lookup_semantic_cache(
         if not response.points:
             return None
 
-        allowed = {str(d) for d in document_ids} if document_ids is not None else None
+        allowed = {str(d) for d in document_ids}
         for point in response.points:
             p = point.payload or {}
             cached_sources = p.get("source_doc_ids", [])
-            if allowed is not None and any(src not in allowed for src in cached_sources):
+            if not cached_sources or any(src not in allowed for src in cached_sources):
                 continue
 
             logger.info(

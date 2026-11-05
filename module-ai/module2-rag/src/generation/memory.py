@@ -1,5 +1,4 @@
 import logging
-from dataclasses import dataclass
 from typing import Any
 from uuid import UUID
 
@@ -7,30 +6,8 @@ from generation.gemini import generate
 
 logger = logging.getLogger(__name__)
 
-
-@dataclass
-class ConversationMemory:
-    summary: str = ""
-    processed_count: int = 0
-
-
-_memory_store: dict[str, ConversationMemory] = {}
-
 DEFAULT_TRIGGER_MESSAGES = 10
 DEFAULT_KEEP_COUNT = 4
-
-
-def _get_cp(thread_id: str | None) -> tuple[str, int]:
-    if not thread_id or thread_id not in _memory_store:
-        return "", 0
-    mem = _memory_store[thread_id]
-    return mem.summary, mem.processed_count
-
-
-def _save_cp(thread_id: str | None, summary: str, count: int) -> None:
-    if thread_id and summary:
-        _memory_store[thread_id] = ConversationMemory(summary=summary, processed_count=count)
-        logger.info("Đã lưu Short-term Memory cho phiên %s (%d tin)", thread_id, count)
 
 
 def _format_messages_to_text(messages: list[dict[str, Any]]) -> str:
@@ -46,26 +23,26 @@ async def process_conversation_memory(
     history: list[dict[str, Any]] | None,
     api_key: str | list[str],
     conversation_id: UUID | str | None = None,
+    current_summary: str | None = None,
+    current_processed_count: int = 0,
     trigger_messages: int = DEFAULT_TRIGGER_MESSAGES,
     keep_recent_count: int = DEFAULT_KEEP_COUNT,
-) -> tuple[str, list[dict[str, Any]]]:
+) -> tuple[str, list[dict[str, Any]], int]:
+    cached_summary = (current_summary or "").strip()
+    processed_count = max(0, current_processed_count)
+
     if not history:
-        return "", []
+        return cached_summary, [], processed_count
 
-    thread_id = str(conversation_id) if conversation_id else None
-    cached_summary, processed_count = _get_cp(thread_id)
+    if len(history) < trigger_messages:
+        return cached_summary, history, processed_count
 
-    pending_messages = history[processed_count:] if processed_count < len(history) else history[-keep_recent_count:]
-
-    if len(pending_messages) < trigger_messages:
-        return cached_summary, (history[-keep_recent_count:] if cached_summary else history)
-
-    cutoff = max(1, len(pending_messages) - keep_recent_count)
-    while cutoff < len(pending_messages) and pending_messages[cutoff].get("role") != "user":
+    cutoff = max(1, len(history) - keep_recent_count)
+    while cutoff < len(history) and history[cutoff].get("role") != "user":
         cutoff += 1
 
-    to_summarize = pending_messages[:cutoff]
-    fresh_pending = pending_messages[cutoff:]
+    to_summarize = history[:cutoff]
+    fresh_pending = history[cutoff:]
     to_sum_text = _format_messages_to_text(to_summarize)
 
     if cached_summary:
@@ -85,10 +62,14 @@ async def process_conversation_memory(
 
     try:
         new_summary = (await generate(prompt, api_key=api_key, request_timeout_ms=10_000)).strip()
-        new_processed_count = len(history) - len(fresh_pending)
-        _save_cp(thread_id, new_summary, new_processed_count)
-        logger.info("Cập nhật Short-term Memory cho phiên %s", thread_id)
-        return new_summary, fresh_pending
+        new_processed_count = processed_count + len(to_summarize)
+        logger.info(
+            "Cập nhật Short-term Memory cho phiên %s: tóm tắt thêm %d tin (tổng %d tin)",
+            conversation_id or "unknown",
+            len(to_summarize),
+            new_processed_count,
+        )
+        return new_summary, fresh_pending, new_processed_count
     except Exception as err:
         logger.warning("Lỗi tóm tắt memory: %s. Giữ nguyên summary cũ.", err)
-        return cached_summary, (history[-keep_recent_count:] if cached_summary else history)
+        return cached_summary, history, processed_count

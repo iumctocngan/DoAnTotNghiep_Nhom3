@@ -409,21 +409,27 @@ public class ClassChatService(
 
         var sortedDocIds = targetDocIds.OrderBy(id => id).ToList();
 
-        // 2. Query recent history OF THIS CONVERSATION for context
-        var recentHistory = await dbContext.ClassChatMessages
+        // 2. Query recent history OF THIS CONVERSATION for context & rolling memory
+        var totalMsgCount = await dbContext.ClassChatMessages
+            .Where(m => m.ConversationId == targetConversationId)
+            .CountAsync(ct);
+
+        var safeProcessedCount = Math.Clamp(conv.SummaryProcessedCount, 0, totalMsgCount);
+        var historyForRag = await dbContext.ClassChatMessages
             .AsNoTracking()
             .Where(m => m.ConversationId == targetConversationId)
-            .OrderByDescending(m => m.CreatedAt)
-            .Take(20)
             .OrderBy(m => m.CreatedAt)
+            .Skip(safeProcessedCount)
             .Select(m => new ChatMessageItemDto(m.Role, m.Content))
             .ToListAsync(ct);
 
         var chatRequest = new ChatRequestDto(
             request.Question.Trim(),
             sortedDocIds,
-            recentHistory,
-            targetConversationId);
+            historyForRag,
+            targetConversationId,
+            conv.Summary,
+            safeProcessedCount);
 
         // 3. Query RAG Module (Module 2 performs Semantic Cache via Qdrant)
         var ragResponse = await ragClient.ScopedChatAsync(chatRequest, ct);
@@ -459,6 +465,16 @@ public class ClassChatService(
         };
 
         conv.UpdatedAt = DateTime.UtcNow;
+        if (!string.IsNullOrWhiteSpace(ragResponse.NewSummary) &&
+            ragResponse.NewSummaryProcessedCount > conv.SummaryProcessedCount)
+        {
+            conv.Summary = ragResponse.NewSummary;
+            conv.SummaryProcessedCount = ragResponse.NewSummaryProcessedCount;
+        }
+        else if (safeProcessedCount != conv.SummaryProcessedCount)
+        {
+            conv.SummaryProcessedCount = safeProcessedCount;
+        }
         dbContext.ClassChatMessages.AddRange(userMsgEntity, botMsgEntity);
         await dbContext.SaveChangesAsync(ct);
 

@@ -28,6 +28,13 @@ public class ClassChatConversationConfiguration : IEntityTypeConfiguration<Class
             .HasDefaultValueSql("GETUTCDATE()")
             .IsRequired();
 
+        builder.Property(c => c.Summary)
+            .IsRequired(false);
+
+        builder.Property(c => c.SummaryProcessedCount)
+            .HasDefaultValue(0)
+            .IsRequired();
+
         builder.HasOne(c => c.Class)
             .WithMany()
             .HasForeignKey(c => c.ClassId)

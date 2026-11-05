@@ -1,10 +1,19 @@
 import asyncio
 import logging
 import os
+import sys
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)-7s | %(name)s - %(message)s",
+    datefmt="%H:%M:%S",
+    handlers=[logging.StreamHandler(sys.stdout)],
+    force=True,
+)
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware

@@ -6,7 +6,9 @@ public record ChatRequestDto(
     string Question,
     List<Guid>? DocumentIds,
     List<ChatMessageItemDto>? History = null,
-    Guid? ConversationId = null);
+    Guid? ConversationId = null,
+    string? Summary = null,
+    int SummaryProcessedCount = 0);
 
 public record CitationDto(
     Guid ChunkId,
@@ -18,7 +20,11 @@ public record CitationDto(
     double? Score,
     string? ImageUrl);
 
-public record ChatResponseDto(string Answer, List<CitationDto> Citations);
+public record ChatResponseDto(
+    string Answer,
+    List<CitationDto> Citations,
+    string? NewSummary = null,
+    int NewSummaryProcessedCount = 0);
 
 public interface IRagModuleClient
 {

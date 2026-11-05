@@ -31,6 +31,8 @@ OUT_OF_SCOPE_ANSWER = (
 class GroundedAnswer:
     answer: str
     citations: list[Citation]
+    new_summary: str | None = None
+    new_summary_processed_count: int = 0
 
 
 async def rewrite_standalone_question(
@@ -87,12 +89,14 @@ async def answer_question(
     document_ids: list[UUID] | None = None,
     history: list[dict] | None = None,
     conversation_id: UUID | None = None,
+    summary: str | None = None,
+    summary_processed_count: int = 0,
 ) -> GroundedAnswer:
     """
     Quy trình trả lời câu hỏi chuẩn RAG:
     1. Chuẩn hóa câu hỏi thành standalone nếu có ngữ cảnh hội thoại.
     2. Tra cứu Semantic Cache 1 lần theo search_question rõ nghĩa.
-    3. Chạy song song Short-term Memory (LangChain) và Hybrid Retrieval (Qdrant).
+    3. Chạy song song Short-term Memory (SQL Persistent) và Hybrid Retrieval (Qdrant).
     4. Sinh câu trả lời với Gemini theo Grounded Context.
     5. Lưu kết quả thành công vào Semantic Cache.
     """
@@ -109,14 +113,21 @@ async def answer_question(
     cached = await lookup_semantic_cache(search_question, settings, client, document_ids)
     if cached is not None:
         cached_answer, cached_citations = cached
-        return GroundedAnswer(answer=cached_answer, citations=cached_citations)
+        return GroundedAnswer(
+            answer=cached_answer,
+            citations=cached_citations,
+            new_summary=summary,
+            new_summary_processed_count=summary_processed_count,
+        )
 
     # 3. Chạy song song Short-term Memory và Hybrid Retrieval
-    (summary, recent_history), hits = await asyncio.gather(
+    (curr_summary, recent_history, new_processed_count), hits = await asyncio.gather(
         process_conversation_memory(
             history=history,
             api_key=settings.gemini_api_key,
             conversation_id=conversation_id,
+            current_summary=summary,
+            current_processed_count=summary_processed_count,
             trigger_messages=10,
             keep_recent_count=4,
         ),
@@ -130,14 +141,19 @@ async def answer_question(
     )
 
     if not hits:
-        return GroundedAnswer(NO_EVIDENCE_ANSWER, [])
+        return GroundedAnswer(
+            answer=NO_EVIDENCE_ANSWER,
+            citations=[],
+            new_summary=curr_summary,
+            new_summary_processed_count=new_processed_count,
+        )
 
     # 4. Sinh câu trả lời với Gemini
     prompt = build_chat_prompt(
         question=search_question,
         context=build_context(hits),
         history=recent_history,
-        summary=summary,
+        summary=curr_summary,
     )
     raw_answer = await generate(
         prompt,
@@ -151,11 +167,21 @@ async def answer_question(
         raise GeminiGenerationError("Mô hình Gemini trả về câu trả lời không hợp lệ.") from error
 
     if draft.status == "out_of_scope":
-        return GroundedAnswer(OUT_OF_SCOPE_ANSWER, [])
+        return GroundedAnswer(
+            answer=OUT_OF_SCOPE_ANSWER,
+            citations=[],
+            new_summary=curr_summary,
+            new_summary_processed_count=new_processed_count,
+        )
 
     answer = draft.answer.strip()
     if draft.status != "answered" or not answer:
-        return GroundedAnswer(NO_EVIDENCE_ANSWER, [])
+        return GroundedAnswer(
+            answer=NO_EVIDENCE_ANSWER,
+            citations=[],
+            new_summary=curr_summary,
+            new_summary_processed_count=new_processed_count,
+        )
 
     source_ids = [i for i in dict.fromkeys(draft.used_source_ids) if 1 <= i <= len(hits)]
     citations = [make_citation(hits[idx - 1]) for idx in source_ids]
@@ -164,4 +190,9 @@ async def answer_question(
     if citations:
         await upsert_semantic_cache(search_question, answer, citations, settings, client)
 
-    return GroundedAnswer(answer=answer, citations=citations)
+    return GroundedAnswer(
+        answer=answer,
+        citations=citations,
+        new_summary=curr_summary,
+        new_summary_processed_count=new_processed_count,
+    )

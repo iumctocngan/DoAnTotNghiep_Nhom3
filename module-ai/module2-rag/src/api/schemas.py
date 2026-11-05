@@ -37,6 +37,8 @@ class ChatRequest(BaseModel):
     document_ids: SelectedDocumentIds | None = None
     history: list[ChatMessageItem] | None = None
     conversation_id: UUID | None = None
+    summary: str | None = None
+    summary_processed_count: int = 0
 
 
 class CitationResponse(BaseModel):
@@ -55,6 +57,8 @@ class CitationResponse(BaseModel):
 class ChatResponse(BaseModel):
     answer: str
     citations: list[CitationResponse]
+    new_summary: str | None = None
+    new_summary_processed_count: int = 0
 
 
 class GenerateCloRubricRequest(BaseModel):

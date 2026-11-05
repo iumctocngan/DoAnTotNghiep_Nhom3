@@ -10,5 +10,8 @@ public class ClassChatConversation
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
+    public string? Summary { get; set; }
+    public int SummaryProcessedCount { get; set; } = 0;
+
     public ICollection<ClassChatMessage> Messages { get; set; } = new List<ClassChatMessage>();
 }
