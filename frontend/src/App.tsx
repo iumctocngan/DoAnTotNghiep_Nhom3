@@ -6,6 +6,7 @@ import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { AppLayout } from './components/layout/AppLayout';
 import { LoginPage } from './pages/auth/LoginPage';
 import { DashboardPage } from './pages/dashboard/DashboardPage';
+import { StudentDetailPage } from './pages/students/StudentDetailPage';
 import { StaffListPage } from './pages/staff/StaffListPage';
 import { RolePermissionMatrixPage } from './pages/permissions/RolePermissionMatrixPage';
 import { CurriculumPage } from './pages/curriculum/CurriculumPage';
@@ -17,6 +18,7 @@ import { ToastProvider } from './components/common/ToastProvider';
 import { TrangQuanLy } from './pages/quan-ly/TrangQuanLy';
 import { AssessmentPage } from './pages/teacher/AssessmentPage';
 import { ClassAssistantPage } from './pages/assistant/ClassAssistantPage';
+import { AiChatPage } from './pages/ai/AiChatPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,6 +47,7 @@ export const App: React.FC = () => {
                   {/* Quản lý học viên & người giám hộ */}
                   <Route element={<ProtectedRoute requiredPermission="students.view" />}>
                     <Route path="/hoc-vien" element={<TrangQuanLy key="hoc-vien" phanHe="hoc-vien" />} />
+                    <Route path="/students/:id" element={<StudentDetailPage />} />
                     <Route path="/hoc-vien/:id/nguoi-giam-ho" element={<TrangQuanLy key="lien-ket" phanHe="lien-ket" />} />
                   </Route>
 
@@ -73,6 +76,11 @@ export const App: React.FC = () => {
                   {/* Học phí & Hóa đơn */}
                   <Route element={<ProtectedRoute requiredPermission="invoices.view" />}>
                     <Route path="/invoices" element={<InvoiceListPage />} />
+                  </Route>
+
+                  {/* AI CSKH Chatbot (Module 3) */}
+                  <Route element={<ProtectedRoute allowedRoles={['Admin', 'CustomerCare']} />}>
+                    <Route path="/ai-chat" element={<AiChatPage />} />
                   </Route>
 
                   {/* Chương trình học */}

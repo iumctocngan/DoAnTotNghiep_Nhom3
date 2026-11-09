@@ -1,0 +1,40 @@
+{
+  "model_version": "v1.0.0-lgbm",
+  "algorithm": "LightGBM Classifier",
+  "trained_date": "2026-10-27T22:43:57.262304",
+  "total_samples": 1200,
+  "base_real_samples": 119,
+  "metrics": {
+    "roc_auc": 0.8563,
+    "f1_score": 0.9244,
+    "recall_churn": 0.7619
+  },
+  "feature_names": [
+    "attendance_rate_last_60d",
+    "consecutive_absent_count",
+    "recent_exam_score",
+    "score_drop_trend",
+    "homework_completion_rate",
+    "parent_interaction_score",
+    "days_until_term_end",
+    "current_debt_amount",
+    "overdue_debt_days",
+    "tenure_months",
+    "paused_history_count",
+    "current_level"
+  ],
+  "feature_importances": {
+    "attendance_rate_last_60d": 299.0,
+    "consecutive_absent_count": 80.0,
+    "recent_exam_score": 137.0,
+    "score_drop_trend": 186.0,
+    "homework_completion_rate": 168.0,
+    "parent_interaction_score": 171.0,
+    "days_until_term_end": 316.0,
+    "current_debt_amount": 182.0,
+    "overdue_debt_days": 91.0,
+    "tenure_months": 25.0,
+    "paused_history_count": 0.0,
+    "current_level": 29.0
+  }
+}

@@ -22,6 +22,12 @@ builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
+var aiServiceBaseUrl = builder.Configuration["AiService:BaseUrl"] ?? "http://127.0.0.1:8001/";
+builder.Services.AddHttpClient<IModule3AiClient, Module3AiClient>(client =>
+{
+    client.BaseAddress = new Uri(aiServiceBaseUrl, UriKind.Absolute);
+    client.Timeout = TimeSpan.FromSeconds(25);
+});
 
 // Dynamic Authorization Services (RBAC)
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();

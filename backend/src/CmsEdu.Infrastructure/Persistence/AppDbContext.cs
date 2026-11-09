@@ -25,6 +25,12 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Invoice> Invoices => Set<Invoice>();
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+
+    // --- Module 3: AI Finance & Customer Care ---
+    public DbSet<StudentRenewalPrediction> StudentRenewalPredictions => Set<StudentRenewalPrediction>();
+    public DbSet<CskhChatSession> CskhChatSessions => Set<CskhChatSession>();
+    public DbSet<CskhChatMessage> CskhChatMessages => Set<CskhChatMessage>();
+    public DbSet<CskhInteraction> CskhInteractions => Set<CskhInteraction>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<Document> Documents => Set<Document>();
     public DbSet<ClassChatConversation> ClassChatConversations => Set<ClassChatConversation>();

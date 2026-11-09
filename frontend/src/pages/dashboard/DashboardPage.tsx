@@ -1,42 +1,51 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { dashboardApi } from '../../api/dashboardApi';
-import type { ApiError } from '../../types/auth';
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { dashboardApi } from "../../api/dashboardApi";
+import type { ApiError } from "../../types/auth";
 import type {
   AdminDashboardResponse,
   CustomerCareDashboardResponse,
   TeacherDashboardResponse,
   AccountingDashboardResponse,
-} from '../../types/dashboard';
+} from "../../types/dashboard";
 import {
   formatCurrency,
   formatDateDisplay,
   formatDateTimeDisplay,
   formatTimeDisplay,
-} from '../../utils/date';
-import { getRoleLabel } from '../../utils/role';
-import { MaterialIcon } from '../../components/common/MaterialIcon';
+} from "../../utils/date";
+import { getRoleLabel } from "../../utils/role";
+import { MaterialIcon } from "../../components/common/MaterialIcon";
+import { module3Api } from "../../api/module3Api";
+import type { AtRiskStudentResponse } from "../../types/module3";
 
-const compactNumber = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 });
-const percentNumber = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 });
+const compactNumber = new Intl.NumberFormat("vi-VN", {
+  maximumFractionDigits: 1,
+});
+const percentNumber = new Intl.NumberFormat("vi-VN", {
+  maximumFractionDigits: 1,
+});
 
 function formatCompactCurrency(amount: number): string {
   const format = (value: number) => compactNumber.format(value);
   if (amount >= 1_000_000_000) {
-    return format(amount / 1_000_000_000) + ' tỷ';
+    return format(amount / 1_000_000_000) + " tỷ";
   }
   if (amount >= 1_000_000) {
-    return format(amount / 1_000_000) + ' triệu';
+    return format(amount / 1_000_000) + " triệu";
   }
   if (amount >= 1_000) {
-    return format(amount / 1_000) + ' nghìn';
+    return format(amount / 1_000) + " nghìn";
   }
   return String(amount);
 }
 
-const FriendlyErrorView: React.FC<{ error: unknown; title?: string }> = ({ error, title }) => {
+const FriendlyErrorView: React.FC<{ error: unknown; title?: string }> = ({
+  error,
+  title,
+}) => {
   const apiErr = error as ApiError;
   const is403 = apiErr?.statusCode === 403;
 
@@ -44,22 +53,28 @@ const FriendlyErrorView: React.FC<{ error: unknown; title?: string }> = ({ error
     <div
       className={`p-4 rounded-md border text-sm mb-4 ${
         is403
-          ? 'bg-amber-50 border-amber-200 text-amber-800'
-          : 'bg-red-50 border-red-200 text-red-700'
+          ? "bg-amber-50 border-amber-200 text-amber-800"
+          : "bg-red-50 border-red-200 text-red-700"
       }`}
     >
-      <strong>{is403 ? 'Không có quyền truy cập:' : (title || 'Lỗi tải dữ liệu:')}</strong>{' '}
+      <strong>
+        {is403 ? "Không có quyền truy cập:" : title || "Lỗi tải dữ liệu:"}
+      </strong>{" "}
       {is403
-        ? 'Bạn không có quyền xem thông tin bảng điều khiển này (Mã lỗi 403 Forbidden).'
-        : (apiErr?.message || 'Không thể kết nối đến máy chủ.')}
+        ? "Bạn không có quyền xem thông tin bảng điều khiển này (Mã lỗi 403 Forbidden)."
+        : apiErr?.message || "Không thể kết nối đến máy chủ."}
     </div>
   );
 };
 
-const DashboardLoading: React.FC<{ cardCount?: 3 | 4 }> = ({ cardCount = 4 }) => (
+const DashboardLoading: React.FC<{ cardCount?: 3 | 4 }> = ({
+  cardCount = 4,
+}) => (
   <div aria-label="Đang tải bảng điều khiển" aria-busy="true">
-    <div className={`kpi-grid${cardCount === 3 ? ' kpi-grid-3' : ''}`}>
-      {Array.from({ length: cardCount }, (_, index) => <div key={index} className="skeleton-card" />)}
+    <div className={`kpi-grid${cardCount === 3 ? " kpi-grid-3" : ""}`}>
+      {Array.from({ length: cardCount }, (_, index) => (
+        <div key={index} className="skeleton-card" />
+      ))}
     </div>
     <div className="dashboard-grid-2">
       <div className="skeleton-panel" />
@@ -70,22 +85,22 @@ const DashboardLoading: React.FC<{ cardCount?: 3 | 4 }> = ({ cardCount = 4 }) =>
 
 interface KpiCardProps {
   icon: React.ReactNode;
-  iconType?: 'primary' | 'success' | 'warning' | 'danger' | 'neutral';
+  iconType?: "primary" | "success" | "warning" | "danger" | "neutral";
   value: string | number;
   label: string;
   subtext?: string;
   badgeText?: string;
-  badgeType?: 'warning' | 'danger' | 'success' | 'neutral';
+  badgeType?: "warning" | "danger" | "success" | "neutral";
 }
 
 const KpiCard: React.FC<KpiCardProps> = ({
   icon,
-  iconType = 'primary',
+  iconType = "primary",
   value,
   label,
   subtext,
   badgeText,
-  badgeType = 'warning',
+  badgeType = "warning",
 }) => {
   return (
     <div className="kpi-card">
@@ -99,7 +114,11 @@ const KpiCard: React.FC<KpiCardProps> = ({
       {(subtext || badgeText) && (
         <div className="kpi-bottom">
           <span className="kpi-subtext">{subtext}</span>
-          {badgeText && <span className={`kpi-badge kpi-badge-${badgeType}`}>{badgeText}</span>}
+          {badgeText && (
+            <span className={`kpi-badge kpi-badge-${badgeType}`}>
+              {badgeText}
+            </span>
+          )}
         </div>
       )}
     </div>
@@ -134,9 +153,10 @@ const HorizontalBarChart: React.FC<HorizontalBarChartProps> = ({
       ) : (
         items.map((item) => {
           const percent = (item.count / total) * 100;
-          const percentLabel = percent > 0 && percent < 0.1
-            ? '<0,1%'
-            : `${percentNumber.format(percent)}%`;
+          const percentLabel =
+            percent > 0 && percent < 0.1
+              ? "<0,1%"
+              : `${percentNumber.format(percent)}%`;
           return (
             <div key={item.label} className="bar-row">
               <span className="bar-label" title={item.label}>
@@ -155,7 +175,7 @@ const HorizontalBarChart: React.FC<HorizontalBarChartProps> = ({
                   className="bar-fill"
                   style={{
                     width: `${percent}%`,
-                    backgroundColor: item.color || 'var(--primary)',
+                    backgroundColor: item.color || "var(--primary)",
                   }}
                 />
               </div>
@@ -186,7 +206,7 @@ interface VerticalColumnChartProps {
 const VerticalColumnChart: React.FC<VerticalColumnChartProps> = ({
   title,
   items,
-  emptyText = 'Chưa có dữ liệu thống kê theo tháng.',
+  emptyText = "Chưa có dữ liệu thống kê theo tháng.",
 }) => {
   const maxValue = items.reduce((max, item) => Math.max(max, item.value), 0);
 
@@ -208,12 +228,17 @@ const VerticalColumnChart: React.FC<VerticalColumnChartProps> = ({
                   <div className="column-chart-plot">
                     <div
                       className="column-chart-bar"
-                      title={item.tooltipText || `${item.label}: ${item.formattedValue ?? item.value}`}
+                      title={
+                        item.tooltipText ||
+                        `${item.label}: ${item.formattedValue ?? item.value}`
+                      }
                       style={{
                         height: `${heightPercent}%`,
                       }}
                     >
-                      <span className="column-chart-value">{item.formattedValue ?? item.value}</span>
+                      <span className="column-chart-value">
+                        {item.formattedValue ?? item.value}
+                      </span>
                     </div>
                   </div>
                   <span className="column-chart-axis">{item.label}</span>
@@ -227,49 +252,182 @@ const VerticalColumnChart: React.FC<VerticalColumnChartProps> = ({
   );
 };
 
+const AtRiskStudentsTable: React.FC = () => {
+  const { data, isLoading, isError, error } = useQuery<AtRiskStudentResponse[]>(
+    {
+      queryKey: ["ai", "retention-queue"],
+      queryFn: module3Api.getRetentionQueue,
+      staleTime: 60_000,
+    },
+  );
+
+  const errorMessage =
+    error && typeof error === "object" && "message" in error
+      ? String(error.message)
+      : "Không thể kết nối đến máy chủ.";
+  const highRiskStudents = (data ?? []).filter(
+    (student) => student.riskLevel === "HighRisk",
+  );
+
+  return (
+    <section className="chart-box mt-5">
+      <div className="chart-header">
+        <div>
+          <h3 className="chart-title">
+            Học sinh nguy cơ cao (At-Risk Students)
+          </h3>
+          <p className="mt-1 text-xs text-slate-500">
+            Ưu tiên chăm sóc theo dự đoán tái phí và các yếu tố SHAP.
+          </p>
+        </div>
+        {data && (
+          <span className="kpi-badge kpi-badge-danger">
+            {highRiskStudents.length} học sinh
+          </span>
+        )}
+      </div>
+
+      {isLoading ? (
+        <div className="chart-empty" aria-busy="true">
+          Đang tải danh sách học sinh nguy cơ cao...
+        </div>
+      ) : isError ? (
+        <div
+          role="alert"
+          className="rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900"
+        >
+          Chưa tải được danh sách nguy cơ: {errorMessage} API Module 3 có thể
+          chưa sẵn sàng.
+        </div>
+      ) : highRiskStudents.length === 0 ? (
+        <div className="chart-empty">
+          Chưa có học sinh nào được dự đoán ở mức nguy cơ cao.
+        </div>
+      ) : (
+        <div className="table-container">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Học sinh</th>
+                <th>Lớp</th>
+                <th className="whitespace-nowrap">Còn lại kỳ phí</th>
+                <th>SHAP Drivers</th>
+                <th className="text-right">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {highRiskStudents.map((student) => (
+                <tr key={`${student.studentId}-${student.enrollmentId}`}>
+                  <td>
+                    <Link
+                      to={`/students/${student.studentId}`}
+                      className="font-semibold text-sky-800 hover:underline"
+                    >
+                      {student.studentName}
+                    </Link>
+                    <div className="font-mono text-xs text-slate-500">
+                      {student.studentCode}
+                    </div>
+                    <span className="mt-1 inline-flex rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-800">
+                      Nguy cơ cao
+                    </span>
+                  </td>
+                  <td>{student.className || "Chưa có dữ liệu"}</td>
+                  <td>{student.daysUntilPeriodEnd} ngày</td>
+                  <td>
+                    {student.topDrivers.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {student.topDrivers.slice(0, 3).map((driver) => (
+                          <span
+                            key={`${driver.feature}-${driver.description}`}
+                            title={`${driver.feature} · ${driver.direction}`}
+                            className={`rounded-full px-2 py-1 text-xs ${driver.direction === "negative" ? "bg-red-100 text-red-800" : driver.direction === "positive" ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-700"}`}
+                          >
+                            {driver.description}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-xs text-slate-500">
+                        Chưa có dữ liệu SHAP
+                      </span>
+                    )}
+                  </td>
+                  <td className="text-right">
+                    <Link
+                      to={`/ai-chat?studentId=${student.studentId}`}
+                      className="btn btn-secondary whitespace-nowrap text-xs"
+                    >
+                      Mở Chatbot Tư Vấn
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+};
+
 const AdminDashboardView: React.FC = () => {
   const { user } = useAuth();
   const { data, isLoading, isError, error } = useQuery<AdminDashboardResponse>({
-    queryKey: ['dashboard', 'admin', user?.userId],
+    queryKey: ["dashboard", "admin", user?.userId],
     queryFn: dashboardApi.getAdminDashboard,
   });
 
   if (isLoading) return <DashboardLoading />;
-  if (isError) return <FriendlyErrorView error={error} title="Bảng điều khiển Quản trị" />;
+  if (isError)
+    return <FriendlyErrorView error={error} title="Bảng điều khiển Quản trị" />;
   if (!data) return null;
 
   const getClassLabel = (status: string) => {
     switch (status) {
-      case 'Active': return 'Đang học';
-      case 'Preparing': return 'Sắp khai giảng';
-      case 'Completed': return 'Đã kết thúc';
-      case 'Cancelled': return 'Đã hủy';
-      default: return status;
+      case "Active":
+        return "Đang học";
+      case "Preparing":
+        return "Sắp khai giảng";
+      case "Completed":
+        return "Đã kết thúc";
+      case "Cancelled":
+        return "Đã hủy";
+      default:
+        return status;
     }
   };
 
   const getClassColor = (status: string) => {
     switch (status) {
-      case 'Active': return 'var(--primary)';
-      case 'Preparing': return '#94a3b8';
-      case 'Completed': return 'var(--success)';
-      case 'Cancelled': return '#ef4444';
-      default: return 'var(--primary)';
+      case "Active":
+        return "var(--primary)";
+      case "Preparing":
+        return "#94a3b8";
+      case "Completed":
+        return "var(--success)";
+      case "Cancelled":
+        return "#ef4444";
+      default:
+        return "var(--primary)";
     }
   };
 
-  const classesChartItems: HorizontalBarItem[] = data.classesByStatus.map((c) => ({
-    label: getClassLabel(c.status),
-    count: c.count,
-    color: getClassColor(c.status),
-  }));
+  const classesChartItems: HorizontalBarItem[] = data.classesByStatus.map(
+    (c) => ({
+      label: getClassLabel(c.status),
+      count: c.count,
+      color: getClassColor(c.status),
+    }),
+  );
 
-  const enrollmentChartItems: VerticalColumnItem[] = data.enrollmentStartsByMonth.map((m) => ({
-    label: `${String(m.month).padStart(2, '0')}/${m.year}`,
-    value: m.count,
-    formattedValue: String(m.count),
-    tooltipText: `Tháng ${m.month}-${m.year}: ${m.count} lượt ghi danh mới`,
-  }));
+  const enrollmentChartItems: VerticalColumnItem[] =
+    data.enrollmentStartsByMonth.map((m) => ({
+      label: `${String(m.month).padStart(2, "0")}/${m.year}`,
+      value: m.count,
+      formattedValue: String(m.count),
+      tooltipText: `Tháng ${m.month}-${m.year}: ${m.count} lượt ghi danh mới`,
+    }));
 
   return (
     <div>
@@ -313,19 +471,24 @@ const AdminDashboardView: React.FC = () => {
           items={enrollmentChartItems}
         />
       </div>
+      <AtRiskStudentsTable />
     </div>
   );
 };
 
 const TeacherDashboardView: React.FC = () => {
   const { user } = useAuth();
-  const { data, isLoading, isError, error } = useQuery<TeacherDashboardResponse>({
-    queryKey: ['dashboard', 'teacher', user?.userId],
-    queryFn: dashboardApi.getTeacherDashboard,
-  });
+  const { data, isLoading, isError, error } =
+    useQuery<TeacherDashboardResponse>({
+      queryKey: ["dashboard", "teacher", user?.userId],
+      queryFn: dashboardApi.getTeacherDashboard,
+    });
 
   if (isLoading) return <DashboardLoading />;
-  if (isError) return <FriendlyErrorView error={error} title="Bảng điều khiển Giảng dạy" />;
+  if (isError)
+    return (
+      <FriendlyErrorView error={error} title="Bảng điều khiển Giảng dạy" />
+    );
   if (!data) return null;
 
   const pendingCount = data.pendingSessionCount;
@@ -349,11 +512,11 @@ const TeacherDashboardView: React.FC = () => {
         />
         <KpiCard
           icon={<MaterialIcon name="schedule" />}
-          iconType={pendingCount > 0 ? 'warning' : 'neutral'}
+          iconType={pendingCount > 0 ? "warning" : "neutral"}
           value={pendingCount}
           label="Buổi cần hoàn tất"
           subtext="Buổi đã qua chưa hoàn tất"
-          badgeText={pendingCount > 0 ? 'Cần xử lý ngay' : undefined}
+          badgeText={pendingCount > 0 ? "Cần xử lý ngay" : undefined}
           badgeType="warning"
         />
         <KpiCard
@@ -378,7 +541,9 @@ const TeacherDashboardView: React.FC = () => {
         </div>
 
         {data.upcomingSessions.length === 0 ? (
-          <div className="chart-empty">Hiện tại không có buổi học nào sắp tới trong lịch phân công.</div>
+          <div className="chart-empty">
+            Hiện tại không có buổi học nào sắp tới trong lịch phân công.
+          </div>
         ) : (
           <div className="table-container">
             <table className="data-table">
@@ -394,11 +559,16 @@ const TeacherDashboardView: React.FC = () => {
                 {data.upcomingSessions.map((session) => (
                   <tr key={session.id}>
                     <td className="font-semibold">
-                      {formatTimeDisplay(session.startTime)} - {formatTimeDisplay(session.endTime)}
+                      {formatTimeDisplay(session.startTime)} -{" "}
+                      {formatTimeDisplay(session.endTime)}
                     </td>
-                    <td className="whitespace-nowrap">{formatDateDisplay(session.sessionDate)}</td>
+                    <td className="whitespace-nowrap">
+                      {formatDateDisplay(session.sessionDate)}
+                    </td>
                     <td className="font-mono font-semibold">
-                      <span className="badge badge-teacher">{session.classCode}</span>
+                      <span className="badge badge-teacher">
+                        {session.classCode}
+                      </span>
                     </td>
                     <td className="font-medium">{session.className}</td>
                   </tr>
@@ -414,42 +584,61 @@ const TeacherDashboardView: React.FC = () => {
 
 const CustomerCareDashboardView: React.FC = () => {
   const { user } = useAuth();
-  const { data, isLoading, isError, error } = useQuery<CustomerCareDashboardResponse>({
-    queryKey: ['dashboard', 'customer-care', user?.userId],
-    queryFn: dashboardApi.getCustomerCareDashboard,
-  });
+  const { data, isLoading, isError, error } =
+    useQuery<CustomerCareDashboardResponse>({
+      queryKey: ["dashboard", "customer-care", user?.userId],
+      queryFn: dashboardApi.getCustomerCareDashboard,
+    });
 
   if (isLoading) return <DashboardLoading />;
-  if (isError) return <FriendlyErrorView error={error} title="Bảng điều khiển Chăm sóc học viên" />;
+  if (isError)
+    return (
+      <FriendlyErrorView
+        error={error}
+        title="Bảng điều khiển Chăm sóc học viên"
+      />
+    );
   if (!data) return null;
 
   const noGuardianCount = data.studentsWithoutGuardianCount;
 
   const getEnrollmentLabel = (status: string) => {
     switch (status) {
-      case 'Active': return 'Đang theo học';
-      case 'Paused': return 'Bảo lưu';
-      case 'Completed': return 'Hoàn thành';
-      case 'Withdrawn': return 'Thôi học';
-      default: return status;
+      case "Active":
+        return "Đang theo học";
+      case "Paused":
+        return "Bảo lưu";
+      case "Completed":
+        return "Hoàn thành";
+      case "Withdrawn":
+        return "Thôi học";
+      default:
+        return status;
     }
   };
 
   const getEnrollmentColor = (status: string) => {
     switch (status) {
-      case 'Active': return 'var(--primary)';
-      case 'Paused': return '#d97706';
-      case 'Completed': return 'var(--success)';
-      case 'Withdrawn': return '#ef4444';
-      default: return 'var(--primary)';
+      case "Active":
+        return "var(--primary)";
+      case "Paused":
+        return "#d97706";
+      case "Completed":
+        return "var(--success)";
+      case "Withdrawn":
+        return "#ef4444";
+      default:
+        return "var(--primary)";
     }
   };
 
-  const enrollmentBarItems: HorizontalBarItem[] = data.enrollmentsByStatus.map((e) => ({
-    label: getEnrollmentLabel(e.status),
-    count: e.count,
-    color: getEnrollmentColor(e.status),
-  }));
+  const enrollmentBarItems: HorizontalBarItem[] = data.enrollmentsByStatus.map(
+    (e) => ({
+      label: getEnrollmentLabel(e.status),
+      count: e.count,
+      color: getEnrollmentColor(e.status),
+    }),
+  );
 
   const studentsWithoutGuardianList = data.studentsWithoutGuardian;
 
@@ -479,11 +668,11 @@ const CustomerCareDashboardView: React.FC = () => {
         />
         <KpiCard
           icon={<MaterialIcon name="error" />}
-          iconType={noGuardianCount > 0 ? 'danger' : 'neutral'}
+          iconType={noGuardianCount > 0 ? "danger" : "neutral"}
           value={noGuardianCount}
           label="Thiếu thông tin PH"
           subtext="Chưa có người giám hộ"
-          badgeText={noGuardianCount > 0 ? 'Cần xử lý ngay' : undefined}
+          badgeText={noGuardianCount > 0 ? "Cần xử lý ngay" : undefined}
           badgeType="danger"
         />
       </div>
@@ -495,7 +684,9 @@ const CustomerCareDashboardView: React.FC = () => {
         <div className="chart-box">
           <div className="chart-header">
             <div>
-              <h3 className="chart-title">Học viên thiếu thông tin phụ huynh</h3>
+              <h3 className="chart-title">
+                Học viên thiếu thông tin phụ huynh
+              </h3>
             </div>
             {noGuardianCount > 0 && (
               <span className="kpi-badge kpi-badge-danger">
@@ -505,7 +696,9 @@ const CustomerCareDashboardView: React.FC = () => {
           </div>
 
           {studentsWithoutGuardianList.length === 0 ? (
-            <div className="chart-empty">Tất cả học viên hiện tại đã có đầy đủ thông tin người giám hộ.</div>
+            <div className="chart-empty">
+              Tất cả học viên hiện tại đã có đầy đủ thông tin người giám hộ.
+            </div>
           ) : (
             <div className="table-container">
               <table className="data-table">
@@ -529,6 +722,7 @@ const CustomerCareDashboardView: React.FC = () => {
             </div>
           )}
         </div>
+        <AtRiskStudentsTable />
       </div>
     </div>
   );
@@ -537,23 +731,28 @@ const CustomerCareDashboardView: React.FC = () => {
 const AccountingDashboardView: React.FC = () => {
   const { user } = useAuth();
 
-  const { data, isLoading, isError, error } = useQuery<AccountingDashboardResponse>({
-    queryKey: ['dashboard', 'accounting', user?.userId],
-    queryFn: () => dashboardApi.getAccountingDashboard(),
-  });
+  const { data, isLoading, isError, error } =
+    useQuery<AccountingDashboardResponse>({
+      queryKey: ["dashboard", "accounting", user?.userId],
+      queryFn: () => dashboardApi.getAccountingDashboard(),
+    });
 
   const revenueByMonth = data?.revenueByMonth ?? [];
-  const revenueMonthlyItems: VerticalColumnItem[] = revenueByMonth.map((item) => ({
-    label: `${String(item.month).padStart(2, '0')}/${item.year}`,
-    value: item.amount,
-    formattedValue: formatCompactCurrency(item.amount),
-    tooltipText: `Tháng ${item.month}/${item.year}: ${formatCurrency(item.amount)}`,
-  }));
+  const revenueMonthlyItems: VerticalColumnItem[] = revenueByMonth.map(
+    (item) => ({
+      label: `${String(item.month).padStart(2, "0")}/${item.year}`,
+      value: item.amount,
+      formattedValue: formatCompactCurrency(item.amount),
+      tooltipText: `Tháng ${item.month}/${item.year}: ${formatCurrency(item.amount)}`,
+    }),
+  );
 
   return (
     <div>
       {isLoading && <DashboardLoading cardCount={3} />}
-      {isError && <FriendlyErrorView error={error} title="Bảng điều khiển Kế toán" />}
+      {isError && (
+        <FriendlyErrorView error={error} title="Bảng điều khiển Kế toán" />
+      )}
 
       {data && (
         <>
@@ -574,11 +773,11 @@ const AccountingDashboardView: React.FC = () => {
             />
             <KpiCard
               icon={<MaterialIcon name="error" />}
-              iconType={data.overdueDebt > 0 ? 'danger' : 'neutral'}
+              iconType={data.overdueDebt > 0 ? "danger" : "neutral"}
               value={formatCurrency(data.overdueDebt)}
               label="Công nợ quá hạn"
               subtext="Hóa đơn quá hạn thanh toán"
-              badgeText={data.overdueDebt > 0 ? 'Cần đôn đốc' : undefined}
+              badgeText={data.overdueDebt > 0 ? "Cần đôn đốc" : undefined}
               badgeType="danger"
             />
           </div>
@@ -596,7 +795,9 @@ const AccountingDashboardView: React.FC = () => {
               </div>
 
               {data.transactions.length === 0 ? (
-                <div className="chart-empty">Không có giao dịch nào phát sinh.</div>
+                <div className="chart-empty">
+                  Không có giao dịch nào phát sinh.
+                </div>
               ) : (
                 <div className="table-container max-h-[280px] overflow-y-auto">
                   <table className="data-table">
@@ -623,8 +824,14 @@ const AccountingDashboardView: React.FC = () => {
                             {formatCurrency(tx.amount)}
                           </td>
                           <td className="text-center">
-                            <span className={tx.status === 'Confirmed' ? 'badge badge-active' : 'badge badge-inactive'}>
-                              {tx.status === 'Confirmed' ? 'Đã thu' : 'Đã hủy'}
+                            <span
+                              className={
+                                tx.status === "Confirmed"
+                                  ? "badge badge-active"
+                                  : "badge badge-inactive"
+                              }
+                            >
+                              {tx.status === "Confirmed" ? "Đã thu" : "Đã hủy"}
                             </span>
                           </td>
                         </tr>
@@ -647,15 +854,13 @@ export const DashboardPage: React.FC = () => {
   return (
     <div className="dashboard-page">
       <div className="page-header">
-        <h1>
-          Tổng quan {getRoleLabel(user?.role)}
-        </h1>
+        <h1>Tổng quan {getRoleLabel(user?.role)}</h1>
       </div>
 
-      {user?.role === 'Admin' && <AdminDashboardView />}
-      {user?.role === 'Teacher' && <TeacherDashboardView />}
-      {user?.role === 'CustomerCare' && <CustomerCareDashboardView />}
-      {user?.role === 'Accountant' && <AccountingDashboardView />}
+      {user?.role === "Admin" && <AdminDashboardView />}
+      {user?.role === "Teacher" && <TeacherDashboardView />}
+      {user?.role === "CustomerCare" && <CustomerCareDashboardView />}
+      {user?.role === "Accountant" && <AccountingDashboardView />}
     </div>
   );
 };

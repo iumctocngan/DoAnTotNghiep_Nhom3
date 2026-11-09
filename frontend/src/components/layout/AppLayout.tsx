@@ -1,49 +1,96 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
-import { authApi } from '../../api/authApi';
-import { useAuth } from '../../context/AuthContext';
-import { ChangePasswordModal } from '../../pages/auth/ChangePasswordModal';
-import { getRoleLabel } from '../../utils/role';
-import { MaterialIcon } from '../common/MaterialIcon';
-import { ConfirmDialog } from '../common/ConfirmDialog';
-import { useToast } from '../common/ToastProvider';
+import React, { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import {
+  Link,
+  NavLink,
+  Outlet,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+import { authApi } from "../../api/authApi";
+import { useAuth } from "../../context/AuthContext";
+import { ChangePasswordModal } from "../../pages/auth/ChangePasswordModal";
+import { getRoleLabel } from "../../utils/role";
+import { MaterialIcon } from "../common/MaterialIcon";
+import { ConfirmDialog } from "../common/ConfirmDialog";
+import { useToast } from "../common/ToastProvider";
 
 export const AppLayout: React.FC = () => {
   const { user, logout, hasPermission } = useAuth();
   const viTri = useLocation();
-  const tenTrang: Record<string, string> = { 'hoc-vien': 'Học viên', 'nguoi-giam-ho': 'Người giám hộ', 'lop-hoc': 'Lớp học', 'ghi-danh': 'Ghi danh', sessions: 'Buổi học & Điểm danh', invoices: 'Học phí & Thu tiền', curriculum: 'Chương trình học', staff: 'Nhân sự', permissions: 'Ma trận phân quyền', teacher: 'Giảng dạy', 'class-assistant': 'Trợ lý học liệu' };
+  const navigate = useNavigate();
+  const tenTrang: Record<string, string> = {
+    "hoc-vien": "Học viên",
+    students: "Chi tiết học viên",
+    "nguoi-giam-ho": "Người giám hộ",
+    "lop-hoc": "Lớp học",
+    "ghi-danh": "Ghi danh",
+    sessions: "Buổi học & Điểm danh",
+    invoices: "Học phí & Thu tiền",
+    curriculum: "Chương trình học",
+    staff: "Nhân sự",
+    permissions: "Ma trận phân quyền",
+    teacher: "Giảng dạy",
+    "class-assistant": "Trợ lý học liệu",
+    "ai-chat": "Chatbot CSKH",
+  };
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [isLogoutConfirmationOpen, setIsLogoutConfirmationOpen] = useState(false);
+  const [isLogoutConfirmationOpen, setIsLogoutConfirmationOpen] =
+    useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(() => window.innerWidth > 760);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(
+    () => window.innerWidth > 760,
+  );
   const userMenuRef = useRef<HTMLDivElement>(null);
   const showToast = useToast();
   const { data: claimProfile } = useQuery({
-    queryKey: ['auth', 'me', user?.userId],
+    queryKey: ["auth", "me", user?.userId],
     queryFn: authApi.getMe,
     enabled: isUserMenuOpen && !!user,
     staleTime: 60_000,
   });
   const profile = claimProfile ?? user;
   const roleLabel = getRoleLabel(profile?.role);
-  const avatarLetter = profile?.fullName.trim().split(/\s+/).at(-1)?.charAt(0).toLocaleUpperCase('vi-VN') ?? 'N';
+  const avatarLetter =
+    profile?.fullName
+      .trim()
+      .split(/\s+/)
+      .at(-1)
+      ?.charAt(0)
+      .toLocaleUpperCase("vi-VN") ?? "N";
+
+  useEffect(() => {
+    if (user?.role !== "Admin" && user?.role !== "CustomerCare") return;
+
+    const handleChatbotShortcut = (event: KeyboardEvent) => {
+      if (event.altKey && event.key.toLocaleLowerCase() === "c") {
+        event.preventDefault();
+        navigate("/ai-chat");
+      }
+    };
+
+    document.addEventListener("keydown", handleChatbotShortcut);
+    return () => document.removeEventListener("keydown", handleChatbotShortcut);
+  }, [navigate, user?.role]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
         setIsUserMenuOpen(false);
       }
     };
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setIsUserMenuOpen(false);
+      if (event.key === "Escape") setIsUserMenuOpen(false);
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleEscape);
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
     };
   }, []);
 
@@ -53,7 +100,10 @@ export const AppLayout: React.FC = () => {
     try {
       await logout();
     } catch {
-      showToast('Đã đăng xuất trên trình duyệt này, nhưng chưa xác nhận được phiên trên máy chủ đã bị thu hồi.', 'error');
+      showToast(
+        "Đã đăng xuất trên trình duyệt này, nhưng chưa xác nhận được phiên trên máy chủ đã bị thu hồi.",
+        "error",
+      );
     } finally {
       setIsLoggingOut(false);
     }
@@ -61,120 +111,164 @@ export const AppLayout: React.FC = () => {
 
   return (
     <div className="layout-container">
-      <aside className={`sidebar ${isSidebarOpen ? '' : 'collapsed'}`}>
+      <aside className={`sidebar ${isSidebarOpen ? "" : "collapsed"}`}>
         <div className="sidebar-brand">
-          <Link to="/" className="sidebar-brand-logo" title="Về trang chủ LOGICHUB">
+          <Link
+            to="/"
+            className="sidebar-brand-logo"
+            title="Về trang chủ LOGICHUB"
+          >
             <img src="/logo-logic-hub-trong-suot.png" alt="Logo LOGICHUB" />
           </Link>
-          <div className="sidebar-brand-subtitle">Hệ thống Quản trị Trung tâm</div>
+          <div className="sidebar-brand-subtitle">
+            Hệ thống Quản trị Trung tâm
+          </div>
         </div>
 
         <nav
           className="sidebar-nav"
           onClick={(event) => {
-            if (window.innerWidth <= 760 && (event.target as HTMLElement).closest('a'))
+            if (
+              window.innerWidth <= 760 &&
+              (event.target as HTMLElement).closest("a")
+            )
               setIsSidebarOpen(false);
           }}
         >
           <NavLink
             to="/"
             end
-            className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+            className={({ isActive }) =>
+              isActive ? "nav-link active" : "nav-link"
+            }
           >
             Tổng quan
           </NavLink>
 
-          {(hasPermission('students.view') || hasPermission('enrollments.view')) && (
+          {(hasPermission("students.view") ||
+            hasPermission("enrollments.view")) && (
             <div className="nhom-dieu-huong">Học sinh</div>
           )}
-          {hasPermission('students.view') && (
+          {hasPermission("students.view") && (
             <NavLink
               to="/hoc-vien"
-              className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+              className={({ isActive }) =>
+                isActive ? "nav-link active" : "nav-link"
+              }
             >
               Hồ sơ học viên
             </NavLink>
           )}
-          {hasPermission('enrollments.view') && (
+          {hasPermission("enrollments.view") && (
             <NavLink
               to="/ghi-danh"
-              className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+              className={({ isActive }) =>
+                isActive ? "nav-link active" : "nav-link"
+              }
             >
               Ghi danh học viên
             </NavLink>
           )}
 
-          {(hasPermission('classes.view') ||
-            hasPermission('sessions.view') ||
-            hasPermission('invoices.view') ||
-            hasPermission('curriculum.view')) && (
+          {(hasPermission("classes.view") ||
+            hasPermission("sessions.view") ||
+            hasPermission("invoices.view") ||
+            hasPermission("curriculum.view") ||
+            user?.role === "Admin" ||
+            user?.role === "CustomerCare") && (
             <div className="nhom-dieu-huong">Vận hành</div>
           )}
-          {hasPermission('classes.view') && (
+          {hasPermission("classes.view") && (
             <NavLink
               to="/lop-hoc"
-              className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+              className={({ isActive }) =>
+                isActive ? "nav-link active" : "nav-link"
+              }
             >
               Quản lý lớp học
             </NavLink>
           )}
-          {hasPermission('sessions.view') && (
+          {hasPermission("sessions.view") && (
             <NavLink
               to="/sessions"
-              className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+              className={({ isActive }) =>
+                isActive ? "nav-link active" : "nav-link"
+              }
             >
               Buổi học & Điểm danh
             </NavLink>
           )}
-          {hasPermission('invoices.view') && (
+          {hasPermission("invoices.view") && (
             <NavLink
               to="/invoices"
-              className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+              className={({ isActive }) =>
+                isActive ? "nav-link active" : "nav-link"
+              }
             >
               Học phí & Thu tiền
             </NavLink>
           )}
-          {hasPermission('curriculum.view') && (
+          {hasPermission("curriculum.view") && (
             <NavLink
               to="/curriculum"
-              className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+              className={({ isActive }) =>
+                isActive ? "nav-link active" : "nav-link"
+              }
             >
               Chương trình học
             </NavLink>
           )}
+          {(user?.role === "Admin" || user?.role === "CustomerCare") && (
+            <NavLink
+              to="/ai-chat"
+              className={({ isActive }) =>
+                isActive ? "nav-link active" : "nav-link"
+              }
+            >
+              Chatbot CSKH
+            </NavLink>
+          )}
 
-          {(hasPermission('assessments.view') ||
-            hasPermission('teacher.classes') ||
-            hasPermission('assistant.view')) && (
+          {(hasPermission("assessments.view") ||
+            hasPermission("teacher.classes") ||
+            hasPermission("assistant.view")) && (
             <>
-              {hasPermission('assessments.view') && (
+              {hasPermission("assessments.view") && (
                 <NavLink
                   to="/assessments"
-                  className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                  className={({ isActive }) =>
+                    isActive ? "nav-link active" : "nav-link"
+                  }
                 >
                   Đánh giá học sinh AI
                 </NavLink>
               )}
-              {hasPermission('teacher.classes') && (
+              {hasPermission("teacher.classes") && (
                 <>
                   <NavLink
                     to="/teacher/classes"
-                    className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                    className={({ isActive }) =>
+                      isActive ? "nav-link active" : "nav-link"
+                    }
                   >
                     Lớp học phụ trách
                   </NavLink>
                   <NavLink
                     to="/teacher/schedule"
-                    className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                    className={({ isActive }) =>
+                      isActive ? "nav-link active" : "nav-link"
+                    }
                   >
                     Lịch giảng dạy
                   </NavLink>
                 </>
               )}
-              {hasPermission('assistant.view') && (
+              {hasPermission("assistant.view") && (
                 <NavLink
                   to="/class-assistant"
-                  className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                  className={({ isActive }) =>
+                    isActive ? "nav-link active" : "nav-link"
+                  }
                 >
                   Trợ lý học liệu
                 </NavLink>
@@ -182,21 +276,25 @@ export const AppLayout: React.FC = () => {
             </>
           )}
 
-          {(hasPermission('staff.view') || hasPermission('roles.manage')) && (
+          {(hasPermission("staff.view") || hasPermission("roles.manage")) && (
             <>
               <div className="nhom-dieu-huong">Hệ thống</div>
-              {hasPermission('staff.view') && (
+              {hasPermission("staff.view") && (
                 <NavLink
                   to="/staff"
-                  className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                  className={({ isActive }) =>
+                    isActive ? "nav-link active" : "nav-link"
+                  }
                 >
                   Quản lý nhân sự
                 </NavLink>
               )}
-              {hasPermission('roles.manage') && (
+              {hasPermission("roles.manage") && (
                 <NavLink
                   to="/permissions"
-                  className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                  className={({ isActive }) =>
+                    isActive ? "nav-link active" : "nav-link"
+                  }
                 >
                   Ma trận phân quyền
                 </NavLink>
@@ -221,7 +319,11 @@ export const AppLayout: React.FC = () => {
               type="button"
               className="sidebar-toggle-btn"
               onClick={() => setIsSidebarOpen((prev) => !prev)}
-              title={isSidebarOpen ? 'Thu gọn thanh điều hướng' : 'Mở rộng thanh điều hướng'}
+              title={
+                isSidebarOpen
+                  ? "Thu gọn thanh điều hướng"
+                  : "Mở rộng thanh điều hướng"
+              }
               aria-label="Đóng mở thanh điều hướng"
               aria-expanded={isSidebarOpen}
             >
@@ -242,12 +344,16 @@ export const AppLayout: React.FC = () => {
               aria-controls="account-panel"
               title="Thông tin tài khoản"
             >
-              <span className="user-avatar" aria-hidden="true">{avatarLetter}</span>
+              <span className="user-avatar" aria-hidden="true">
+                {avatarLetter}
+              </span>
               <span className="user-menu-name">
                 <strong>{profile?.fullName}</strong>
                 <small>{roleLabel}</small>
               </span>
-              <span className="user-menu-chevron" aria-hidden="true"><MaterialIcon name="expand_more" /></span>
+              <span className="user-menu-chevron" aria-hidden="true">
+                <MaterialIcon name="expand_more" />
+              </span>
             </button>
 
             {isUserMenuOpen && (
@@ -256,8 +362,14 @@ export const AppLayout: React.FC = () => {
                   <strong>{profile?.fullName}</strong>
                   <span>{roleLabel}</span>
                   <dl>
-                    <div><dt>Mã nhân viên</dt><dd>{profile?.employeeCode}</dd></div>
-                    <div><dt>Email</dt><dd>{profile?.email}</dd></div>
+                    <div>
+                      <dt>Mã nhân viên</dt>
+                      <dd>{profile?.employeeCode}</dd>
+                    </div>
+                    <div>
+                      <dt>Email</dt>
+                      <dd>{profile?.email}</dd>
+                    </div>
                   </dl>
                 </div>
                 <div className="user-menu-divider" />
@@ -275,13 +387,26 @@ export const AppLayout: React.FC = () => {
             )}
           </div>
         </header>
-        <nav className="duong-dan-trang" aria-label="Đường dẫn trang"><Link to="/">Trang chủ</Link><span>/</span><span>{tenTrang[viTri.pathname.split('/')[1]] ?? 'Tổng quan'}</span><button type="button" disabled={isLoggingOut} onClick={() => setIsLogoutConfirmationOpen(true)}>Đăng xuất</button></nav>
+        <nav className="duong-dan-trang" aria-label="Đường dẫn trang">
+          <Link to="/">Trang chủ</Link>
+          <span>/</span>
+          <span>{tenTrang[viTri.pathname.split("/")[1]] ?? "Tổng quan"}</span>
+          <button
+            type="button"
+            disabled={isLoggingOut}
+            onClick={() => setIsLogoutConfirmationOpen(true)}
+          >
+            Đăng xuất
+          </button>
+        </nav>
 
         {/* Content Outlet */}
         <main className="content-area">
           <Outlet />
         </main>
-        <footer className="chan-trang">LOGICHUB · Hệ thống quản lý trung tâm giáo dục</footer>
+        <footer className="chan-trang">
+          LOGICHUB · Hệ thống quản lý trung tâm giáo dục
+        </footer>
       </div>
 
       <ChangePasswordModal
@@ -295,7 +420,9 @@ export const AppLayout: React.FC = () => {
           confirmText="Đăng xuất"
           isPending={isLoggingOut}
           onCancel={() => setIsLogoutConfirmationOpen(false)}
-          onConfirm={() => { void handleLogout(); }}
+          onConfirm={() => {
+            void handleLogout();
+          }}
         />
       )}
     </div>

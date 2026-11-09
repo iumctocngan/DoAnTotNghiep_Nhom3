@@ -462,6 +462,127 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                     b.ToTable("Documents", (string)null);
                 });
 
+            modelBuilder.Entity("CmsEdu.Domain.Entities.CskhChatMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ContextDataJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SessionId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("SuggestedScriptJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SessionId");
+
+                    b.ToTable("CskhChatMessages", (string)null);
+                });
+
+            modelBuilder.Entity("CmsEdu.Domain.Entities.CskhChatSession", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("LastActiveAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CskhChatSessions", (string)null);
+                });
+
+            modelBuilder.Entity("CmsEdu.Domain.Entities.CskhInteraction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Channel")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateOnly?>("FollowUpDate")
+                        .HasColumnType("date");
+
+                    b.Property<int>("GuardianFeedback")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GuardianId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("StaffUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("GuardianId");
+
+                    b.HasIndex("StaffUserId");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("CskhInteractions", (string)null);
+                });
+
             modelBuilder.Entity("CmsEdu.Domain.Entities.Enrollment", b =>
                 {
                     b.Property<int>("Id")
@@ -936,6 +1057,60 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                     b.ToTable("StudentRemarks", (string)null);
                 });
 
+            modelBuilder.Entity("CmsEdu.Domain.Entities.StudentRenewalPrediction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DaysUntilPeriodEnd")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EnrollmentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ModelVersion")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateOnly>("PredictionDate")
+                        .HasColumnType("date");
+
+                    b.Property<double>("RenewalProbability")
+                        .HasColumnType("float");
+
+                    b.Property<int>("RiskLevel")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TopDriversJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EnrollmentId");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("StudentId", "PredictionDate");
+
+                    b.ToTable("StudentRenewalPredictions", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_SRP_DaysUntilPeriodEnd", "[DaysUntilPeriodEnd] >= 0");
+
+                            t.HasCheckConstraint("CK_SRP_Probability", "[RenewalProbability] >= 0.0 AND [RenewalProbability] <= 1.0");
+                        });
+                });
+
             modelBuilder.Entity("CmsEdu.Infrastructure.Identity.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
@@ -1331,6 +1506,47 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                     b.Navigation("Level");
                 });
 
+            modelBuilder.Entity("CmsEdu.Domain.Entities.CskhChatMessage", b =>
+                {
+                    b.HasOne("CmsEdu.Domain.Entities.CskhChatSession", "Session")
+                        .WithMany("Messages")
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Session");
+                });
+
+            modelBuilder.Entity("CmsEdu.Domain.Entities.CskhChatSession", b =>
+                {
+                    b.HasOne("CmsEdu.Domain.Entities.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("CmsEdu.Domain.Entities.CskhInteraction", b =>
+                {
+                    b.HasOne("CmsEdu.Domain.Entities.Guardian", "Guardian")
+                        .WithMany()
+                        .HasForeignKey("GuardianId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CmsEdu.Domain.Entities.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Guardian");
+
+                    b.Navigation("Student");
+                });
+
             modelBuilder.Entity("CmsEdu.Domain.Entities.Enrollment", b =>
                 {
                     b.HasOne("CmsEdu.Domain.Entities.Class", "Class")
@@ -1449,6 +1665,25 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                     b.Navigation("Session");
                 });
 
+            modelBuilder.Entity("CmsEdu.Domain.Entities.StudentRenewalPrediction", b =>
+                {
+                    b.HasOne("CmsEdu.Domain.Entities.Enrollment", "Enrollment")
+                        .WithMany()
+                        .HasForeignKey("EnrollmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CmsEdu.Domain.Entities.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Enrollment");
+
+                    b.Navigation("Student");
+                });
+
             modelBuilder.Entity("CmsEdu.Infrastructure.Identity.RefreshToken", b =>
                 {
                     b.HasOne("CmsEdu.Infrastructure.Identity.ApplicationUser", "User")
@@ -1526,6 +1761,11 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("CmsEdu.Domain.Entities.Course", b =>
                 {
                     b.Navigation("Levels");
+                });
+
+            modelBuilder.Entity("CmsEdu.Domain.Entities.CskhChatSession", b =>
+                {
+                    b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("CmsEdu.Domain.Entities.Enrollment", b =>
