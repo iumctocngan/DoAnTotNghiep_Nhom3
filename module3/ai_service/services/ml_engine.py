@@ -87,8 +87,7 @@ def load_model() -> tuple[Any, Any, str]:
     if not os.path.isfile(model_path):
         raise FileNotFoundError(
             f"ML model artifact not found at '{model_path}'. "
-            "Set ML_MODEL_PATH to an existing model or generate one with "
-            "'python .\\ai_service\\scripts\\prepare_dataset_and_train.py' from module3."
+            "Set ML_MODEL_PATH to an existing model artifact."
         )
 
     bundle = joblib.load(model_path)
