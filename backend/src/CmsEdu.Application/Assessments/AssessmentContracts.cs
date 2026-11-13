@@ -4,7 +4,8 @@ namespace CmsEdu.Application.Assessments;
 
 public record Criterion([property: Required, MaxLength(200)] string Name,
     decimal Weight, [property: Required, MaxLength(50)] string Clo,
-    [property: Required, MaxLength(1000)] string Description);
+    [property: Required, MaxLength(1000)] string Description,
+    [property: MaxLength(5)] string[]? MucDanhGia = null);
 public record CreateRubric(int ClassId, [property: Required, MaxLength(200)] string Name,
     [property: Required, MinLength(1), MaxLength(50)] List<Criterion> Criteria);
 public record CreateAssessment(int EnrollmentId, int RubricId,

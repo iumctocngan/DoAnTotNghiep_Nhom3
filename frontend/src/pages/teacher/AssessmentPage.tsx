@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/apiClient';
 
-type Criterion = { name: string; weight: number; clo: string; description: string };
+type Criterion = { name: string; weight: number; clo: string; description: string; mucDanhGia?: string[] };
 type Rubric = { id: number; name: string; criteria: Criterion[] };
 type History = { id: number; title: string; date: string; score: number; feedback: string | null; feedbackSource: string | null; approvedAt: string | null };
 type Report = { fullName: string; average: number | null; attendanceRate: number | null; progress: number | null; risk: string;
@@ -33,6 +33,23 @@ export function AssessmentPage() {
     catch (e) { setMessage((e as { message?: string }).message ?? 'Không thể lưu.'); }
     finally { setBusy(false); }
   }
+  async function nhapTepClo(tep: File) {
+    setBusy(true);
+    setMessage('');
+    try {
+      const duLieu = new FormData();
+      duLieu.append('tep', tep);
+      const ketQua = await apiClient<{ criteria: Criterion[] }>(
+        `${root}/classes/${classId}/rubrics/import`, { method: 'POST', body: duLieu });
+      setCriteria(ketQua.criteria);
+      setname(tep.name.replace(/\.xlsx$/i, '').slice(0, 200));
+      setMessage('Đã đọc tệp CLO. Kiểm tra tiêu chí và trọng số trước khi lưu Rubric.');
+    } catch (loi) {
+      setMessage((loi as { message?: string }).message ?? 'Không thể đọc tệp CLO.');
+    } finally {
+      setBusy(false);
+    }
+  }
   const post = (path: string, body: unknown) => apiClient(`${root}${path}`, { method: 'POST', body: JSON.stringify(body) });
   return <div className="assessment-page">
     <h1>Đánh giá học sinh bằng AI</h1><p>Chấm điểm · Rubric · Chuẩn đầu ra CLO · Theo dõi tiến bộ</p>
@@ -41,6 +58,11 @@ export function AssessmentPage() {
     {[classes, students, rubrics, report].some(x => x.isError) && <p role="alert">Không thể tải dữ liệu. Vui lòng tải lại trang.</p>}
     {message && <p role="status">{message}</p>}
     {!!classId && <details><summary>Tạo Rubric / tiếp nhận tiêu chí từ Module 2</summary><form onSubmit={e => { e.preventDefault(); void run(() => post('/rubrics', { classId, name, criteria })); }}>
+      <label>Nhập file CLO từ Module 2<input type="file" accept=".xlsx" disabled={busy} onChange={e => {
+        const tep = e.currentTarget.files?.[0];
+        e.currentTarget.value = '';
+        if (tep) void nhapTepClo(tep);
+      }} /></label>
       <label>Tên Rubric<input required maxLength={200} value={name} onChange={e => setname(e.target.value)} /></label>
       {criteria.map((c, i) => <fieldset key={i}><legend>Tiêu chí {i + 1}</legend>{(['name', 'clo', 'description'] as const).map(key => <label key={key}>{ { name: 'Tên tiêu chí', clo: 'Mã CLO', description: 'Mô tả / nội dung cần ôn' }[key]}<input required maxLength={key === 'description' ? 1000 : key === 'clo' ? 50 : 200} value={c[key]} onChange={e => setCriteria(criteria.map((v, j) => j === i ? { ...v, [key]: e.target.value } : v))} /></label>)}<label>Trọng số (%)<input type="number" min="0.01" max="100" step="0.01" required value={c.weight} onChange={e => setCriteria(criteria.map((v, j) => j === i ? { ...v, weight: +e.target.value } : v))} /></label><button type="button" disabled={criteria.length === 1} onClick={() => setCriteria(criteria.filter((_, j) => j !== i))}>Xóa tiêu chí</button></fieldset>)}
       <p>Tổng trọng số: {criteria.reduce((sum, c) => sum + c.weight, 0)}%</p><button type="button" disabled={criteria.length >= 50} onClick={() => setCriteria([...criteria, { name: '', weight: 0, clo: '', description: '' }])}>Thêm tiêu chí</button> <button disabled={busy}>Lưu Rubric</button>
@@ -48,6 +70,11 @@ export function AssessmentPage() {
     {!!studentId && <><section><h2>Chấm điểm theo Rubric</h2><form onSubmit={e => { e.preventDefault(); void run(() => post('', { enrollmentId: studentId, rubricId, title, date, scores })); }}>
       <label>Bài đánh giá<input required maxLength={200} value={title} onChange={e => setTitle(e.target.value)} /></label><label>Ngày đánh giá<input type="date" required value={date} onChange={e => setDate(e.target.value)} /></label>
       <label>Rubric<select required value={rubricId || ''} onChange={e => { const id = +e.target.value; setRubricId(id); setScores(rubrics.data?.find(x => x.id === id)?.criteria.map(() => 0) ?? []); }}><option value="">Chọn Rubric</option>{rubrics.data?.map(x => <option key={x.id} value={x.id}>{x.name}</option>)}</select></label>
+      {rubric?.criteria.some(c => c.mucDanhGia?.some(Boolean)) && <details>
+        <summary>Xem mô tả các mức Rubric</summary>
+        {rubric.criteria.filter(c => c.mucDanhGia?.some(Boolean)).map((c, i) =>
+          <div key={i}><strong>{c.name}</strong><ol>{c.mucDanhGia?.map((muc, j) => <li key={j}>{muc || 'Chưa có mô tả'}</li>)}</ol></div>)}
+      </details>}
       {rubric?.criteria.map((c, i) => <label key={i}>{c.name} ({c.weight}% · {c.clo})<input required type="number" min="0" max="10" step="0.01" value={scores[i] ?? 0} onChange={e => setScores(scores.map((v, j) => j === i ? +e.target.value : v))} /></label>)}<button disabled={busy || !rubricId}>Lưu điểm</button>
     </form></section>
     {report.isFetching && <p>Đang tải báo cáo…</p>}

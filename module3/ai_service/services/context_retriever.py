@@ -44,7 +44,7 @@ def retrieve_student_context(db: Session, student_id: int) -> StudentContext:
     """
     Gom đầy đủ context của học sinh từ:
     1. Core Platform: Students, Guardians, Enrollments, Attendances, Invoices, Payments
-    2. Module 1: StudentRemarks (điểm thi, nhận xét GV)
+    2. Module 1: Assessment (điểm và nhận xét đã duyệt), StudentRemarks (nhận xét cũ)
     3. Module 3: StudentRenewalPredictions (dự đoán AI gần nhất)
 
     Returns:
@@ -136,30 +136,28 @@ def retrieve_student_context(db: Session, student_id: int) -> StudentContext:
         has_overdue=(current_debt > 0 and due_date < today) if current_debt is not None and due_date else None,
     )
 
-    note = None
+    nhan_xet = None
     if enrollment_id is not None:
-        note = db.execute(text("""
-            SELECT TOP 1 Content FROM StudentRemarks WHERE EnrollmentId = :enrollment_id
-            ORDER BY CreatedAt DESC, Id DESC
+        nhan_xet = db.execute(text("""
+            SELECT TOP 1 Feedback AS Content, Score
+            FROM Assessment
+            WHERE EnrollmentId = :enrollment_id AND ApprovedAt IS NOT NULL
+              AND NULLIF(LTRIM(RTRIM(Feedback)), N'') IS NOT NULL
+            ORDER BY ApprovedAt DESC, Id DESC
         """), {"enrollment_id": enrollment_id}).mappings().first()
-    if note is None:
-        missing.append("Chưa có nhận xét giáo viên gần nhất; không có dữ liệu điểm bài thi gần nhất")
-    # Extract numerical score from remark content using regex
-    recent_score = None
-    if note and note["Content"]:
-        import re as _re
-        _matches = _re.findall(
-            r"(?:diem|điểm|score|dat|đạt)\s*[:=]?\s*(\d+(?:\.\d+)?)",
-            note["Content"],
-            _re.IGNORECASE,
-        )
-        if _matches:
-            _candidate = float(_matches[0])
-            if 0.0 <= _candidate <= 10.0:
-                recent_score = _candidate
+        if nhan_xet is None:
+            nhan_xet = db.execute(text("""
+                SELECT TOP 1 Content, NULL AS Score
+                FROM StudentRemarks WHERE EnrollmentId = :enrollment_id
+                ORDER BY CreatedAt DESC, Id DESC
+            """), {"enrollment_id": enrollment_id}).mappings().first()
+    if nhan_xet is None:
+        missing.append("Chưa có nhận xét giáo viên gần nhất")
+    if nhan_xet is None or nhan_xet["Score"] is None:
+        missing.append("Chưa có điểm bài đánh giá đã duyệt")
     assessment = Module1Assessment(
-        teacher_note=note["Content"] if note else None,
-        recent_score=recent_score,
+        teacher_note=nhan_xet["Content"] if nhan_xet else None,
+        recent_score=float(nhan_xet["Score"]) if nhan_xet and nhan_xet["Score"] is not None else None,
     )
 
     prediction = None

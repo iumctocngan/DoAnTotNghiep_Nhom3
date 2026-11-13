@@ -2,7 +2,7 @@
 
 Mở **Đánh giá học sinh AI** tại `/assessments` bằng tài khoản Admin hoặc Teacher. Giáo viên chỉ truy cập lớp mình phụ trách.
 
-1. Chọn lớp, tạo Rubric: tên tiêu chí, mã CLO, nội dung/năng lực cần ôn và trọng số. Tổng trọng số phải bằng 100%. Rubric được lưu bất biến để giữ đúng lịch sử điểm.
+1. Chọn lớp, mở **Tạo Rubric**, rồi nhập file CLO .xlsx do Module 2 xuất hoặc khai báo thủ công. Khi nhập file, hệ thống đọc trang **Danh sách CLO chi tiết**, giữ mã và nội dung CLO, tiêu chí và mô tả năm mức. Trọng số ban đầu được chia gần đều và cộng đúng 100%; giáo viên có thể sửa trước khi lưu. Rubric gồm tên tiêu chí, mã CLO, nội dung/năng lực cần ôn và trọng số. Tổng trọng số phải bằng 100%. Rubric được lưu bất biến để giữ đúng lịch sử điểm.
 2. Chọn học viên theo ghi danh, chọn Rubric, nhập bài đánh giá, ngày và điểm từng tiêu chí (0–10).
 3. Xem báo cáo học tập, lịch sử, báo cáo CLO và Rubric; xuất JSON.
 4. Sinh nhận xét AI, chỉnh sửa rồi duyệt; hoặc giáo viên tự nhập nhận xét khi chưa cấu hình AI. Nhận xét đã duyệt không được ghi đè.
@@ -36,13 +36,14 @@ Chỉ khi bấm sinh nhận xét, dữ liệu báo cáo học tập của học 
 - `GET /api/assessments/classes`
 - `GET /api/assessments/classes/{id}/students`
 - `GET /api/assessments/classes/{id}/rubrics`
-- `POST /api/assessments/rubrics`: `{ classId, name, criteria: [{ name, weight, clo, description }] }`. Module 2 có thể cấp định nghĩa này, giáo viên kiểm tra và lưu qua API. Chưa có kết nối tự động tới Module 2.
+- `POST /api/assessments/rubrics`: `{ classId, name, criteria: [{ name, weight, clo, description }] }`. Các tiêu chí có thể kèm `mucDanhGia` chứa mô tả năm mức.
+- `POST /api/assessments/classes/{id}/rubrics/import`: nhận file Excel do Module 2 xuất qua trường multipart `tep`, trả về tiêu chí xem trước.
 - `POST /api/assessments`: `{ enrollmentId, rubricId, title, date: "2026-10-18", scores: [8, 7] }`. Thứ tự điểm trùng thứ tự tiêu chí.
 - `GET /api/assessments/enrollments/{id}/report`: báo cáo học tập, CLO, Rubric, gợi ý ôn, cảnh báo và nhận xét kèm trạng thái duyệt.
 - `POST /api/assessments/{id}/feedback`
 - `POST /api/assessments/{id}/approve`: `{ feedback }`
 
-Các API hiện giới hạn Admin/Teacher. Module 3 chưa có quyền truy cập riêng; khi tích hợp cần hợp đồng và phân quyền đọc báo cáo đã duyệt, không lấy bản nháp làm nhận xét chính thức.
+Các API đánh giá giới hạn Admin/Teacher. Nội dung nhận xét, điểm, thời điểm duyệt và người duyệt được lưu trong bảng `Assessment` của SQL Server. Module 3 đọc nhận xét đã duyệt gần nhất của ghi danh hiện tại từ cùng cơ sở dữ liệu. Nếu chưa có, chatbot dùng nhận xét cũ từ `StudentRemarks` và để trống điểm.
 
 ## Kiểm tra
 
