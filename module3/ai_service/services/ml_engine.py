@@ -85,9 +85,11 @@ def load_model() -> tuple[Any, Any, str]:
 
     model_path = _resolve_model_path()
     if not os.path.isfile(model_path):
-        # Nếu chưa có file artifact, tự động chạy huấn luyện tạo mới
-        from ai_service.train_model import train_and_export_model
-        train_and_export_model()
+        raise FileNotFoundError(
+            f"ML model artifact not found at '{model_path}'. "
+            "Set ML_MODEL_PATH to an existing model or generate one with "
+            "'python .\\ai_service\\scripts\\prepare_dataset_and_train.py' from module3."
+        )
 
     bundle = joblib.load(model_path)
     if isinstance(bundle, dict) and "model" in bundle:

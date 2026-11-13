@@ -3,6 +3,7 @@ Unit tests cho ML Engine & SHAP Explainer (Sprint 2 - TC-ML-03, TC-ML-04, TC-ML-
 """
 import time
 import pytest
+import ai_service.services.ml_engine as ml_engine
 from ai_service.services.ml_engine import (
     load_model,
     classify_risk_level,
@@ -20,6 +21,19 @@ def test_classify_risk_level_thresholds():
     assert classify_risk_level(0.749) == "MediumRisk"
     assert classify_risk_level(0.75) == "LowRisk"
     assert classify_risk_level(0.95) == "LowRisk"
+
+
+def test_load_model_requires_existing_artifact(monkeypatch, tmp_path):
+    monkeypatch.setattr(ml_engine, "_cached_bundle", None)
+    monkeypatch.setattr(ml_engine, "_cached_explainer", None)
+    monkeypatch.setattr(
+        ml_engine,
+        "_resolve_model_path",
+        lambda: str(tmp_path / "missing_model.joblib"),
+    )
+
+    with pytest.raises(FileNotFoundError, match="ML model artifact not found"):
+        load_model()
 
 
 def test_load_model_and_explainer():
