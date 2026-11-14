@@ -9,6 +9,7 @@ import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { useToast } from '../../components/common/ToastProvider';
 import { MaterialIcon } from '../../components/common/MaterialIcon';
 import { useAuth } from '../../context/AuthContext';
+import { CloRubricModal } from '../assistant/CloRubricModal';
 
 export const KnowledgeBaseSection: React.FC = () => {
   const queryClient = useQueryClient();
@@ -21,6 +22,8 @@ export const KnowledgeBaseSection: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [deletingDoc, setDeletingDoc] = useState<KnowledgeDocument | null>(null);
+  const [isCloModalOpen, setIsCloModalOpen] = useState(false);
+  const [selectedCloDocId, setSelectedCloDocId] = useState<string | undefined>(undefined);
 
   // Upload Form State (3 simplified scope groups)
   const [file, setFile] = useState<File | null>(null);
@@ -186,18 +189,33 @@ export const KnowledgeBaseSection: React.FC = () => {
             Tải lên giáo trình, kế hoạch bài dạy và tài liệu học tập. Khi phân công giáo viên vào lớp, giáo viên tự động được cấp quyền truy cập tài liệu tương ứng.
           </p>
         </div>
-        {canManage && (
+        <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
-            onClick={() => setIsUploadModalOpen(true)}
-            className="btn btn-primary shrink-0 flex items-center gap-1.5"
+            onClick={() => {
+              setSelectedCloDocId(undefined);
+              setIsCloModalOpen(true);
+            }}
+            disabled={documents.length === 0}
+            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white rounded text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer disabled:cursor-not-allowed"
+            title="Xuất Ma trận Chuẩn đầu ra CLO & Rubric đánh giá ra file Excel (.xlsx)"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-            </svg>
-            Tải lên tài liệu
+            <MaterialIcon name="assignment" className="text-base" />
+            <span>Xuất CLO & Rubric (.xlsx)</span>
           </button>
-        )}
+          {canManage && (
+            <button
+              type="button"
+              onClick={() => setIsUploadModalOpen(true)}
+              className="btn btn-primary shrink-0 flex items-center gap-1.5"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+              </svg>
+              Tải lên tài liệu
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Filter and Search Bar */}
@@ -292,7 +310,7 @@ export const KnowledgeBaseSection: React.FC = () => {
                   <th className="px-4 py-3.5">Dung lượng</th>
                   <th className="px-4 py-3.5">Trạng thái</th>
                   <th className="px-4 py-3.5">Ngày tải lên</th>
-                  {canManage && <th className="px-4 py-3.5 text-right">Thao tác</th>}
+                  <th className="px-4 py-3.5 text-right">Thao tác</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -371,20 +389,35 @@ export const KnowledgeBaseSection: React.FC = () => {
                         {new Date(doc.createdAt).toLocaleDateString('vi-VN')}
                       </td>
 
-                      {canManage && (
-                        <td className="px-4 py-4 text-right">
-                          <button
-                            type="button"
-                            onClick={() => setDeletingDoc(doc)}
-                            className="p-1.5 text-slate-400 hover:text-rose-600 rounded hover:bg-rose-50 transition-colors"
-                            title="Xóa tài liệu"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
-                        </td>
-                      )}
+                      <td className="px-4 py-4 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          {isPdf && doc.status === 'ready' && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedCloDocId(doc.id);
+                                setIsCloModalOpen(true);
+                              }}
+                              className="p-1.5 text-slate-400 hover:text-emerald-600 rounded hover:bg-emerald-50 transition-colors cursor-pointer"
+                              title="Xuất Ma trận CLO & Rubric (.xlsx)"
+                            >
+                              <MaterialIcon name="assignment" className="text-base" />
+                            </button>
+                          )}
+                          {canManage && (
+                            <button
+                              type="button"
+                              onClick={() => setDeletingDoc(doc)}
+                              className="p-1.5 text-slate-400 hover:text-rose-600 rounded hover:bg-rose-50 transition-colors cursor-pointer"
+                              title="Xóa tài liệu"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                      </td>
                     </tr>
                   );
                 })}
@@ -589,6 +622,19 @@ export const KnowledgeBaseSection: React.FC = () => {
           isDangerous={true}
           onConfirm={() => deleteMutation.mutate(deletingDoc.id)}
           onCancel={() => setDeletingDoc(null)}
+        />
+      )}
+
+      {/* CLO & Rubric Export Modal */}
+      {isCloModalOpen && (
+        <CloRubricModal
+          isOpen={isCloModalOpen}
+          onClose={() => {
+            setIsCloModalOpen(false);
+            setSelectedCloDocId(undefined);
+          }}
+          documents={documents}
+          defaultDocId={selectedCloDocId}
         />
       )}
     </div>

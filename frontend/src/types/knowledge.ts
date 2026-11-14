@@ -88,3 +88,15 @@ export interface UploadKnowledgeDocumentRequest {
   classId?: number;
   file: File;
 }
+
+export interface DocumentOutlineItem {
+  title: string;
+  startPage: number;
+  endPage: number;
+}
+
+export interface GenerateCloRubricRequest {
+  outcomeCount?: number;
+  startPage?: number;
+  endPage?: number;
+}

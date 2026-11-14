@@ -69,4 +69,25 @@ public class RagModuleClient(
         res.EnsureSuccessStatusCode();
         return await res.Content.ReadAsStreamAsync(ct);
     }
+
+    public async Task<(byte[] Bytes, string FileName)> GenerateCloRubricAsync(CloRubricRequestDto requestDto, CancellationToken ct)
+    {
+        var payload = requestDto with { OutcomeCount = requestDto.OutcomeCount ?? 3 };
+        var content = new StringContent(JsonSerializer.Serialize(payload, JsonOptions), Encoding.UTF8, "application/json");
+        using var req = CreateRequest(HttpMethod.Post, "/api/v1/clo-rubric/generate", content);
+        var res = await client.SendAsync(req, ct);
+        res.EnsureSuccessStatusCode();
+        var bytes = await res.Content.ReadAsByteArrayAsync(ct);
+        var fn = res.Content.Headers.ContentDisposition?.FileName?.Trim('"');
+        return (bytes, !string.IsNullOrWhiteSpace(fn) ? fn : $"clo-rubric-{requestDto.DocumentId}.xlsx");
+    }
+
+    public async Task<List<DocumentOutlineItemDto>> GetKnowledgeDocumentOutlineAsync(Guid documentId, CancellationToken ct)
+    {
+        using var req = CreateRequest(HttpMethod.Get, $"/api/v1/documents/{documentId}/outline");
+        var res = await client.SendAsync(req, ct);
+        if (!res.IsSuccessStatusCode) return [];
+        var body = await res.Content.ReadAsStringAsync(ct);
+        return JsonSerializer.Deserialize<List<DocumentOutlineItemDto>>(body, JsonOptions) ?? [];
+    }
 }

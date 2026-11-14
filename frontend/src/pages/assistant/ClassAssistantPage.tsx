@@ -7,6 +7,7 @@ import { useToast } from '../../components/common/ToastProvider';
 import { MaterialIcon } from '../../components/common/MaterialIcon';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { CitationPreviewModal } from './CitationPreviewModal';
+import { CloRubricModal } from './CloRubricModal';
 import { KnowledgeScope, type Citation, type ClassConversation } from '../../types/knowledge';
 
 export const ClassAssistantPage: React.FC = () => {
@@ -39,6 +40,7 @@ export const ClassAssistantPage: React.FC = () => {
   const [deletingConv, setDeletingConv] = useState<ClassConversation | null>(null);
   const [editingConv, setEditingConv] = useState<ClassConversation | null>(null);
   const [editTitleInput, setEditTitleInput] = useState('');
+  const [isCloModalOpen, setIsCloModalOpen] = useState(false);
 
   // 1. Fetch Classes
   const { data: classes = [], isLoading: isClassesLoading } = useQuery({
@@ -231,8 +233,8 @@ export const ClassAssistantPage: React.FC = () => {
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-4 flex flex-col h-[calc(100vh-4rem)]">
       {/* Top Header Card & Scope/Class Selector */}
-      <div className="bg-white p-4 rounded border border-slate-200 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0">
-        <div>
+      <div className="bg-white p-4 rounded border border-slate-200 shadow-xs flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 shrink-0">
+        <div className="min-w-0 flex-1">
           <h1 className="text-lg font-bold text-slate-800 flex items-center gap-2">
             <span className="text-[#0284c7]">
               <MaterialIcon name="menu_book" />
@@ -248,28 +250,41 @@ export const ClassAssistantPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Scope / Class Selector Dropdown */}
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <label className="text-xs font-semibold text-slate-600 whitespace-nowrap mb-0">
-            {isAdmin ? 'Phạm vi tra cứu:' : 'Lớp phụ trách:'}
-          </label>
-          <select
-            value={selectedClassId === null ? '' : selectedClassId}
-            onChange={(e) => setSelectedClassId(Number(e.target.value))}
-            disabled={isClassesLoading && !isAdmin}
-            className="w-full md:w-80 px-3 py-1.5 text-xs font-medium border border-slate-300 rounded bg-white focus:outline-none shadow-xs"
+        {/* Scope / Class Selector Dropdown & Actions */}
+        <div className="flex items-center gap-2.5 shrink-0 w-full lg:w-auto justify-start lg:justify-end">
+          <div className="flex items-center gap-1.5 shrink-0">
+            <label className="text-xs font-semibold text-slate-600 whitespace-nowrap mb-0">
+              {isAdmin ? 'Phạm vi tra cứu:' : 'Lớp phụ trách:'}
+            </label>
+            <select
+              value={selectedClassId === null ? '' : selectedClassId}
+              onChange={(e) => setSelectedClassId(Number(e.target.value))}
+              disabled={isClassesLoading && !isAdmin}
+              className="w-auto min-w-[170px] max-w-[230px] px-2.5 py-1.5 text-xs font-medium border border-slate-300 rounded bg-white focus:outline-none shadow-xs truncate"
+            >
+              {isAdmin && (
+                <option value="0">
+                  Toàn bộ Trung tâm
+                </option>
+              )}
+              {classes.map((cls) => (
+                <option key={cls.id} value={cls.id}>
+                  {cls.maLop} - {cls.tenLop}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsCloModalOpen(true)}
+            disabled={!classKnowledge || classKnowledge.documents.length === 0}
+            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white rounded text-xs font-semibold flex items-center gap-1.5 shadow-xs shrink-0 whitespace-nowrap transition-colors cursor-pointer disabled:cursor-not-allowed"
+            title="Xuất Ma trận Chuẩn đầu ra CLO & Rubric đánh giá ra file Excel (.xlsx)"
           >
-            {isAdmin && (
-              <option value="0">
-                Toàn bộ Trung tâm
-              </option>
-            )}
-            {classes.map((cls) => (
-              <option key={cls.id} value={cls.id}>
-                {cls.maLop} - {cls.tenLop}
-              </option>
-            ))}
-          </select>
+            <MaterialIcon name="assignment" className="text-sm" />
+            <span>Xuất CLO & Rubric (.xlsx)</span>
+          </button>
         </div>
       </div>
 
@@ -593,16 +608,7 @@ export const ClassAssistantPage: React.FC = () => {
                         </div>
                       )}
 
-                      <div
-                        className={`text-[10px] mt-1.5 text-right ${
-                          isUser ? 'text-sky-100' : 'text-slate-400'
-                        }`}
-                      >
-                        {new Date(m.createdAt).toLocaleTimeString('vi-VN', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </div>
+
                     </div>
                   </div>
                 );
@@ -654,6 +660,15 @@ export const ClassAssistantPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* CLO & Rubric Export Modal */}
+      {isCloModalOpen && classKnowledge && (
+        <CloRubricModal
+          isOpen={isCloModalOpen}
+          onClose={() => setIsCloModalOpen(false)}
+          documents={classKnowledge.documents}
+        />
+      )}
 
       {/* Citation Preview Modal */}
       {activeCitation && (

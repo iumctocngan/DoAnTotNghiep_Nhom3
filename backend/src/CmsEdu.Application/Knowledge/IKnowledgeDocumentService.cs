@@ -29,6 +29,11 @@ public record UploadKnowledgeDocumentDto(
     int? LevelId,
     int? ClassId);
 
+public record GenerateCloRubricDto(
+    int? OutcomeCount = 3,
+    int? StartPage = null,
+    int? EndPage = null);
+
 public interface IKnowledgeDocumentService
 {
     Task<List<KnowledgeDocumentDto>> GetDocumentsAsync(
@@ -54,4 +59,15 @@ public interface IKnowledgeDocumentService
     Task DeleteDocumentAsync(Guid id, CancellationToken ct);
 
     Task<Stream> GetPageImageAsync(Guid id, int page, CancellationToken ct);
+
+    Task<(byte[] Bytes, string FileName)> GenerateCloRubricAsync(
+        Guid documentId,
+        int? outcomeCount,
+        int? startPage,
+        int? endPage,
+        CancellationToken ct);
+
+    Task<List<DocumentOutlineItemDto>> GetDocumentOutlineAsync(
+        Guid documentId,
+        CancellationToken ct);
 }

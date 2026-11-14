@@ -42,6 +42,8 @@ public class ClassChatAndKnowledgeTests
         public Task<bool> IngestKnowledgeDocumentAsync(Guid documentId, string fileName, Stream fileStream, CancellationToken cancellationToken) => Task.FromResult(true);
         public Task<bool> DeleteKnowledgeDocumentAsync(Guid documentId, CancellationToken cancellationToken) => Task.FromResult(true);
         public Task<Stream> GetKnowledgeDocumentPageImageStreamAsync(Guid documentId, int page, CancellationToken cancellationToken) => Task.FromResult<Stream>(new MemoryStream());
+        public Task<(byte[] Bytes, string FileName)> GenerateCloRubricAsync(CloRubricRequestDto request, CancellationToken cancellationToken) => Task.FromResult((Array.Empty<byte>(), "test.xlsx"));
+        public Task<List<DocumentOutlineItemDto>> GetKnowledgeDocumentOutlineAsync(Guid documentId, CancellationToken cancellationToken) => Task.FromResult(new List<DocumentOutlineItemDto>());
     }
 
     [Fact]

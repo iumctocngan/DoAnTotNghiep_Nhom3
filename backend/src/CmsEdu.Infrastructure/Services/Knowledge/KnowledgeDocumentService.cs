@@ -176,6 +176,31 @@ public class KnowledgeDocumentService(
         return await ragClient.GetKnowledgeDocumentPageImageStreamAsync(documentId, page, ct);
     }
 
+    public async Task<(byte[] Bytes, string FileName)> GenerateCloRubricAsync(
+        Guid documentId,
+        int? outcomeCount,
+        int? startPage,
+        int? endPage,
+        CancellationToken ct)
+    {
+        var doc = await dbContext.Documents.FirstOrDefaultAsync(d => d.Id == documentId, ct)
+            ?? throw new NotFoundException("Không tìm thấy tài liệu.");
+
+        return await ragClient.GenerateCloRubricAsync(
+            new CloRubricRequestDto(documentId, outcomeCount, startPage, endPage),
+            ct);
+    }
+
+    public async Task<List<DocumentOutlineItemDto>> GetDocumentOutlineAsync(
+        Guid documentId,
+        CancellationToken ct)
+    {
+        var doc = await dbContext.Documents.FirstOrDefaultAsync(d => d.Id == documentId, ct)
+            ?? throw new NotFoundException("Không tìm thấy tài liệu.");
+
+        return await ragClient.GetKnowledgeDocumentOutlineAsync(documentId, ct);
+    }
+
     private static KnowledgeDocumentDto ToDto(Document d) =>
         new(
             d.Id,

@@ -1,9 +1,11 @@
-import { apiClient } from './apiClient';
+import { apiClient, getAccessToken } from './apiClient';
 import type {
   ClassChatResult,
   ClassConversation,
   ClassKnowledgeInfo,
   ClassMessage,
+  DocumentOutlineItem,
+  GenerateCloRubricRequest,
   KnowledgeDocument,
   KnowledgeScope,
 } from '../types/knowledge';
@@ -83,4 +85,26 @@ export const knowledgeApi = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+
+  generateCloRubric: async (
+    documentId: string,
+    data: GenerateCloRubricRequest
+  ): Promise<Blob> => {
+    const token = getAccessToken();
+    const response = await fetch(`/api/knowledge-documents/${documentId}/clo-rubric`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      throw new Error('Không thể tạo file CLO & Rubric.');
+    }
+    return await response.blob();
+  },
+
+  getDocumentOutline: (documentId: string): Promise<DocumentOutlineItem[]> =>
+    apiClient<DocumentOutlineItem[]>(`/api/knowledge-documents/${documentId}/outline`),
 };

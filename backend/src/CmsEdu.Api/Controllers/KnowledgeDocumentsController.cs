@@ -71,4 +71,30 @@ public class KnowledgeDocumentsController(IKnowledgeDocumentService documentServ
         var stream = await documentService.GetPageImageAsync(id, page, cancellationToken);
         return File(stream, "image/png");
     }
+
+    [HttpPost("{id:guid}/clo-rubric")]
+    [HasPermission(Permissions.Curriculum.View)]
+    public async Task<IActionResult> GenerateCloRubric(
+        Guid id,
+        [FromBody] GenerateCloRubricDto request,
+        CancellationToken cancellationToken)
+    {
+        var (bytes, fileName) = await documentService.GenerateCloRubricAsync(
+            id,
+            request.OutcomeCount,
+            request.StartPage,
+            request.EndPage,
+            cancellationToken);
+
+        return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+    }
+
+    [HttpGet("{id:guid}/outline")]
+    [HasPermission(Permissions.Curriculum.View)]
+    public async Task<ActionResult<List<CmsEdu.Application.Common.Interfaces.DocumentOutlineItemDto>>> GetOutline(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        return Ok(await documentService.GetDocumentOutlineAsync(id, cancellationToken));
+    }
 }

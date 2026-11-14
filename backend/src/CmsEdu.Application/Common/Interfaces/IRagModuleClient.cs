@@ -26,10 +26,20 @@ public record ChatResponseDto(
     string? NewSummary = null,
     int NewSummaryProcessedCount = 0);
 
+public record CloRubricRequestDto(
+    Guid DocumentId,
+    int? OutcomeCount = 3,
+    int? StartPage = null,
+    int? EndPage = null);
+
+public record DocumentOutlineItemDto(string Title, int StartPage, int EndPage);
+
 public interface IRagModuleClient
 {
     Task<bool> IngestKnowledgeDocumentAsync(Guid documentId, string fileName, Stream fileStream, CancellationToken cancellationToken);
     Task<bool> DeleteKnowledgeDocumentAsync(Guid documentId, CancellationToken cancellationToken);
     Task<ChatResponseDto> ScopedChatAsync(ChatRequestDto request, CancellationToken cancellationToken);
     Task<Stream> GetKnowledgeDocumentPageImageStreamAsync(Guid documentId, int page, CancellationToken cancellationToken);
+    Task<(byte[] Bytes, string FileName)> GenerateCloRubricAsync(CloRubricRequestDto request, CancellationToken cancellationToken);
+    Task<List<DocumentOutlineItemDto>> GetKnowledgeDocumentOutlineAsync(Guid documentId, CancellationToken cancellationToken);
 }
