@@ -31,7 +31,7 @@ export const AppLayout: React.FC = () => {
     staff: "Nhân sự",
     permissions: "Ma trận phân quyền",
     teacher: "Giảng dạy",
-    "class-assistant": "Trợ lý học liệu",
+    "class-assistant": "Hỏi đáp tài liệu",
     "ai-chat": "Chatbot CSKH",
   };
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -270,7 +270,7 @@ export const AppLayout: React.FC = () => {
                     isActive ? "nav-link active" : "nav-link"
                   }
                 >
-                  Trợ lý học liệu
+                  Hỏi đáp tài liệu
                 </NavLink>
               )}
             </>

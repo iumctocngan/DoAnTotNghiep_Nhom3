@@ -207,7 +207,7 @@ export const ClassAssistantPage: React.FC = () => {
         queryKey: ['class-conversation-messages', selectedClassId, res.conversationId || currentConversationId],
       });
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Không thể kết nối đến Trợ lý AI.', 'error');
+      showToast(err instanceof Error ? err.message : 'Không thể kết nối đến Hỏi đáp tài liệu.', 'error');
     } finally {
       setIsAsking(false);
     }
@@ -240,8 +240,8 @@ export const ClassAssistantPage: React.FC = () => {
               <MaterialIcon name="menu_book" />
             </span>
             {isAdmin && selectedClassId === 0
-              ? 'Trợ lý Tri thức Toàn Trung tâm'
-              : 'Trợ lý Học liệu Lớp học'}
+              ? 'Hỏi đáp Tri thức Toàn Trung tâm'
+              : 'Hỏi đáp Tài liệu Lớp học'}
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
             {isAdmin && selectedClassId === 0
@@ -514,7 +514,7 @@ export const ClassAssistantPage: React.FC = () => {
                 </span>
                 <span className="text-[11px] text-slate-500 truncate block">
                   {selectedClassId === 0
-                    ? 'Trợ lý Tri thức Toàn Trung tâm'
+                    ? 'Hỏi đáp Tri thức Toàn Trung tâm'
                     : classKnowledge
                     ? `${classKnowledge.className} (${classKnowledge.classCode}) • ${classKnowledge.courseName}`
                     : 'Chọn lớp'}
@@ -552,7 +552,7 @@ export const ClassAssistantPage: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-slate-700 text-sm">
-                    {selectedClassId === 0 ? 'Trợ lý Tri thức Toàn Trung tâm' : 'Trợ lý Học liệu Lớp học'}
+                    {selectedClassId === 0 ? 'Hỏi đáp Tri thức Toàn Trung tâm' : 'Hỏi đáp Tài liệu Lớp học'}
                   </h3>
                   <p className="text-xs text-slate-400 max-w-md mt-1">
                     {selectedClassId === 0
@@ -577,7 +577,7 @@ export const ClassAssistantPage: React.FC = () => {
                       {!isUser && (
                         <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-slate-200/70">
                           <span className="text-[11px] font-bold text-slate-700">
-                            {selectedClassId === 0 ? 'Trợ lý Trung tâm' : 'Trợ lý Học liệu'}
+                            {selectedClassId === 0 ? 'Hỏi đáp Tri thức' : 'Hỏi đáp Tài liệu'}
                           </span>
                         </div>
                       )}
@@ -621,8 +621,8 @@ export const ClassAssistantPage: React.FC = () => {
                   <div className="w-4 h-4 border-2 border-[#0284c7] border-t-transparent rounded-full animate-spin"></div>
                   <span>
                     {selectedClassId === 0
-                      ? 'Trợ lý đang tra cứu toàn bộ kho tri thức...'
-                      : 'Trợ lý đang tra cứu học liệu lớp học...'}
+                      ? 'Đang tra cứu toàn bộ kho tri thức...'
+                      : 'Đang tra cứu tài liệu lớp học...'}
                   </span>
                 </div>
               </div>

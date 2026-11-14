@@ -107,7 +107,7 @@ export const App: React.FC = () => {
                     <Route path="/assessments" element={<AssessmentPage />} />
                   </Route>
 
-                  {/* Trợ lý học liệu AI */}
+                  {/* Hỏi đáp tài liệu AI */}
                   <Route element={<ProtectedRoute requiredPermission="assistant.view" />}>
                     <Route path="/class-assistant" element={<ClassAssistantPage />} />
                     <Route path="/notebooks" element={<Navigate to="/class-assistant" replace />} />
