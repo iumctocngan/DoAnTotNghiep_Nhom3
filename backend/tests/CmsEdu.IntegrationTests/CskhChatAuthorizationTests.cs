@@ -23,6 +23,8 @@ public class CskhChatAuthorizationTests
         {
             (HttpMethod.Get, "/api/ai/dashboard/retention-queue"),
             (HttpMethod.Get, "/api/ai/cskh/student-context/1"),
+            (HttpMethod.Post, "/api/ai/predictions/students/1"),
+            (HttpMethod.Post, "/api/ai/predictions/batch"),
             (HttpMethod.Post, "/api/ai/cskh-chat/sessions"),
             (HttpMethod.Post, "/api/ai/cskh-chat/sessions/test-session/messages"),
             (HttpMethod.Get, "/api/ai/cskh-chat/sessions/test-session/history"),
@@ -43,7 +45,7 @@ public class CskhChatAuthorizationTests
         await using var application = new TestApplication();
         using var client = application.CreateClient();
 
-        using var response = await client.GetAsync("/api/ai/dashboard/retention-queue");
+        using var response = await client.PostAsync("/api/ai/predictions/batch", content: null);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }

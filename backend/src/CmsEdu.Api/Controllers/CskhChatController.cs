@@ -24,6 +24,73 @@ public sealed class CskhChatController(
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
+    [HttpPost("/api/ai/predictions/students/{studentId:int}")]
+    public async Task<ActionResult<PredictionResultResponse>> PredictStudent(
+        int studentId,
+        CancellationToken cancellationToken)
+    {
+        if (studentId <= 0)
+            return BadRequest(new ProblemDetails { Title = "Mã học viên không hợp lệ." });
+
+        var enrollmentId = await db.Enrollments
+            .AsNoTracking()
+            .Where(enrollment =>
+                enrollment.StudentId == studentId &&
+                enrollment.Status == EnrollmentStatus.Active &&
+                !enrollment.Student.IsArchived)
+            .OrderByDescending(enrollment => enrollment.StartDate)
+            .ThenByDescending(enrollment => enrollment.Id)
+            .Select(enrollment => (int?)enrollment.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+        if (enrollmentId is null)
+            return NotFound(new ProblemDetails
+            {
+                Title = "Không tìm thấy ghi danh đang học của học viên."
+            });
+
+        try
+        {
+            return Ok(await aiClient.PredictStudentAsync(studentId, enrollmentId.Value, cancellationToken));
+        }
+        catch (Module3AiException exception)
+        {
+            return MapAiServiceError(exception);
+        }
+        catch (HttpRequestException exception)
+        {
+            logger.LogError(exception, "Cannot reach Module 3 AI Service.");
+            return AiServiceUnavailable();
+        }
+        catch (TaskCanceledException exception) when (!cancellationToken.IsCancellationRequested)
+        {
+            logger.LogError(exception, "Module 3 AI Service request timed out.");
+            return AiServiceUnavailable();
+        }
+    }
+
+    [HttpPost("/api/ai/predictions/batch")]
+    public async Task<ActionResult<BatchPredictionResponse>> PredictBatch(CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await aiClient.PredictBatchAsync(cancellationToken));
+        }
+        catch (Module3AiException exception)
+        {
+            return MapAiServiceError(exception);
+        }
+        catch (HttpRequestException exception)
+        {
+            logger.LogError(exception, "Cannot reach Module 3 AI Service.");
+            return AiServiceUnavailable();
+        }
+        catch (TaskCanceledException exception) when (!cancellationToken.IsCancellationRequested)
+        {
+            logger.LogError(exception, "Module 3 AI Service request timed out.");
+            return AiServiceUnavailable();
+        }
+    }
+
     [HttpGet("/api/ai/cskh/student-context/{studentId:int}")]
     public async Task<IActionResult> GetStudentContext(int studentId, CancellationToken cancellationToken)
     {
@@ -393,9 +460,3 @@ public sealed record AtRiskStudentResponse(
     string StudentCode,
     string StudentName,
     string? ClassName);
-
-public sealed record ShapDriverResponse(
-    [property: JsonPropertyName("feature")] string Feature,
-    [property: JsonPropertyName("direction")] string Direction,
-    [property: JsonPropertyName("impact")] double Impact,
-    [property: JsonPropertyName("description")] string Description);

@@ -13,7 +13,7 @@ Guardrails:
 """
 import json
 from datetime import date, datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 
@@ -24,6 +24,7 @@ from ai_service.schemas.prediction_schemas import (
     BatchPredictResponse,
     ShapDriver,
 )
+from ai_service.security import CurrentUser, require_roles
 from ai_service.services import feature_store, ml_engine
 
 router = APIRouter()
@@ -88,6 +89,7 @@ def _save_prediction_to_db(
 async def predict_student(
     request: PredictStudentRequest,
     db: Session = Depends(get_db),
+    _user: CurrentUser = Depends(require_roles("Admin", "CustomerCare")),
 ):
     # 1. Trích xuất vector đặc trưng từ Feature Store
     features = feature_store.extract_features_for_student(
@@ -135,7 +137,10 @@ async def predict_student(
         "Kết quả được ghi nhận vào bảng StudentRenewalPredictions."
     ),
 )
-async def predict_batch(db: Session = Depends(get_db)):
+async def predict_batch(
+    db: Session = Depends(get_db),
+    _user: CurrentUser = Depends(require_roles("Admin", "CustomerCare")),
+):
     # 1. Lấy danh sách học sinh đủ điều kiện
     targets = feature_store.get_students_for_batch_prediction(db)
 

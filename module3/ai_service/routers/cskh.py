@@ -4,12 +4,13 @@ FastAPI chỉ đọc snapshot nghiệp vụ. Core API đảm nhận JWT/RBAC, l�
 tin nhắn và audit để không mở quyền ghi trực tiếp cho dịch vụ AI.
 Tích hợp bộ đệm phản hồi xác định (Deterministic Cache) nhằm tối ưu hóa token và độ trễ.
 """
-from fastapi import APIRouter, Depends, Header, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from ai_service.config import settings
 from ai_service.database import get_db
 from ai_service.schemas.cskh_schemas import CallScriptResponse, GenerateCallScriptRequest, StudentContext
+from ai_service.security import CurrentUser, require_roles
 from ai_service.services.cskh_cache import chatbot_cache, generate_cache_key
 from ai_service.services.cskh_prompt import OUT_OF_DOMAIN_MESSAGE, build_prompt, is_cskh_question
 from ai_service.services.context_retriever import retrieve_student_context
@@ -32,6 +33,7 @@ router = APIRouter()
 async def get_student_context(
     student_id: int,
     db: Session = Depends(get_db),
+    _user: CurrentUser = Depends(require_roles("Admin", "CustomerCare")),
 ):
     try:
         return retrieve_student_context(db, student_id)
@@ -47,7 +49,7 @@ async def get_student_context(
 async def create_call_script(
     request: GenerateCallScriptRequest,
     db: Session = Depends(get_db),
-    x_authorization_scope: str = Header(default="default_scope", alias="X-Authorization-Scope"),
+    user: CurrentUser = Depends(require_roles("Admin", "CustomerCare")),
 ):
     """Không lưu DB: Core API chịu trách nhiệm xác thực, RBAC và lưu lịch sử chat.
     Áp dụng bộ đệm phản hồi xác định: Khi các biến số đồng nhất, trả kết quả tức thời
@@ -74,7 +76,7 @@ async def create_call_script(
         return _call_llm()
 
     cache_key = generate_cache_key(
-        scope=x_authorization_scope,
+        scope=f"{user.role}:{user.user_id}",
         student_id=request.student_id,
         context=context,
         question=request.question,
@@ -89,7 +91,7 @@ async def create_call_script(
     "/cskh/cache-metrics",
     summary="Lấy số liệu đo lường hiệu năng và lượng token tiết kiệm của bộ đệm Chatbot CSKH",
 )
-async def get_cache_metrics():
+async def get_cache_metrics(_user: CurrentUser = Depends(require_roles("Admin"))):
     """Báo cáo các chỉ số hit-rate, kích thước bộ đệm và tổng token ước lượng đã tiết kiệm."""
     return chatbot_cache.get_metrics()
 
@@ -98,7 +100,7 @@ async def get_cache_metrics():
     "/cskh/cache/clear",
     summary="Xóa toàn bộ bản ghi trong bộ đệm Chatbot CSKH (dành cho kiểm thử/quản trị)",
 )
-async def clear_cache():
+async def clear_cache(_user: CurrentUser = Depends(require_roles("Admin"))):
     """Làm rỗng bộ đệm trong bộ nhớ và reset các bộ đếm."""
     chatbot_cache.clear()
     return {"message": "Đã xóa toàn bộ bộ đệm Chatbot CSKH thành công"}

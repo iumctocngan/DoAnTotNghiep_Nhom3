@@ -48,6 +48,11 @@ class Settings(BaseSettings):
     debug: bool = True
     log_level: str = "INFO"
 
+    # JWT verification (must match the Core API Jwt configuration)
+    jwt_issuer: str = ""
+    jwt_audience: str = ""
+    jwt_signing_key: str = ""
+
     @field_validator("debug", mode="before")
     @classmethod
     def parse_debug(cls, v: Any) -> bool:

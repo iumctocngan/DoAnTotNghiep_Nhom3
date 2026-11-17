@@ -1,14 +1,40 @@
 """
 Integration tests cho Prediction Router (Sprint 2 - TC-ML-06, TC-ML-07).
 """
+from datetime import datetime, timedelta, timezone
+
+import jwt
 import pytest
 from starlette.testclient import TestClient
 from unittest.mock import patch, MagicMock
 
+import ai_service.security as security
 from ai_service.main import app
 from ai_service.database import get_db
 
 client = TestClient(app)
+JWT_ISSUER = "cms-edu-test"
+JWT_AUDIENCE = "cms-edu-ai-test"
+JWT_SIGNING_KEY = "test-signing-key-with-at-least-thirty-two-bytes"
+
+
+@pytest.fixture
+def admin_headers(monkeypatch):
+    monkeypatch.setattr(security.settings, "jwt_issuer", JWT_ISSUER)
+    monkeypatch.setattr(security.settings, "jwt_audience", JWT_AUDIENCE)
+    monkeypatch.setattr(security.settings, "jwt_signing_key", JWT_SIGNING_KEY)
+    token = jwt.encode(
+        {
+            "sub": "test-admin",
+            "role": "Admin",
+            "iss": JWT_ISSUER,
+            "aud": JWT_AUDIENCE,
+            "exp": datetime.now(timezone.utc) + timedelta(minutes=5),
+        },
+        JWT_SIGNING_KEY,
+        algorithm="HS256",
+    )
+    return {"Authorization": f"Bearer {token}"}
 
 
 def test_health_check():
@@ -19,7 +45,17 @@ def test_health_check():
     assert data["status"] == "ok"
 
 
-def test_predict_student_endpoint():
+@pytest.mark.parametrize(
+    "path",
+    ["/api/ml/predict-student", "/api/ml/predict-batch"],
+)
+def test_prediction_endpoints_require_bearer_token(path):
+    response = client.post(path, json={"student_id": 105, "enrollment_id": 42})
+
+    assert response.status_code == 401
+
+
+def test_predict_student_endpoint(admin_headers):
     """Kiểm tra endpoint on-demand POST /api/ml/predict-student."""
     mock_db = MagicMock()
     # Override get_db dependency
@@ -29,6 +65,7 @@ def test_predict_student_endpoint():
         response = client.post(
             "/api/ml/predict-student",
             json={"student_id": 105, "enrollment_id": 42},
+            headers=admin_headers,
         )
         assert response.status_code == 200
         data = response.json()
@@ -50,7 +87,7 @@ def test_predict_student_endpoint():
         app.dependency_overrides.clear()
 
 
-def test_predict_batch_endpoint():
+def test_predict_batch_endpoint(admin_headers):
     """Kiểm tra endpoint batch POST /api/ml/predict-batch."""
     mock_db = MagicMock()
     app.dependency_overrides[get_db] = lambda: mock_db
@@ -62,7 +99,7 @@ def test_predict_batch_endpoint():
                 {"student_id": 102, "enrollment_id": 12},
             ]
 
-            response = client.post("/api/ml/predict-batch")
+            response = client.post("/api/ml/predict-batch", headers=admin_headers)
             assert response.status_code == 200
             data = response.json()
 

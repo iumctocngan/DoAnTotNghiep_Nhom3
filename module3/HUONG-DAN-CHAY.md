@@ -53,10 +53,14 @@ ML_MODEL_PATH=./ai_service/ml_models/renewal_model.joblib
 ML_MODEL_VERSION=v1.0.0-lgbm
 DEBUG=true
 LOG_LEVEL=INFO
+JWT_ISSUER=CmsEdu.Api
+JWT_AUDIENCE=CmsEdu.Web
+JWT_SIGNING_KEY=
 ```
 
 - Chỉnh `SERVER`, `DATABASE` và phương thức xác thực SQL Server theo cấu hình máy.
 - Đặt khóa cho provider được chọn ở `LLM_PROVIDER` (`gemini` hoặc `openai`). Chức năng sinh kịch bản sẽ trả lỗi cấu hình nếu khóa tương ứng đang để trống.
+- Đặt `JWT_ISSUER`, `JWT_AUDIENCE` và `JWT_SIGNING_KEY` khớp với cấu hình `Jwt:Issuer`, `Jwt:Audience` và `Jwt:SigningKey` của Core API. Khóa phải có tối thiểu 32 ký tự; không commit hoặc chia sẻ khóa thật.
 - `ML_MODEL_PATH` mặc định được tính tương đối từ thư mục `module3`; giữ nguyên thư mục làm việc như các lệnh trong hướng dẫn.
 
 ## 4. Chạy AI Service
@@ -89,19 +93,22 @@ Core API không nhận hoặc lưu khóa Gemini/OpenAI. Chỉ cấu hình khóa 
 
 ## 5. Các endpoint AI hiện được khai báo
 
-Các endpoint dưới đây gọi trực tiếp AI Service tại `http://127.0.0.1:8001`. Chúng không phải endpoint .NET có JWT/RBAC; chỉ sử dụng trên máy phát triển đáng tin cậy, không mở trực tiếp ra mạng công cộng.
+Frontend gọi Core API; Core API xác thực JWT/RBAC rồi chuyển tiếp Bearer token đến AI Service. Các endpoint FastAPI bên dưới cũng tự kiểm tra JWT HS256 (issuer, audience, thời hạn và chữ ký), nhưng chỉ nên bind ở `127.0.0.1`, không mở trực tiếp ra mạng công cộng.
 
-| Method | Path | Phụ thuộc |
-|---|---|---|
-| `GET` | `/health` | Chỉ cần AI Service đang chạy |
-| `POST` | `/api/ml/predict-student` | SQL Server, enrollment hợp lệ, model |
-| `POST` | `/api/ml/predict-batch` | SQL Server, dữ liệu enrollment, model |
-| `GET` | `/api/ai/cskh/student-context/{student_id}` | SQL Server và dữ liệu học viên |
-| `POST` | `/api/ai/cskh/call-script` | SQL Server, dữ liệu context và khóa LLM |
+| Method | Path | Quyền | Phụ thuộc |
+|---|---|---|---|
+| `GET` | `/health` | Công khai | Chỉ cần AI Service đang chạy |
+| `POST` | `/api/ml/predict-student` | Admin, CustomerCare | SQL Server, enrollment hợp lệ, model |
+| `POST` | `/api/ml/predict-batch` | Admin, CustomerCare | SQL Server, dữ liệu enrollment, model |
+| `GET` | `/api/ai/cskh/student-context/{student_id}` | Admin, CustomerCare | SQL Server và dữ liệu học viên |
+| `POST` | `/api/ai/cskh/call-script` | Admin, CustomerCare | SQL Server, dữ liệu context và khóa LLM |
+
+Core API cung cấp cổng được bảo vệ để chạy dự đoán: `POST /api/ai/predictions/students/{studentId}` và `POST /api/ai/predictions/batch`. Frontend cần gọi các route này bằng access token; không gửi khóa JWT hoặc khóa LLM từ trình duyệt. Với dự đoán từng học viên, Core API tự chọn ghi danh Active mới nhất, không nhận `enrollment_id` từ client.
 
 Ví dụ dự đoán cho một học viên (thay ID bằng học viên và enrollment có thật trong database):
 
 ```powershell
+$token = "<access-token-cua-nguoi-dung-co-quyen>"
 $body = @{
     student_id = 105
     enrollment_id = 42
@@ -111,13 +118,16 @@ Invoke-RestMethod `
     -Method Post `
     -Uri http://127.0.0.1:8001/api/ml/predict-student `
     -ContentType "application/json" `
+    -Headers @{ Authorization = "Bearer $token" } `
     -Body $body
 ```
 
 Ví dụ truy xuất context và sinh kịch bản:
 
 ```powershell
-Invoke-RestMethod http://127.0.0.1:8001/api/ai/cskh/student-context/105
+Invoke-RestMethod `
+    -Uri http://127.0.0.1:8001/api/ai/cskh/student-context/105 `
+    -Headers @{ Authorization = "Bearer $token" }
 
 $body = @{
     student_id = 105
@@ -128,6 +138,7 @@ Invoke-RestMethod `
     -Method Post `
     -Uri http://127.0.0.1:8001/api/ai/cskh/call-script `
     -ContentType "application/json" `
+    -Headers @{ Authorization = "Bearer $token" } `
     -Body $body
 ```
 
