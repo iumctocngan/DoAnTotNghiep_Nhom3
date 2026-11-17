@@ -277,7 +277,7 @@ const AtRiskStudentsTable: React.FC = () => {
             Học sinh nguy cơ cao (At-Risk Students)
           </h3>
           <p className="mt-1 text-xs text-slate-500">
-            Ưu tiên chăm sóc theo dự đoán tái phí và các yếu tố SHAP.
+            Ưu tiên chăm sóc theo dự đoán tái phí và các yếu tố ảnh hưởng.
           </p>
         </div>
         {data && (
@@ -311,7 +311,7 @@ const AtRiskStudentsTable: React.FC = () => {
                 <th>Học sinh</th>
                 <th>Lớp</th>
                 <th className="whitespace-nowrap">Còn lại kỳ phí</th>
-                <th>SHAP Drivers</th>
+                <th>Yếu tố ảnh hưởng chính</th>
                 <th className="text-right">Thao tác</th>
               </tr>
             </thead>
@@ -349,7 +349,7 @@ const AtRiskStudentsTable: React.FC = () => {
                       </div>
                     ) : (
                       <span className="text-xs text-slate-500">
-                        Chưa có dữ liệu SHAP
+                        Chưa có thông tin về yếu tố ảnh hưởng
                       </span>
                     )}
                   </td>

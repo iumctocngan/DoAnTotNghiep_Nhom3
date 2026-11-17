@@ -586,7 +586,7 @@ const StudentContextCard: React.FC<{
       </div>
       <div>
         <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-600">
-          Top SHAP
+          Yếu tố ảnh hưởng chính
         </h4>
         {context.renewal_prediction.top_drivers.length ? (
           <div className="flex flex-wrap gap-2">
@@ -603,7 +603,9 @@ const StudentContextCard: React.FC<{
               ))}
           </div>
         ) : (
-          <p className="text-sm text-slate-500">Chưa có dữ liệu SHAP.</p>
+          <p className="text-sm text-slate-500">
+            Chưa có thông tin về yếu tố ảnh hưởng.
+          </p>
         )}
       </div>
       {context.assessment.teacher_note && (
