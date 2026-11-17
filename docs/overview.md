@@ -132,6 +132,7 @@ Hệ thống hỗ trợ các danh sách và số liệu cơ bản:
 - Công nợ quá hạn.
 - Học sinh đang học, bảo lưu hoặc đã nghỉ học.
 - Lớp và session sắp diễn ra theo phạm vi role.
+- Báo cáo số buổi vắng theo học viên, khóa học và lớp, lọc theo khóa học, lớp và khoảng ngày; chỉ tính attendance của session Completed.
 
 Dashboard chỉ hiển thị số liệu tổng hợp và danh sách cơ bản theo role, được truy vấn trực tiếp từ dữ liệu nghiệp vụ. Không xây lịch sử liên hệ, bảng thống kê riêng hoặc phân hệ thông báo; email, SMS và push notification nằm ngoài phạm vi.
 
@@ -148,7 +149,7 @@ Dashboard chỉ hiển thị số liệu tổng hợp và danh sách cơ bản t
 - Tài khoản học sinh/phụ huynh.
 - Học thử, học bù và quyền học theo số buổi.
 - Thanh toán trực tuyến và thông báo đa kênh.
-- Lịch sử liên hệ phụ huynh, import/export và báo cáo nâng cao.
+- Lịch sử liên hệ phụ huynh, import/export và các báo cáo nâng cao khác.
 - Cảnh báo tái phí 30 ngày và phát hiện vắng nhiều theo 10 session gần nhất.
 - Giáo viên dạy thay và phân biệt vắng có phép/không phép.
 - Chi tiết xử lý bên trong các module AI.

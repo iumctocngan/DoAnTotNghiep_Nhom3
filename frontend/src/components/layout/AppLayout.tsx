@@ -26,6 +26,7 @@ export const AppLayout: React.FC = () => {
     "lop-hoc": "Lớp học",
     "ghi-danh": "Ghi danh",
     sessions: "Buổi học & Điểm danh",
+    "attendance-reports": "Báo cáo chuyên cần",
     invoices: "Học phí & Thu tiền",
     curriculum: "Chương trình học",
     staff: "Nhân sự",
@@ -196,6 +197,16 @@ export const AppLayout: React.FC = () => {
               }
             >
               Buổi học & Điểm danh
+            </NavLink>
+          )}
+          {hasPermission("sessions.attendance") && (
+            <NavLink
+              to="/attendance-reports"
+              className={({ isActive }) =>
+                isActive ? "nav-link active" : "nav-link"
+              }
+            >
+              Báo cáo chuyên cần
             </NavLink>
           )}
           {hasPermission("invoices.view") && (

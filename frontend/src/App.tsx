@@ -19,6 +19,7 @@ import { TrangQuanLy } from './pages/quan-ly/TrangQuanLy';
 import { AssessmentPage } from './pages/teacher/AssessmentPage';
 import { ClassAssistantPage } from './pages/assistant/ClassAssistantPage';
 import { AiChatPage } from './pages/ai/AiChatPage';
+import { AttendanceAbsenceReportPage } from './pages/attendance/BaoCaoVangMatPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -71,6 +72,9 @@ export const App: React.FC = () => {
                   {/* Buổi học & Điểm danh */}
                   <Route element={<ProtectedRoute requiredPermission="sessions.view" />}>
                     <Route path="/sessions" element={<SessionListPage />} />
+                  </Route>
+                  <Route element={<ProtectedRoute requiredPermission="sessions.attendance" />}>
+                    <Route path="/attendance-reports" element={<AttendanceAbsenceReportPage />} />
                   </Route>
 
                   {/* Học phí & Hóa đơn */}

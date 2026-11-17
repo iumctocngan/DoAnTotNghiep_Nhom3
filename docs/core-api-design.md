@@ -150,11 +150,14 @@ Mỗi học sinh chỉ có tối đa một enrollment mang trạng thái `Active
 | POST   | `/api/sessions/{id}/complete`   | Xác nhận đã diễn ra        | Admin, Teacher chính của lớp |
 | GET    | `/api/sessions/{id}/attendance` | Danh sách điểm danh        | Admin, Teacher chính của lớp |
 | PUT    | `/api/sessions/{id}/attendance` | Lưu điểm danh cả lớp       | Admin, Teacher chính của lớp |
+| GET    | `/api/attendance-reports/absences` | Báo cáo số buổi vắng theo học viên/khóa học/lớp | Admin, Teacher trong lớp phụ trách |
 | GET    | `/api/enrollments/{id}/remarks` | Danh sách nhận xét         | Theo phạm vi role            |
 | POST   | `/api/enrollments/{id}/remarks` | Tạo nhận xét               | Admin, Teacher chính của lớp |
 | PUT    | `/api/remarks/{id}`             | Sửa nhận xét               | Người tạo, Admin             |
 
 Request tạo session không nhận `TeacherUserId`; giáo viên được suy ra từ giáo viên chính của lớp và MVP chưa hỗ trợ dạy thay. Attendance PUT gửi toàn bộ danh sách enrollment hợp lệ của session với trạng thái `Present` hoặc `Absent` và lưu đồng thời trong một transaction; lý do vắng nếu cần ghi trong `Note`. Enrollment hợp lệ phải thuộc cùng lớp, có trạng thái `Active`, `StartDate <= SessionDate` và chưa có `EndDate` hoặc `EndDate >= SessionDate`; enrollment `Paused/Completed/Withdrawn` không nằm trong danh sách điểm danh. Trước lần lưu đầu tiên, không có bản ghi attendance nghĩa là chưa điểm danh. Endpoint complete chỉ thành công khi mọi enrollment hợp lệ tại ngày học đã có attendance; nếu còn thiếu, API trả lỗi kèm danh sách enrollment chưa được điểm danh. Admin hoặc Teacher chính của lớp được sửa attendance khi session chưa `Completed`; sau khi hoàn tất, không cho sửa, hủy hoặc mở lại session và attendance trong MVP. Lesson của session, nếu có, phải thuộc cùng level với lớp. Không tạo remark mới cho enrollment `Completed/Withdrawn`.
+
+Báo cáo vắng nhận các bộ lọc tùy chọn `courseId`, `classId`, `fromDate`, `toDate` cùng `page` và `pageSize` (1–100); nếu có cả hai ngày thì `fromDate` không được sau `toDate`. Nếu truyền đồng thời `courseId` và `classId`, dữ liệu phải khớp cả hai điều kiện. Kết quả được nhóm theo học viên và khóa học qua Enrollment → Class → Level → Course; mỗi attendance `Absent` của session `Completed` tính là một buổi vắng. Session `Scheduled/Cancelled` và attendance `Present` không được tính. Admin xem toàn bộ; Teacher chỉ xem các lớp hiện do mình phụ trách. Báo cáo chỉ đọc, không tạo dữ liệu chuyên cần mới.
 
 ## 9. Học phí
 

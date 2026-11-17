@@ -15,6 +15,7 @@ Hệ thống dùng **RBAC + resource scope** theo nguyên tắc **least privileg
 | Ghi danh | Quản lý | Xem theo lớp phụ trách | Xem, giới hạn dữ liệu | Quản lý nghiệp vụ ghi danh |
 | Buổi học | Quản lý | Xem và hoàn tất theo lớp phụ trách | — | Xem |
 | Điểm danh | Quản lý | Quản lý theo lớp phụ trách | — | — |
+| Báo cáo chuyên cần | Xem toàn bộ | Xem theo lớp phụ trách | — | — |
 | Nhận xét | Quản lý | Quản lý theo lớp phụ trách | — | Xem |
 | Invoice và công nợ | Quản lý | — | Quản lý | Xem |
 | Payment | Quản lý | — | Quản lý | — |

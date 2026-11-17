@@ -267,7 +267,7 @@ MissingInvoice (chưa lập học phí) = học sinh có enrollment Active nhưn
 
 ## 8. Dữ liệu theo dõi tính động
 
-Không tạo bảng riêng cho chưa lập học phí, công nợ quá hạn, dashboard hoặc notification. Các danh sách MVP được truy vấn trực tiếp từ dữ liệu nghiệp vụ. Cảnh báo tái phí 30 ngày và thống kê vắng nhiều được hoãn sau MVP.
+Không tạo bảng riêng cho chưa lập học phí, công nợ quá hạn, dashboard, báo cáo vắng hoặc notification. Các danh sách và báo cáo MVP được truy vấn trực tiếp từ dữ liệu nghiệp vụ. Cảnh báo tái phí 30 ngày và cảnh báo vắng nhiều theo ngưỡng được hoãn sau MVP.
 
 ## 9. Audit
 

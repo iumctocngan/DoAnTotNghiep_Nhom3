@@ -1,0 +1,14 @@
+@baseUrl = http://localhost:5151
+@accessToken = replace-with-a-valid-access-token
+
+### Báo cáo tất cả khóa học đã vắng
+GET {{baseUrl}}/api/attendance-reports/absences?page=1&pageSize=20
+Authorization: Bearer {{accessToken}}
+
+### Lọc theo khóa học và khoảng ngày
+GET {{baseUrl}}/api/attendance-reports/absences?courseId=1&classId=1&fromDate=2026-09-01&toDate=2026-12-31&page=1&pageSize=20
+Authorization: Bearer {{accessToken}}
+
+### Kiểm tra khoảng ngày không hợp lệ (400)
+GET {{baseUrl}}/api/attendance-reports/absences?fromDate=2026-12-31&toDate=2026-09-01
+Authorization: Bearer {{accessToken}}

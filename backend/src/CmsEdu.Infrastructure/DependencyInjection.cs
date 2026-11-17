@@ -63,6 +63,7 @@ public static class DependencyInjection
         services.AddScoped<CmsEdu.Application.Guardians.DichVuNguoiGiamHo>();
         services.AddScoped<IDichVuBuoiHoc, DichVuBuoiHoc>();
         services.AddScoped<IDichVuDiemDanh, DichVuDiemDanh>();
+        services.AddScoped<IAttendanceAbsenceReportService, AttendanceAbsenceReportService>();
         services.AddScoped<IDichVuHoaDon, DichVuHoaDon>();
         services.AddScoped<IDichVuPayment, DichVuPayment>();
         services.AddScoped<IRoleDashboardService, RoleDashboardService>();
