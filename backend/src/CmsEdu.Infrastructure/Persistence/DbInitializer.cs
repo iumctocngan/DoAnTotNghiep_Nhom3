@@ -96,6 +96,21 @@ public static class DbInitializer
                 throw new InvalidOperationException("SeedAdmin:EmployeeCode must not exceed 50 characters.");
             }
 
+            if (await userManager.Users.AnyAsync(x => x.EmployeeCode == adminEmployeeCode))
+            {
+                var admins = await userManager.GetUsersInRoleAsync(UserRole.Admin);
+                if (admins.Any(x => x.EmploymentStatus == EmploymentStatus.Active))
+                {
+                    logger.LogWarning(
+                        "Default Admin seeding skipped because employee code {EmployeeCode} is in use and an active Admin already exists.",
+                        adminEmployeeCode);
+                    return;
+                }
+
+                throw new InvalidOperationException(
+                    "SeedAdmin:EmployeeCode is already in use. Configure an unused employee code to create the first active Admin.");
+            }
+
             var adminUserToCreate = new ApplicationUser
             {
                 UserName = adminEmail,

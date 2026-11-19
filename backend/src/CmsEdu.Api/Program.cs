@@ -22,6 +22,7 @@ builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
+builder.Services.AddHttpClient("AssessmentAI", client => client.Timeout = TimeSpan.FromSeconds(45));
 var aiServiceBaseUrl = builder.Configuration["AiService:BaseUrl"] ?? "http://127.0.0.1:8001/";
 builder.Services.AddHttpClient<IModule3AiClient, Module3AiClient>(client =>
 {

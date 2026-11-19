@@ -447,3 +447,16 @@
 .assessment-page fieldset, .assessment-page article { border: 1px solid #dce3ed; border-radius: 8px; padding: 16px; margin: 12px 0; }
 .assessment-page table { width: 100%; border-collapse: collapse; }
 .assessment-page th, .assessment-page td { text-align: left; padding: 10px; border-bottom: 1px solid #dce3ed; }
+.assessment-page:has(.bang-danh-gia-lop) { max-width: none; }
+.bang-danh-gia-lop { overflow-x: auto; border: 1px solid #dce3ed; border-radius: 8px; }
+.bang-danh-gia-lop th { background: #eef4f5; }
+.bang-danh-gia-lop th:first-child { min-width: 190px; position: sticky; left: 0; z-index: 1; }
+.bang-danh-gia-lop td { min-width: 174px; }
+.bang-danh-gia-lop small { display: block; margin-top: 4px; }
+.bang-danh-gia-lop details { margin: 6px 0 0; padding: 6px; font-weight: 400; font-size: .875rem; }
+.bang-danh-gia-lop summary { cursor: pointer; }
+.bang-danh-gia-lop details ol { list-style: decimal; padding-left: 1.25rem; }
+.assessment-levels { display: flex; gap: 8px; }
+.assessment-levels label { align-items: center; margin: 0; gap: 2px; cursor: pointer; }
+.assessment-levels input:disabled, .assessment-levels label:has(input:disabled) { cursor: default; }
+.nhan-xet-theo-lop label { display: flex; margin-right: 0; }

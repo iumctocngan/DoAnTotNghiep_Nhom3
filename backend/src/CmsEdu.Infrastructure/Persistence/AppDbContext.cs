@@ -45,6 +45,9 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<Assessment>().HasOne(x => x.Rubric).WithMany().HasForeignKey(x => x.RubricId).OnDelete(DeleteBehavior.Restrict);
         builder.Entity<Assessment>().Property(x => x.Score).HasPrecision(5, 2);
         builder.Entity<Assessment>().HasIndex(x => new { x.EnrollmentId, x.Date });
+        builder.Entity<Assessment>().HasOne<Session>().WithMany().HasForeignKey(x => x.SessionId).OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<Assessment>().HasIndex(x => new { x.SessionId, x.RubricId, x.EnrollmentId })
+            .IsUnique().HasFilter("[SessionId] IS NOT NULL");
         builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }
 }

@@ -11,48 +11,64 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "Documents",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    FileName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    StoragePath = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    FileSize = table.Column<long>(type: "bigint", nullable: false),
-                    DocumentType = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: false),
-                    Status = table.Column<string>(type: "varchar(20)", unicode: false, maxLength: 20, nullable: false, defaultValue: "processing"),
-                    ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Scope = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
-                    CourseId = table.Column<int>(type: "int", nullable: true),
-                    LevelId = table.Column<int>(type: "int", nullable: true),
-                    ClassId = table.Column<int>(type: "int", nullable: true),
-                    UploadedByUserId = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Documents", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Documents_Classes_ClassId",
-                        column: x => x.ClassId,
-                        principalTable: "Classes",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
-                        name: "FK_Documents_Courses_CourseId",
-                        column: x => x.CourseId,
-                        principalTable: "Courses",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
-                        name: "FK_Documents_Levels_LevelId",
-                        column: x => x.LevelId,
-                        principalTable: "Levels",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
-                });
+            migrationBuilder.Sql("""
+                IF OBJECT_ID(N'dbo.Documents', N'U') IS NULL
+                BEGIN
+                    CREATE TABLE [dbo].[Documents] (
+                        [Id] uniqueidentifier NOT NULL CONSTRAINT [PK_Documents] PRIMARY KEY,
+                        [Title] nvarchar(255) NOT NULL,
+                        [FileName] nvarchar(255) NOT NULL,
+                        [StoragePath] nvarchar(500) NOT NULL,
+                        [FileSize] bigint NOT NULL,
+                        [DocumentType] varchar(10) NOT NULL,
+                        [Status] varchar(20) NOT NULL DEFAULT 'processing',
+                        [ErrorMessage] nvarchar(max) NULL,
+                        [CreatedAt] datetime2 NOT NULL DEFAULT GETUTCDATE(),
+                        [UpdatedAt] datetime2 NULL,
+                        [Scope] int NOT NULL DEFAULT 1,
+                        [CourseId] int NULL,
+                        [LevelId] int NULL,
+                        [ClassId] int NULL,
+                        [UploadedByUserId] nvarchar(450) NULL
+                    );
+                END
+                ELSE IF COL_LENGTH(N'dbo.Documents', N'NotebookId') IS NOT NULL
+                     AND COL_LENGTH(N'dbo.Documents', N'Scope') IS NULL
+                     AND OBJECT_ID(N'dbo.Notebooks', N'U') IS NOT NULL
+                BEGIN
+                    ALTER TABLE [dbo].[Documents] DROP CONSTRAINT [FK_Documents_Notebooks_NotebookId];
+                    DROP INDEX [IX_Documents_NotebookId] ON [dbo].[Documents];
+                    ALTER TABLE [dbo].[Documents] ALTER COLUMN [NotebookId] uniqueidentifier NULL;
+                    ALTER TABLE [dbo].[Documents] ADD CONSTRAINT [FK_Documents_Notebooks_NotebookId]
+                        FOREIGN KEY ([NotebookId]) REFERENCES [dbo].[Notebooks] ([Id]) ON DELETE CASCADE;
+                    CREATE INDEX [IX_Documents_NotebookId] ON [dbo].[Documents] ([NotebookId]);
+
+                    ALTER TABLE [dbo].[Documents] ALTER COLUMN [ErrorMessage] nvarchar(max) NULL;
+                    ALTER TABLE [dbo].[Documents] ADD [Title] nvarchar(255) NULL,
+                        [UpdatedAt] datetime2 NULL, [Scope] int NOT NULL DEFAULT 1,
+                        [CourseId] int NULL, [LevelId] int NULL, [ClassId] int NULL,
+                        [UploadedByUserId] nvarchar(450) NULL;
+
+                    -- Old notebooks lack a class mapping. Keep their documents out of teacher retrieval.
+                    EXEC(N'UPDATE d SET [Title] = d.[FileName], [Scope] = 4,
+                                [UploadedByUserId] = n.[TeacherId]
+                           FROM [dbo].[Documents] d
+                           LEFT JOIN [dbo].[Notebooks] n ON n.[Id] = d.[NotebookId];
+                           ALTER TABLE [dbo].[Documents] ALTER COLUMN [Title] nvarchar(255) NOT NULL;');
+                END
+                ELSE
+                    THROW 51000, 'Documents already exists with an unexpected schema. Check the database migration history.', 1;
+                """);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Documents_Classes_ClassId", table: "Documents", column: "ClassId",
+                principalTable: "Classes", principalColumn: "Id", onDelete: ReferentialAction.SetNull);
+            migrationBuilder.AddForeignKey(
+                name: "FK_Documents_Courses_CourseId", table: "Documents", column: "CourseId",
+                principalTable: "Courses", principalColumn: "Id", onDelete: ReferentialAction.SetNull);
+            migrationBuilder.AddForeignKey(
+                name: "FK_Documents_Levels_LevelId", table: "Documents", column: "LevelId",
+                principalTable: "Levels", principalColumn: "Id", onDelete: ReferentialAction.SetNull);
 
             migrationBuilder.CreateTable(
                 name: "ClassChatMessages",
@@ -106,6 +122,10 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql("""
+                IF COL_LENGTH(N'dbo.Documents', N'NotebookId') IS NOT NULL
+                    THROW 51001, 'Automatic rollback would delete legacy notebook documents.', 1;
+                """);
             migrationBuilder.DropTable(name: "ClassChatMessages");
             migrationBuilder.DropTable(name: "Documents");
         }

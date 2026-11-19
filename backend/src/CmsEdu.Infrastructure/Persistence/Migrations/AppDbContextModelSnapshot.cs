@@ -66,6 +66,9 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("SessionId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -75,6 +78,10 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                     b.HasIndex("RubricId");
 
                     b.HasIndex("EnrollmentId", "Date");
+
+                    b.HasIndex("SessionId", "RubricId", "EnrollmentId")
+                        .IsUnique()
+                        .HasFilter("[SessionId] IS NOT NULL");
 
                     b.ToTable("Assessment");
                 });
@@ -1402,6 +1409,11 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                         .HasForeignKey("RubricId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("CmsEdu.Domain.Entities.Session", null)
+                        .WithMany()
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Enrollment");
 

@@ -17,6 +17,7 @@ public class Assessment
     public Enrollment Enrollment { get; set; } = null!;
     public int RubricId { get; set; }
     public AssessmentRubric Rubric { get; set; } = null!;
+    public int? SessionId { get; set; }
     public string Title { get; set; } = "";
     public DateOnly Date { get; set; }
     public decimal Score { get; set; }

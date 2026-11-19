@@ -2,16 +2,18 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CmsEdu.Application.Assessments;
 
-public record Criterion([property: Required, MaxLength(200)] string Name,
-    decimal Weight, [property: Required, MaxLength(50)] string Clo,
-    [property: Required, MaxLength(1000)] string Description,
-    [property: MaxLength(5)] string[]? MucDanhGia = null);
-public record CreateRubric(int ClassId, [property: Required, MaxLength(200)] string Name,
-    [property: Required, MinLength(1), MaxLength(50)] List<Criterion> Criteria);
+public record Criterion([Required, MaxLength(200)] string Name,
+    decimal Weight, [Required, MaxLength(50)] string Clo,
+    [Required, MaxLength(1000)] string Description,
+    [MaxLength(5)] string[]? MucDanhGia = null);
+public record CreateRubric(int ClassId, [Required, MaxLength(200)] string Name,
+    [Required, MinLength(1), MaxLength(50)] List<Criterion> Criteria);
 public record CreateAssessment(int EnrollmentId, int RubricId,
-    [property: Required, MaxLength(200)] string Title, DateOnly Date,
-    [property: Required, MinLength(1), MaxLength(50)] List<decimal> Scores);
-public record ApproveFeedback([property: Required, MaxLength(4000)] string Feedback);
+    [Required, MaxLength(200)] string Title, DateOnly Date,
+    [Required, MinLength(1), MaxLength(50)] List<decimal> Scores);
+public record ApproveFeedback([Required, MaxLength(4000)] string Feedback);
+public record GradeRow(int EnrollmentId, [Required, MinLength(1), MaxLength(50)] List<decimal> Scores);
+public record SaveClassGrades([Required, MinLength(1)] List<GradeRow> Rows);
 
 public static class AssessmentMath
 {
