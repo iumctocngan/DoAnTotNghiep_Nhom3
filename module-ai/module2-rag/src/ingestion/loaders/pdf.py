@@ -51,24 +51,54 @@ def _extract_toc_hierarchy(document: pymupdf.Document) -> list[tuple[int, str]]:
         return []
     toc_page = document[2]
     blocks = toc_page.get_text("blocks")
-    entries: list[tuple[int, str]] = []
-    for block in blocks:
-        if len(block) < 5:
+
+    lesson_blocks = []
+    number_blocks = []
+    for b in blocks:
+        if len(b) < 5:
             continue
+        b_text = b[4].strip()
+        if re.search(r"(?:Bài|Unit)\s+\d+", b_text, re.IGNORECASE):
+            lesson_blocks.append(b)
+        else:
+            nums = re.findall(r"\b\d{1,3}\b", b_text)
+            if nums:
+                number_blocks.append((b, int(nums[0])))
+
+    entries: list[tuple[int, str]] = []
+    for block in lesson_blocks:
         text = block[4].strip()
-        match = re.search(r"(Bài\s+\d+)", text, re.IGNORECASE)
+        match = re.search(r"((?:Bài|Unit)\s+\d+)", text, re.IGNORECASE)
         if not match:
             continue
         prefix = match.group(1).strip()
+        prefix = prefix[0].upper() + prefix[1:]
         remaining = text[:match.start()] + text[match.end():]
         page_match = re.search(r"\b(\d{1,3})\b", remaining)
-        if not page_match:
-            continue
-        page_number = int(page_match.group(1))
-        title_raw = remaining[:page_match.start()] + remaining[page_match.end():]
+        if page_match:
+            page_number = int(page_match.group(1))
+            title_raw = remaining[:page_match.start()] + remaining[page_match.end():]
+        else:
+            # Trường hợp số trang nằm ở cột/text frame riêng
+            bx0, by0, bx1, by1 = block[:4]
+            best_page = None
+            min_dy = 9999.0
+            for nb, p_num in number_blocks:
+                nx0, ny0, nx1, ny1 = nb[:4]
+                dy = min(abs(by0 - ny0), abs(by1 - ny1), abs((by0 + by1) / 2.0 - (ny0 + ny1) / 2.0))
+                if dy < 30 and nx0 >= bx0 - 20:
+                    if dy < min_dy:
+                        min_dy = dy
+                        best_page = p_num
+            if best_page is None:
+                continue
+            page_number = best_page
+            title_raw = remaining
+
         clean_title = re.sub(r"\s+", " ", title_raw).strip(" :-\t\n\r")
         full_lesson = f"{prefix}: {clean_title}" if clean_title else prefix
         entries.append((page_number, full_lesson))
+
     entries.sort(key=lambda item: item[0])
     return entries
 
