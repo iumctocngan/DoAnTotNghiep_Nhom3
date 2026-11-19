@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { knowledgeApi } from '../../api/knowledgeApi';
 import { curriculumApi } from '../../api/curriculumApi';
@@ -9,6 +9,15 @@ import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { useToast } from '../../components/common/ToastProvider';
 import { MaterialIcon } from '../../components/common/MaterialIcon';
 import { useAuth } from '../../context/AuthContext';
+
+interface UploadQueueItem {
+  id: string;
+  file: File;
+  title: string;
+  size: number;
+  status: 'pending' | 'uploading' | 'success' | 'error';
+  errorMessage?: string;
+}
 
 export const KnowledgeBaseSection: React.FC = () => {
   const queryClient = useQueryClient();
@@ -22,9 +31,15 @@ export const KnowledgeBaseSection: React.FC = () => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [deletingDoc, setDeletingDoc] = useState<KnowledgeDocument | null>(null);
 
-  // Upload Form State (3 simplified scope groups)
-  const [file, setFile] = useState<File | null>(null);
-  const [docTitle, setDocTitle] = useState('');
+  // Upload Form State (Multiple files & folders)
+  const [queue, setQueue] = useState<UploadQueueItem[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
+
   const [uploadScopeMode, setUploadScopeMode] = useState<'global' | 'curriculum' | 'class'>('global');
   const [selectedCourseId, setSelectedCourseId] = useState<number | undefined>(undefined);
   const [selectedLevelId, setSelectedLevelId] = useState<number | undefined>(undefined);
@@ -61,24 +76,6 @@ export const KnowledgeBaseSection: React.FC = () => {
     enabled: isUploadModalOpen && uploadScopeMode === 'class',
   });
 
-  // Upload Mutation
-  const uploadMutation = useMutation({
-    mutationFn: (formData: FormData) => knowledgeApi.uploadDocument(formData),
-    onSuccess: (res) => {
-      queryClient.invalidateQueries({ queryKey: ['knowledge-documents'] });
-      showToast(
-        res.status === 'failed'
-          ? (res.errorMessage || 'Lập chỉ mục tài liệu thất bại.')
-          : 'Tải lên thành công. Hệ thống đang lập chỉ mục tài liệu.',
-        res.status === 'failed' ? 'error' : 'success'
-      );
-      closeUploadModal();
-    },
-    onError: (err) => {
-      showToast(err instanceof Error ? err.message : 'Tải lên tài liệu thất bại.', 'error');
-    },
-  });
-
   // Delete Mutation
   const deleteMutation = useMutation({
     mutationFn: (id: string) => knowledgeApi.deleteDocument(id),
@@ -93,37 +90,153 @@ export const KnowledgeBaseSection: React.FC = () => {
   });
 
   const closeUploadModal = () => {
+    if (isUploading) {
+      if (!window.confirm('Quá trình tải lên tài liệu đang diễn ra. Bạn có chắc muốn đóng?')) {
+        return;
+      }
+    }
     setIsUploadModalOpen(false);
-    setFile(null);
-    setDocTitle('');
+    setQueue([]);
+    setIsUploading(false);
+    setUploadProgress({ current: 0, total: 0 });
     setUploadScopeMode('global');
     setSelectedCourseId(undefined);
     setSelectedLevelId(undefined);
     setSelectedClassId(undefined);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    const ext = f.name.split('.').pop()?.toLowerCase();
-    if (ext !== 'pdf' && ext !== 'docx') {
-      showToast('Hệ thống chỉ hỗ trợ định dạng PDF hoặc DOCX.', 'error');
-      return;
+  const addFilesToQueue = (files: File[]) => {
+    let invalidExtCount = 0;
+    let oversizeCount = 0;
+    const newItems: UploadQueueItem[] = [];
+
+    for (const f of files) {
+      const ext = f.name.split('.').pop()?.toLowerCase();
+      if (ext !== 'pdf' && ext !== 'docx') {
+        invalidExtCount++;
+        continue;
+      }
+      if (f.size > 25 * 1024 * 1024) {
+        oversizeCount++;
+        continue;
+      }
+
+      // Avoid duplicate in queue
+      const isDup = queue.some((q) => q.file.name === f.name && q.size === f.size);
+      if (isDup) continue;
+
+      newItems.push({
+        id: `${f.name}-${f.size}-${Date.now()}-${Math.random()}`,
+        file: f,
+        title: f.name.replace(/\.[^/.]+$/, ''),
+        size: f.size,
+        status: 'pending',
+      });
     }
-    if (f.size > 25 * 1024 * 1024) {
-      showToast('Dung lượng file vượt quá giới hạn 25MB.', 'error');
-      return;
-    }
-    setFile(f);
-    if (!docTitle) {
-      setDocTitle(f.name.replace(/\.[^/.]+$/, ''));
+
+    if (newItems.length > 0) {
+      setQueue((prev) => [...prev, ...newItems]);
+      let msg = `Đã thêm ${newItems.length} tài liệu vào danh sách.`;
+      if (invalidExtCount > 0 || oversizeCount > 0) {
+        const reasons = [];
+        if (invalidExtCount > 0) reasons.push(`${invalidExtCount} tệp không phải PDF/DOCX`);
+        if (oversizeCount > 0) reasons.push(`${oversizeCount} tệp vượt quá 25MB`);
+        msg += ` (Bỏ qua: ${reasons.join(', ')})`;
+      }
+      showToast(msg, 'success');
+    } else {
+      if (invalidExtCount > 0 || oversizeCount > 0) {
+        const reasons = [];
+        if (invalidExtCount > 0) reasons.push(`${invalidExtCount} tệp không phải PDF/DOCX`);
+        if (oversizeCount > 0) reasons.push(`${oversizeCount} tệp vượt quá 25MB`);
+        showToast(`Không có tệp hợp lệ nào. (${reasons.join(', ')})`, 'error');
+      }
     }
   };
 
-  const handleUploadSubmit = (e: React.FormEvent) => {
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      addFilesToQueue(Array.from(e.target.files));
+      e.target.value = '';
+    }
+  };
+
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    if (!file) {
-      showToast('Vui lòng chọn file để tải lên.', 'error');
+    setIsDragging(false);
+
+    const items = e.dataTransfer.items;
+    if (!items || items.length === 0) {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        addFilesToQueue(Array.from(e.dataTransfer.files));
+      }
+      return;
+    }
+
+    const traverseEntry = async (entry: any): Promise<File[]> => {
+      return new Promise((resolve) => {
+        if (!entry) return resolve([]);
+        if (entry.isFile) {
+          entry.file(
+            (file: File) => resolve([file]),
+            () => resolve([])
+          );
+        } else if (entry.isDirectory) {
+          const reader = entry.createReader();
+          const allEntries: any[] = [];
+          const readEntries = () => {
+            reader.readEntries(async (entries: any[]) => {
+              if (!entries || entries.length === 0) {
+                const subFiles = await Promise.all(allEntries.map((e) => traverseEntry(e)));
+                resolve(subFiles.flat());
+              } else {
+                allEntries.push(...entries);
+                readEntries();
+              }
+            });
+          };
+          readEntries();
+        } else {
+          resolve([]);
+        }
+      });
+    };
+
+    try {
+      const promises: Promise<File[]>[] = [];
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (typeof item.webkitGetAsEntry === 'function') {
+          const entry = item.webkitGetAsEntry();
+          if (entry) promises.push(traverseEntry(entry));
+        } else {
+          const f = item.getAsFile();
+          if (f) promises.push(Promise.resolve([f]));
+        }
+      }
+      const fileArrays = await Promise.all(promises);
+      addFilesToQueue(fileArrays.flat());
+    } catch {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        addFilesToQueue(Array.from(e.dataTransfer.files));
+      }
+    }
+  };
+
+  const removeQueueItem = (index: number) => {
+    setQueue((prev) => prev.filter((_, idx) => idx !== index));
+  };
+
+  const updateQueueItemTitle = (index: number, newTitle: string) => {
+    setQueue((prev) =>
+      prev.map((it, idx) => (idx === index ? { ...it, title: newTitle } : it))
+    );
+  };
+
+  const handleUploadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (queue.length === 0) {
+      showToast('Vui lòng chọn ít nhất một file tài liệu.', 'error');
       return;
     }
 
@@ -142,15 +255,74 @@ export const KnowledgeBaseSection: React.FC = () => {
       calculatedScope = KnowledgeScope.Class;
     }
 
-    const formData = new FormData();
-    formData.append('file', file);
-    if (docTitle.trim()) formData.append('title', docTitle.trim());
-    formData.append('scope', String(calculatedScope));
-    if (selectedCourseId) formData.append('courseId', String(selectedCourseId));
-    if (selectedLevelId) formData.append('levelId', String(selectedLevelId));
-    if (selectedClassId) formData.append('classId', String(selectedClassId));
+    setIsUploading(true);
+    setUploadProgress({ current: 0, total: queue.length });
 
-    uploadMutation.mutate(formData);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (let i = 0; i < queue.length; i++) {
+      const item = queue[i];
+      if (item.status === 'success') {
+        successCount++;
+        setUploadProgress({ current: i + 1, total: queue.length });
+        continue;
+      }
+
+      setQueue((prev) =>
+        prev.map((it, idx) => (idx === i ? { ...it, status: 'uploading' } : it))
+      );
+
+      const formData = new FormData();
+      formData.append('file', item.file);
+      if (item.title.trim()) formData.append('title', item.title.trim());
+      formData.append('scope', String(calculatedScope));
+      if (selectedCourseId) formData.append('courseId', String(selectedCourseId));
+      if (selectedLevelId) formData.append('levelId', String(selectedLevelId));
+      if (selectedClassId) formData.append('classId', String(selectedClassId));
+
+      try {
+        const res = await knowledgeApi.uploadDocument(formData);
+        if (res.status === 'failed') {
+          failCount++;
+          setQueue((prev) =>
+            prev.map((it, idx) =>
+              idx === i
+                ? { ...it, status: 'error', errorMessage: res.errorMessage || 'Lập chỉ mục thất bại' }
+                : it
+            )
+          );
+        } else {
+          successCount++;
+          setQueue((prev) =>
+            prev.map((it, idx) => (idx === i ? { ...it, status: 'success' } : it))
+          );
+        }
+      } catch (err: unknown) {
+        failCount++;
+        const message = err instanceof Error ? err.message : 'Tải lên thất bại';
+        setQueue((prev) =>
+          prev.map((it, idx) =>
+            idx === i ? { ...it, status: 'error', errorMessage: message } : it
+          )
+        );
+      }
+
+      setUploadProgress({ current: i + 1, total: queue.length });
+    }
+
+    setIsUploading(false);
+    queryClient.invalidateQueries({ queryKey: ['knowledge-documents'] });
+
+    if (failCount === 0) {
+      showToast(`Đã tải lên và lập chỉ mục thành công ${successCount} tài liệu!`, 'success');
+      closeUploadModal();
+    } else {
+      showToast(
+        `Hoàn tất: ${successCount} tài liệu thành công, ${failCount} tài liệu thất bại.`,
+        'error'
+      );
+    }
   };
 
   const formatFileSize = (bytes: number) => {
@@ -398,31 +570,193 @@ export const KnowledgeBaseSection: React.FC = () => {
       {isUploadModalOpen && (
         <Modal title="Tải lên tài liệu học liệu mới" onClose={closeUploadModal} wide>
           <form onSubmit={handleUploadSubmit} className="space-y-4">
+            {/* File Dropzone & Selection */}
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">
-                File tài liệu <span className="text-rose-500">* (PDF hoặc DOCX, tối đa 25MB)</span>
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                Tài liệu học liệu <span className="text-rose-500">* (Định dạng PDF hoặc DOCX, tối đa 25MB/tệp)</span>
               </label>
-              <input
-                type="file"
-                accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                onChange={handleFileChange}
-                className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-800 hover:file:bg-slate-200 border border-slate-300 rounded p-1"
-                required
-              />
+
+              <div
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  if (!isUploading) setIsDragging(true);
+                }}
+                onDragLeave={(e) => {
+                  e.preventDefault();
+                  setIsDragging(false);
+                }}
+                onDrop={handleDrop}
+                className={`border-2 border-dashed rounded-lg p-5 text-center transition-colors ${
+                  isDragging
+                    ? 'border-[#0284c7] bg-sky-50'
+                    : 'border-slate-300 hover:border-slate-400 bg-slate-50/50'
+                }`}
+              >
+                <div className="flex flex-col items-center justify-center gap-2">
+                  <div className="w-12 h-12 rounded-full bg-sky-100 text-[#0284c7] flex items-center justify-center">
+                    <svg className="w-7 h-7 text-[#0284c7]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-slate-700">
+                      Kéo thả tệp hoặc thư mục vào đây
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-center gap-2 mt-1">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploading}
+                      className="px-3.5 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 rounded text-xs font-medium shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <MaterialIcon name="description" className="text-sm text-[#0284c7]" />
+                      <span>Chọn tệp</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => folderInputRef.current?.click()}
+                      disabled={isUploading}
+                      className="px-3.5 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 rounded text-xs font-medium shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                      </svg>
+                      <span>Chọn thư mục</span>
+                    </button>
+                  </div>
+
+                  {/* Hidden native inputs */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    onChange={handleFileInputChange}
+                    className="hidden"
+                  />
+                  <input
+                    ref={folderInputRef}
+                    type="file"
+                    // @ts-expect-error webkitdirectory is standard in HTML5 browsers
+                    webkitdirectory=""
+                    directory=""
+                    multiple
+                    onChange={handleFileInputChange}
+                    className="hidden"
+                  />
+                </div>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">
-                Tiêu đề hiển thị (Tùy chọn)
-              </label>
-              <input
-                type="text"
-                placeholder="VD: Giáo trình Ucrea Step 1"
-                value={docTitle}
-                onChange={(e) => setDocTitle(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-slate-300 rounded outline-none"
-              />
-            </div>
+            {/* Selected Files List */}
+            {queue.length > 0 && (
+              <div className="border border-slate-200 rounded-md overflow-hidden bg-white">
+                <div className="bg-slate-100/90 px-3 py-2 border-b border-slate-200 flex items-center justify-between text-xs">
+                  <div className="font-semibold text-slate-700 flex items-center gap-1.5">
+                    <MaterialIcon name="assignment" className="text-base text-slate-500" />
+                    <span>
+                      Danh sách tệp đã chọn ({queue.length} tệp - {formatFileSize(queue.reduce((acc, it) => acc + it.size, 0))})
+                    </span>
+                  </div>
+                  {!isUploading && (
+                    <button
+                      type="button"
+                      onClick={() => setQueue([])}
+                      className="text-[11px] text-rose-600 hover:text-rose-700 font-semibold hover:underline cursor-pointer"
+                    >
+                      Xóa tất cả
+                    </button>
+                  )}
+                </div>
+
+                <div className="max-h-48 overflow-y-auto divide-y divide-slate-100">
+                  {queue.map((item, idx) => {
+                    const ext = item.file.name.split('.').pop()?.toUpperCase() || 'PDF';
+                    return (
+                      <div key={item.id} className="p-2.5 px-3 flex items-center justify-between gap-3 text-xs hover:bg-slate-50">
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                          <span className="w-7 h-7 rounded bg-slate-200 text-slate-700 font-bold text-[9px] flex items-center justify-center shrink-0 uppercase">
+                            {ext}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <div className="font-medium text-slate-800 truncate" title={item.file.name}>
+                              {item.title}
+                            </div>
+                            <div className="text-[11px] text-slate-400 font-mono flex items-center gap-2 mt-0.5">
+                              <span>{formatFileSize(item.size)}</span>
+                              {item.errorMessage && (
+                                <span className="text-rose-500 font-sans truncate font-medium">
+                                  • {item.errorMessage}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Status / Action */}
+                        <div className="flex items-center gap-2 shrink-0">
+                          {item.status === 'pending' && (
+                            <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                              Chờ nạp
+                            </span>
+                          )}
+                          {item.status === 'uploading' && (
+                            <span className="text-[11px] text-[#0284c7] font-semibold flex items-center gap-1">
+                              <div className="w-3 h-3 border-2 border-[#0284c7] border-t-transparent rounded-full animate-spin"></div>
+                              Đang lập chỉ mục...
+                            </span>
+                          )}
+                          {item.status === 'success' && (
+                            <span className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
+                              <MaterialIcon name="check" className="text-sm text-emerald-500" />
+                              Sẵn sàng
+                            </span>
+                          )}
+                          {item.status === 'error' && (
+                            <span className="text-[11px] text-rose-600 font-semibold flex items-center gap-1" title={item.errorMessage}>
+                              <MaterialIcon name="error" className="text-sm text-rose-500" />
+                              Lỗi
+                            </span>
+                          )}
+
+                          {!isUploading && item.status !== 'uploading' && (
+                            <button
+                              type="button"
+                              onClick={() => removeQueueItem(idx)}
+                              className="text-slate-400 hover:text-rose-500 p-1 rounded hover:bg-slate-200/60 transition-colors cursor-pointer"
+                              title="Xóa khỏi danh sách"
+                            >
+                              <MaterialIcon name="close" className="text-sm" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Optional Title input when exactly 1 file is selected */}
+            {queue.length === 1 && (
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Tiêu đề hiển thị (Tùy chọn)
+                </label>
+                <input
+                  type="text"
+                  placeholder="VD: Giáo trình Ucrea Step 1"
+                  value={queue[0].title}
+                  onChange={(e) => updateQueueItemTitle(0, e.target.value)}
+                  disabled={isUploading}
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded outline-none disabled:bg-slate-100"
+                />
+              </div>
+            )}
 
             <div>
               <label className="block text-xs font-medium text-slate-700 mb-2">
@@ -559,21 +893,57 @@ export const KnowledgeBaseSection: React.FC = () => {
               </div>
             )}
 
+            {/* Overall Progress Indicator during upload */}
+            {isUploading && (
+              <div className="space-y-1.5 p-3 bg-sky-50 rounded border border-sky-200">
+                <div className="flex items-center justify-between text-xs font-semibold text-sky-900">
+                  <span>
+                    Đang nạp dữ liệu: {uploadProgress.current}/{uploadProgress.total} tài liệu...
+                  </span>
+                  <span>
+                    {uploadProgress.total > 0
+                      ? Math.round((uploadProgress.current / uploadProgress.total) * 100)
+                      : 0}%
+                  </span>
+                </div>
+                <div className="w-full bg-sky-200 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="bg-[#0284c7] h-2 rounded-full transition-all duration-300"
+                    style={{
+                      width: `${uploadProgress.total > 0 ? (uploadProgress.current / uploadProgress.total) * 100 : 0}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
               <button
                 type="button"
                 onClick={closeUploadModal}
-                disabled={uploadMutation.isPending}
-                className="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded border border-slate-300"
+                disabled={isUploading}
+                className="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded border border-slate-300 cursor-pointer disabled:opacity-50"
               >
                 Hủy
               </button>
               <button
                 type="submit"
-                disabled={uploadMutation.isPending}
-                className="btn btn-primary"
+                disabled={isUploading || queue.length === 0}
+                className="btn btn-primary cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
               >
-                {uploadMutation.isPending ? 'Đang tải lên...' : 'Tải lên ngay'}
+                {isUploading ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Đang tải lên ({uploadProgress.current}/{uploadProgress.total})...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    <span>Tải lên ngay {queue.length > 0 ? `(${queue.length} tệp)` : ''}</span>
+                  </>
+                )}
               </button>
             </div>
           </form>
