@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="../backend/src/CmsEdu.Application/CmsEdu.Application.csproj" />
+    <ProjectReference Include="../backend/src/CmsEdu.Infrastructure/CmsEdu.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

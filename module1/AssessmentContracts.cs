@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace CmsEdu.Application.Assessments;
+namespace CmsEdu.Module1;
 
 public record Criterion([Required, MaxLength(200)] string Name,
     decimal Weight, [Required, MaxLength(50)] string Clo,

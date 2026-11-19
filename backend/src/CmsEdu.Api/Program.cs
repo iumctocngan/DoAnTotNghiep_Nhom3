@@ -8,6 +8,7 @@ using CmsEdu.Application.Common.Interfaces;
 using CmsEdu.Infrastructure;
 using CmsEdu.Infrastructure.Identity;
 using CmsEdu.Infrastructure.Persistence;
+using CmsEdu.Module1;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
@@ -16,7 +17,7 @@ var khoiPhucAdmin = args.Contains("--khoi-phuc-admin");
 var builder = WebApplication.CreateBuilder(args.Where(thamSo => thamSo != "--khoi-phuc-admin").ToArray());
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddApplicationPart(typeof(AssessmentsController).Assembly);
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();

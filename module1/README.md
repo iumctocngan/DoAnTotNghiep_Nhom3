@@ -1,5 +1,7 @@
 # Module 1 — AI Student Assessment
 
+Project `CmsEdu.Module1.csproj` chứa API đánh giá, đọc rubric Excel, tính điểm và sinh nhận xét. Backend `CmsEdu.Api` nạp project này để chạy API. Module 1 dùng chung đăng nhập, phân quyền, SQL Server và migrations của backend. Frontend giáo viên nằm trong `frontend/src/pages/teacher`.
+
 Mở **Đánh giá học sinh AI** tại `/assessments` bằng tài khoản Admin hoặc Teacher. Giáo viên chỉ truy cập lớp mình phụ trách.
 
 1. Chọn lớp và nhập tệp rubric Excel .xlsx do Module 2 xuất. Hệ thống đọc trang **Danh sách CLO chi tiết**, giữ mã và nội dung CLO, tiêu chí và mô tả năm mức, đồng thời chia trọng số gần đều với tổng đúng 100%. Rubric được lưu và chọn tự động. Mỗi tiêu chí xuất hiện thành một cột trong bảng đánh giá. Giáo viên cũng có thể khai báo rubric thủ công. Rubric được lưu bất biến để giữ đúng lịch sử điểm.

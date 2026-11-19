@@ -20,6 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CmsEdu.Application\CmsEdu.Application.csproj" />
     <ProjectReference Include="..\CmsEdu.Infrastructure\CmsEdu.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\module1\CmsEdu.Module1.csproj" />
   </ItemGroup>
 
 </Project>

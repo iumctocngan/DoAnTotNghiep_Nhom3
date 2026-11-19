@@ -3,23 +3,24 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using CmsEdu.Application.Assessments;
 using CmsEdu.Application.Common.Exceptions;
 using CmsEdu.Application.Common.Interfaces;
 using CmsEdu.Domain.Authorization;
 using CmsEdu.Domain.Entities;
 using CmsEdu.Domain.Enums;
 using CmsEdu.Infrastructure.Persistence;
-using CmsEdu.Api.Authorization;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
-namespace CmsEdu.Api.Controllers;
+namespace CmsEdu.Module1;
 
 [ApiController, Route("api/assessments")]
 [Authorize]
-[HasPermission(Permissions.Assessments.View)]
+[Authorize(Policy = Permissions.Assessments.View)]
 public class AssessmentsController(AppDbContext db, ICurrentUser user, IConfiguration config,
     IHttpClientFactory clients, ILogger<AssessmentsController> logger) : ControllerBase
 {
@@ -106,7 +107,7 @@ public class AssessmentsController(AppDbContext db, ICurrentUser user, IConfigur
     }
 
     [HttpPost("sessions/{id:int}/rubrics/{rubricId:int}/grades")]
-    [HasPermission(Permissions.Assessments.Manage)]
+    [Authorize(Policy = Permissions.Assessments.Manage)]
     public async Task<IActionResult> SaveGrades(int id, int rubricId, SaveClassGrades request, CancellationToken ct)
     {
         var session = await FindSession(id, ct);
@@ -164,7 +165,7 @@ public class AssessmentsController(AppDbContext db, ICurrentUser user, IConfigur
     }
 
     [HttpPost("classes/{id:int}/rubrics/import")]
-    [HasPermission(Permissions.Assessments.Manage)]
+    [Authorize(Policy = Permissions.Assessments.Manage)]
     [RequestSizeLimit(3 * 1024 * 1024)]
     public async Task<IActionResult> NhapTepClo(int id, IFormFile tep, CancellationToken ct)
     {
@@ -188,7 +189,7 @@ public class AssessmentsController(AppDbContext db, ICurrentUser user, IConfigur
     }
 
     [HttpPost("rubrics")]
-    [HasPermission(Permissions.Assessments.Manage)]
+    [Authorize(Policy = Permissions.Assessments.Manage)]
     public async Task<IActionResult> CreateRubric(CreateRubric request, CancellationToken ct)
     {
         await CheckClass(request.ClassId, ct);
@@ -202,7 +203,7 @@ public class AssessmentsController(AppDbContext db, ICurrentUser user, IConfigur
     }
 
     [HttpPost]
-    [HasPermission(Permissions.Assessments.Manage)]
+    [Authorize(Policy = Permissions.Assessments.Manage)]
     public async Task<IActionResult> Grade(CreateAssessment request, CancellationToken ct)
     {
         var enrollment = await db.Enrollments.FindAsync([request.EnrollmentId], ct) ?? throw new NotFoundException("Không tìm thấy ghi danh.");
@@ -265,7 +266,7 @@ public class AssessmentsController(AppDbContext db, ICurrentUser user, IConfigur
     }
 
     [HttpPost("{id:int}/feedback")]
-    [HasPermission(Permissions.Assessments.Manage)]
+    [Authorize(Policy = Permissions.Assessments.Manage)]
     public async Task<IActionResult> Feedback(int id, CancellationToken ct)
     {
         var item = await Find(id, ct);
@@ -364,7 +365,7 @@ public class AssessmentsController(AppDbContext db, ICurrentUser user, IConfigur
     }
 
     [HttpPost("{id:int}/approve")]
-    [HasPermission(Permissions.Assessments.Manage)]
+    [Authorize(Policy = Permissions.Assessments.Manage)]
     public async Task<IActionResult> Approve(int id, ApproveFeedback request, CancellationToken ct)
     {
         var item = await Find(id, ct);

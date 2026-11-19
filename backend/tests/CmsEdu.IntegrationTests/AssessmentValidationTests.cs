@@ -1,4 +1,4 @@
-using CmsEdu.Application.Assessments;
+using CmsEdu.Module1;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;

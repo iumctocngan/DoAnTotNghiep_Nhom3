@@ -1,5 +1,7 @@
 # Hướng dẫn khởi chạy CMS EDU
 
+- [Module 1 — Đánh giá và nhận xét](module1/README.md) được nạp vào backend chung.
+
 
 1. Chạy Backend :
    ```powershell
@@ -11,4 +13,4 @@
    cd frontend; npm install; npm run dev
    ```
 
-3. Đọc Jwt&SeedAdmin.md để tạo jwt, tài khoản admin 
+3. Đọc Jwt&SeedAdmin.md để tạo jwt, tài khoản admin.
