@@ -3,7 +3,7 @@ import { Modal } from '../../components/common/Modal';
 import { apiClient } from '../../api/apiClient';
 
 export type BanGhi = Record<string, string | number | boolean | null>;
-export type TruongNhap = { ten: string; nhan: string; loai?: string; tuyChon?: [string | number, string][]; khongBatBuoc?: boolean; toiDa?: number };
+export type TruongNhap = { ten: string; nhan: string; loai?: string; tuyChon?: [string | number, string][]; khongBatBuoc?: boolean; toiDa?: number; goiY?: string };
 export type LenhDuLieu = { tieuDe: string; duongDan: string; phuongThuc: 'POST' | 'PUT' | 'DELETE'; truong?: TruongNhap[]; duLieu?: BanGhi };
 
 export function BieuMauDuLieu({ lenh, dong, daLuu }: { lenh: LenhDuLieu; dong: () => void; daLuu: () => Promise<void> }) {
@@ -37,6 +37,7 @@ export function BieuMauDuLieu({ lenh, dong, daLuu }: { lenh: LenhDuLieu; dong: (
           {truong.tuyChon.map(([ma, nhan]) => <option key={String(ma)} value={String(ma)}>{nhan}</option>)}
         </select> : truong.loai === 'textarea' ? <textarea required={!truong.khongBatBuoc} maxLength={truong.toiDa ?? 2000} rows={4} value={String(giaTri[truong.ten] ?? '')} onChange={suKien => datGiaTri({ ...giaTri, [truong.ten]: suKien.target.value })} />
         : <input type={truong.loai ?? 'text'} required={!truong.khongBatBuoc} min={truong.loai === 'number' ? 1 : undefined} maxLength={truong.toiDa ?? 100} value={String(giaTri[truong.ten] ?? '')} onChange={suKien => datGiaTri({ ...giaTri, [truong.ten]: suKien.target.value })} />}
+        {truong.goiY && <small className="mt-1 block text-slate-600">{truong.goiY}</small>}
       </label>)}
       <div className="modal-footer"><button type="button" className="btn btn-secondary" disabled={dangLuu} onClick={dong}>Hủy</button><button className="btn btn-primary" disabled={dangLuu}>{dangLuu ? 'Đang lưu…' : 'Xác nhận'}</button></div>
     </form>

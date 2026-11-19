@@ -8,6 +8,9 @@ namespace CmsEdu.Application.Common.Interfaces;
 /// </summary>
 public interface IDichVuBuoiHoc
 {
+    Task DongBoLichTuanAsync(int? maLop, string? giaoVienId, DateOnly tuNgay, DateOnly denNgay,
+        CancellationToken maHuy = default);
+
     Task<PagedResult<PhanHoiBuoiHoc>> LayDanhSachBuoiHocAsync(
         int? maLop,
         DateOnly? tuNgay,

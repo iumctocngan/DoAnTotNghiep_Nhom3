@@ -16,6 +16,7 @@ public class Session : BaseEntity
     public TimeOnly EndTime { get; set; }
     public SessionStatus Status { get; set; } = SessionStatus.Scheduled;
     public string? Note { get; set; }
+    public bool? IsRegular { get; set; }
 
     public ICollection<Attendance> Attendances { get; set; } = new List<Attendance>();
     public ICollection<StudentRemark> StudentRemarks { get; set; } = new List<StudentRemark>();

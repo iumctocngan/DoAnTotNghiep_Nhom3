@@ -12,6 +12,38 @@ namespace CmsEdu.IntegrationTests;
 public class CurriculumApiTests
 {
     [KiemThuSqlServer]
+    public async Task NumberedLessonsAreSortedAutomatically()
+    {
+        await using var app = new AuthenticationApiTests.AuthenticationTestApp();
+        await app.InitializeAsync();
+        using var client = app.CreateTestClient();
+        using var login = await client.PostAsJsonAsync("/api/auth/login",
+            new LoginRequest(AuthenticationApiTests.AuthenticationTestApp.Email, AuthenticationApiTests.AuthenticationTestApp.Password));
+        var credentials = (await login.Content.ReadFromJsonAsync<LoginResponse>())!;
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.AccessToken);
+
+        using var course = await client.PostAsJsonAsync("/api/courses", new CourseRequest("AUTO", "Toán", null));
+        var courseId = (await course.Content.ReadFromJsonAsync<CourseResponse>())!.Id;
+        using var level = await client.PostAsJsonAsync("/api/levels", new LevelRequest(courseId, "AUTO", "Cấp độ"));
+        var levelId = (await level.Content.ReadFromJsonAsync<LevelResponse>())!.Id;
+        foreach (var title in new[] { "B12 – Tuần 1", "Ôn tập", "B11 – Tuần 10", "B21 – Tuần 1", "B11 – Tuần 2" })
+        {
+            using var create = await client.PostAsJsonAsync("/api/lessons", new LessonRequest(levelId, "AUTO", title, null));
+            Assert.Equal(HttpStatusCode.Created, create.StatusCode);
+        }
+
+        var result = await client.GetFromJsonAsync<PagedResult<LessonResponse>>($"/api/lessons?levelId={levelId}");
+        Assert.Equal(new[] { "B11 – Tuần 2", "Ôn tập", "B11 – Tuần 10", "B12 – Tuần 1", "B21 – Tuần 1" },
+            result!.Items.Select(x => x.Name));
+        Assert.Equal(new[] { 1, 2, 3, 4, 5 }, result.Items.Select(x => x.SortOrder));
+        foreach (var lesson in result.Items)
+        {
+            var saved = await client.GetFromJsonAsync<LessonResponse>($"/api/lessons/{lesson.Id}");
+            Assert.Equal(lesson.SortOrder, saved!.SortOrder);
+        }
+    }
+
+    [KiemThuSqlServer]
     public async Task AdminCanManageCurriculumAndStaffCanReadIt()
     {
         await using var app = new AuthenticationApiTests.AuthenticationTestApp();

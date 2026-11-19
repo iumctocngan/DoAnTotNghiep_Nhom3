@@ -52,8 +52,6 @@ public interface ICurriculumRepository
 
     Task<Lesson?> GetLessonAsync(int id, CancellationToken cancellationToken = default);
 
-    Task<int> GetNextLessonSortOrderAsync(int levelId, CancellationToken cancellationToken = default);
-
     Task SaveLessonAsync(
         Lesson lesson,
         string? userId,

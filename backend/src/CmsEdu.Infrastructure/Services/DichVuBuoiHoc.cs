@@ -1,6 +1,7 @@
 using CmsEdu.Application.Common.Exceptions;
 using CmsEdu.Application.Common.Interfaces;
 using CmsEdu.Application.Common.Models;
+using CmsEdu.Application.Curriculum;
 using CmsEdu.Application.Sessions;
 using CmsEdu.Domain.Entities;
 using CmsEdu.Domain.Enums;
@@ -16,6 +17,84 @@ namespace CmsEdu.Infrastructure.Services;
 public class DichVuBuoiHoc(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai) : IDichVuBuoiHoc
 {
     private const int KichThuocTrangToiDa = 100;
+
+    public async Task DongBoLichTuanAsync(int? maLop, string? giaoVienId, DateOnly tuNgay, DateOnly denNgay,
+        CancellationToken maHuy = default)
+    {
+        if (denNgay.DayNumber - tuNgay.DayNumber is < 0 or > 6)
+            throw new ValidationException("Khoảng lịch phải từ 1 đến 7 ngày.");
+
+        switch (nguoiDungHienTai.Role)
+        {
+            case UserRole.Admin: break;
+            case UserRole.Teacher when !string.IsNullOrWhiteSpace(nguoiDungHienTai.UserId) &&
+                (giaoVienId == null || giaoVienId == nguoiDungHienTai.UserId):
+                giaoVienId = nguoiDungHienTai.UserId;
+                break;
+            default:
+                throw new ForbiddenAccessException("Bạn không có quyền đồng bộ lịch này.");
+        }
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow.AddHours(7));
+        if (denNgay < today) return;
+        if (tuNgay < today) tuNgay = today;
+        var days = Enumerable.Range(tuNgay.DayNumber, denNgay.DayNumber - tuNgay.DayNumber + 1)
+            .Select(DateOnly.FromDayNumber).ToDictionary(x => x.DayOfWeek);
+        var weekdays = days.Keys.ToArray();
+
+        await using var transaction = await nguCanh.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable, maHuy);
+        var classes = await nguCanh.Classes.AsNoTracking()
+            .Where(x => x.Status == ClassStatus.Active && (maLop == null || x.Id == maLop) &&
+                (giaoVienId == null || x.MainTeacherUserId == giaoVienId) && weekdays.Contains(x.DayOfWeek) &&
+                x.StartDate <= denNgay && (x.EndDate == null || x.EndDate >= tuNgay)).ToListAsync(maHuy);
+        var classIds = classes.Select(x => x.Id).ToArray();
+        var sessions = (await nguCanh.Sessions
+            .Where(x => classIds.Contains(x.ClassId) && x.SessionDate >= tuNgay && x.SessionDate <= denNgay)
+            .OrderBy(x => x.Id).ToListAsync(maHuy)).ToLookup(x => (x.ClassId, x.SessionDate));
+        var sessionIds = sessions.SelectMany(x => x).Select(x => x.Id).ToArray();
+        var attendanceIds = await nguCanh.Attendances.Where(x => sessionIds.Contains(x.SessionId))
+            .Select(x => x.SessionId).Distinct().ToListAsync(maHuy);
+        var assessmentIds = await nguCanh.Set<Assessment>().Where(x => x.SessionId.HasValue && sessionIds.Contains(x.SessionId.Value))
+            .Select(x => x.SessionId!.Value).Distinct().ToListAsync(maHuy);
+        var protectedSessions = attendanceIds.Concat(assessmentIds).ToHashSet();
+        var levelIds = classes.Select(x => x.LevelId).Distinct().ToArray();
+        var lessons = (await nguCanh.Lessons.AsNoTracking().Where(x => levelIds.Contains(x.LevelId) && x.IsActive)
+            .ToListAsync(maHuy)).GroupBy(x => x.LevelId).SelectMany(x => LessonOrdering.ByNumber(x)).ToLookup(x => x.LevelId);
+        var usedLessons = (await nguCanh.Sessions.AsNoTracking().Where(x => classIds.Contains(x.ClassId) &&
+            x.LessonId != null && x.Status != SessionStatus.Cancelled)
+            .Select(x => new { x.ClassId, x.LessonId }).Distinct().ToListAsync(maHuy))
+            .ToHashSet();
+
+        foreach (var lop in classes)
+        {
+            var date = days[lop.DayOfWeek];
+            if (date < lop.StartDate || date > lop.EndDate) continue;
+            var slot = sessions[(lop.Id, date)];
+            var regular = slot.FirstOrDefault(x => x.IsRegular == true) ?? slot.FirstOrDefault(x => x.IsRegular == null);
+            if (regular != null)
+            {
+                if (regular.Status == SessionStatus.Scheduled && !protectedSessions.Contains(regular.Id))
+                {
+                    regular.IsRegular = true;
+                    regular.StartTime = lop.StartTime;
+                    regular.EndTime = lop.EndTime;
+                }
+                continue;
+            }
+
+            if (slot.Any(x => x.Status != SessionStatus.Cancelled && x.StartTime < lop.EndTime && lop.StartTime < x.EndTime))
+                continue;
+
+            var lesson = lessons[lop.LevelId].FirstOrDefault(x => !usedLessons.Contains(new { ClassId = lop.Id, LessonId = (int?)x.Id }));
+            nguCanh.Sessions.Add(new Session
+            {
+                ClassId = lop.Id, SessionDate = date, StartTime = lop.StartTime, EndTime = lop.EndTime,
+                LessonId = lesson?.Id, IsRegular = true
+            });
+        }
+        await nguCanh.SaveChangesAsync(maHuy);
+        await transaction.CommitAsync(maHuy);
+    }
 
     // [Danh sách buổi học] Lọc theo lớp, khoảng ngày, phân trang và áp dụng phạm vi phân quyền
     public async Task<PagedResult<PhanHoiBuoiHoc>> LayDanhSachBuoiHocAsync(
@@ -108,6 +187,7 @@ public class DichVuBuoiHoc(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai) 
         var buoiHoc = new Session
         {
             ClassId = lopHoc.Id,
+            IsRegular = false,
             LessonId = baiHoc?.Id,
             SessionDate = yeuCau.SessionDate,
             StartTime = yeuCau.StartTime,
@@ -141,6 +221,9 @@ public class DichVuBuoiHoc(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai) 
         {
             throw new ConflictException("Chỉ có thể cập nhật buổi học đang ở trạng thái lên lịch.");
         }
+        if (buoiHoc.IsRegular == true && (yeuCau.SessionDate != buoiHoc.SessionDate ||
+            yeuCau.StartTime != buoiHoc.StartTime || yeuCau.EndTime != buoiHoc.EndTime))
+            throw new ConflictException("Buổi học định kỳ lấy giờ từ lớp. Để đổi riêng buổi này, hãy hủy buổi và thêm buổi học bù.");
 
         KiemTraNgayBuoiHoc(buoiHoc.Class, yeuCau.SessionDate);
         await DamBaoGiaoVienRanhAsync(
@@ -367,6 +450,7 @@ public class DichVuBuoiHoc(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai) 
             buoiHoc.StartTime,
             buoiHoc.EndTime,
             buoiHoc.Status,
-            buoiHoc.Note);
+            buoiHoc.Note,
+            buoiHoc.IsRegular == true);
     }
 }

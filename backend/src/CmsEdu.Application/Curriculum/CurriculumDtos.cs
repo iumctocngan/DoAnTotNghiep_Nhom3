@@ -8,6 +8,6 @@ public record LevelRequest(int CourseId, string Code, string Name, int? SortOrde
 
 public record LevelResponse(int Id, int CourseId, string Code, string Name, int SortOrder, bool IsActive);
 
-public record LessonRequest(int LevelId, string Code, string Name, string? Objective, int? SortOrder = null);
+public record LessonRequest(int LevelId, string Code, string Name, string? Objective);
 
 public record LessonResponse(int Id, int LevelId, string Code, string Name, string? Objective, int SortOrder, bool IsActive);

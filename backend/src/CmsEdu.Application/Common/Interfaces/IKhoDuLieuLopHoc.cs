@@ -14,6 +14,9 @@ public interface IKhoDuLieuLopHoc
         TimeOnly batDau, TimeOnly ketThuc, DateOnly ngayBatDau, DateOnly? ngayKetThuc,
         CancellationToken maHuy);
     Task<bool> CoDuLieuLienQuanAsync(int id, CancellationToken maHuy);
+    Task<List<int>> LayBaiHocHoatDongAsync(int capDoId, CancellationToken maHuy);
+    Task<List<Session>> LayBuoiCungKhungGioAsync(Class lop, DateOnly tuNgay, DateOnly denNgay, CancellationToken maHuy);
+    Task DongBoGioBuoiDinhKyAsync(Class lop, CancellationToken maHuy);
     Task LuuAsync(CancellationToken maHuy);
     void Them(Class lop);
     void Xoa(Class lop);

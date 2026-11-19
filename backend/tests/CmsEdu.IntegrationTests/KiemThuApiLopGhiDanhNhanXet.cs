@@ -3,8 +3,10 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using CmsEdu.Application.Authentication;
 using CmsEdu.Application.Classes;
+using CmsEdu.Application.Common.Models;
 using CmsEdu.Application.Enrollments;
 using CmsEdu.Application.Remarks;
+using CmsEdu.Application.Sessions;
 using CmsEdu.Domain.Entities;
 using CmsEdu.Domain.Enums;
 using CmsEdu.Infrastructure.Identity;
@@ -17,6 +19,114 @@ namespace CmsEdu.IntegrationTests;
 
 public class KiemThuApiLopGhiDanhNhanXet
 {
+    [KiemThuSqlServer]
+    public async Task DongBoLichTuanLuuBuoiThucVaCapNhatGioTheoLop()
+    {
+        await using var ungDung = new AuthenticationApiTests.AuthenticationTestApp();
+        await ungDung.InitializeAsync();
+        var (capDoId, _, _, giaoVienId) = await TaoDuLieuNen(ungDung);
+        using var admin = await DangNhap(ungDung, AuthenticationApiTests.AuthenticationTestApp.Email,
+            AuthenticationApiTests.AuthenticationTestApp.Password);
+        using var scope = ungDung.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var today = DateOnly.FromDateTime(DateTime.UtcNow.AddHours(7));
+        var upcoming = today.AddDays(3);
+        var lop = new Class
+        {
+            ClassCode = "CU01", Name = "Lớp lịch tuần", MainTeacherUserId = giaoVienId,
+            LevelId = capDoId, Capacity = 10, StartDate = today.AddDays(-30), DayOfWeek = upcoming.DayOfWeek,
+            StartTime = new TimeOnly(10, 0), EndTime = new TimeOnly(10, 50), Status = ClassStatus.Active
+        };
+        db.Classes.Add(lop);
+        await db.SaveChangesAsync();
+        db.Sessions.Add(new Session { ClassId = lop.Id, SessionDate = upcoming.AddDays(1),
+            StartTime = new TimeOnly(8, 0), EndTime = new TimeOnly(9, 0), IsRegular = false, Note = "Học bù" });
+        await db.SaveChangesAsync();
+
+        var url = $"/api/sessions/weekly-sync?classId={lop.Id}&fromDate={today:yyyy-MM-dd}&toDate={today.AddDays(6):yyyy-MM-dd}";
+        using var sync = await admin.PostAsync(url, null);
+        Assert.Equal(HttpStatusCode.NoContent, sync.StatusCode);
+        var list = await admin.GetFromJsonAsync<PagedResult<PhanHoiBuoiHoc>>($"/api/sessions?classId={lop.Id}");
+        var saved = Assert.Single(list!.Items, x => x.FollowsClassSchedule);
+        Assert.Equal(upcoming, saved.SessionDate);
+        Assert.Equal(SessionStatus.Scheduled, saved.Status);
+        Assert.Equal(lop.StartTime, saved.StartTime);
+        Assert.Equal(lop.EndTime, saved.EndTime);
+
+        using var edit = await admin.PutAsJsonAsync($"/api/classes/{lop.Id}",
+            new YeuCauLopHoc(lop.ClassCode, lop.Name, lop.LevelId, giaoVienId, lop.Capacity, lop.StartDate,
+                lop.EndDate, lop.DayOfWeek, new TimeOnly(11, 0), new TimeOnly(11, 50), ClassStatus.Active));
+        Assert.Equal(HttpStatusCode.OK, edit.StatusCode);
+        Assert.Equal(new TimeOnly(11, 0),
+            await db.Sessions.Where(x => x.Id == saved.Id).Select(x => x.StartTime).SingleAsync());
+        using var resync = await admin.PostAsync(url, null);
+        Assert.Equal(HttpStatusCode.NoContent, resync.StatusCode);
+        var rows = await db.Sessions.AsNoTracking().Where(x => x.ClassId == lop.Id).ToListAsync();
+        Assert.Equal(2, rows.Count);
+        var updated = Assert.Single(rows, x => x.IsRegular == true);
+        Assert.Equal(saved.Id, updated.Id);
+        Assert.Equal(new TimeOnly(11, 0), updated.StartTime);
+        Assert.Equal(new TimeOnly(8, 0), Assert.Single(rows, x => x.IsRegular == false).StartTime);
+    }
+
+    [KiemThuSqlServer]
+    public async Task MoLopXepBuoiHangTuanTheoThuGioVaChoPhepHocBu()
+    {
+        await using var ungDung = new AuthenticationApiTests.AuthenticationTestApp();
+        await ungDung.InitializeAsync();
+        var (capDoId, _, _, giaoVienId) = await TaoDuLieuNen(ungDung);
+        using var admin = await DangNhap(ungDung, AuthenticationApiTests.AuthenticationTestApp.Email,
+            AuthenticationApiTests.AuthenticationTestApp.Password);
+        using var scope = ungDung.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var baiHai = new Lesson { LevelId = capDoId, Code = "BH2", Name = "Bài 2", SortOrder = 2 };
+        var baiMot = new Lesson { LevelId = capDoId, Code = "BH1", Name = "Bài 1", SortOrder = 1 };
+        db.Lessons.AddRange(baiHai, baiMot);
+        await db.SaveChangesAsync();
+
+        var ngayBatDau = new DateOnly(2026, 11, 20);
+        var gioBatDau = new TimeOnly(10, 0);
+        var gioKetThuc = new TimeOnly(10, 50);
+        var lopChuNhat = new YeuCauLopHoc("AUTO", "Lớp Chủ nhật", capDoId, giaoVienId, 10,
+            ngayBatDau, new DateOnly(2026, 12, 6), DayOfWeek.Sunday, gioBatDau, gioKetThuc, ClassStatus.Active);
+
+        async Task<ThongTinLopHoc> TaoLop(YeuCauLopHoc yeuCau)
+        {
+            using var response = await admin.PostAsJsonAsync("/api/classes", yeuCau);
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+            return (await response.Content.ReadFromJsonAsync<ThongTinLopHoc>())!;
+        }
+        async Task<List<PhanHoiBuoiHoc>> LayBuoi(int classId) =>
+            (await admin.GetFromJsonAsync<PagedResult<PhanHoiBuoiHoc>>($"/api/sessions?classId={classId}"))!.Items.ToList();
+
+        var lop = await TaoLop(lopChuNhat);
+        var buoi = await LayBuoi(lop.Id);
+        Assert.Equal(new[] { new DateOnly(2026, 11, 22), new DateOnly(2026, 11, 29), new DateOnly(2026, 12, 6) },
+            buoi.Select(x => x.SessionDate));
+        Assert.All(buoi, x =>
+        {
+            Assert.Equal(gioBatDau, x.StartTime);
+            Assert.Equal(gioKetThuc, x.EndTime);
+            Assert.Equal(SessionStatus.Scheduled, x.Status);
+        });
+        Assert.Equal(new int?[] { baiMot.Id, baiHai.Id, null }, buoi.Select(x => x.LessonId));
+
+        using var bu = await admin.PostAsJsonAsync("/api/sessions",
+            new YeuCauTaoBuoiHoc(lop.Id, baiHai.Id, new DateOnly(2026, 12, 5), gioBatDau, gioKetThuc, "Học bù"));
+        Assert.Equal(HttpStatusCode.Created, bu.StatusCode);
+        Assert.Equal(4, (await LayBuoi(lop.Id)).Count);
+
+        var lopChuanBi = lopChuNhat with { TenLop = "Lớp Thứ ba", Thu = DayOfWeek.Tuesday, NgayKetThuc = null, TrangThai = ClassStatus.Preparing };
+        var lopThuBa = await TaoLop(lopChuanBi);
+        Assert.Empty(await LayBuoi(lopThuBa.Id));
+        var lopDangHoc = lopChuanBi with { TrangThai = ClassStatus.Active };
+        Assert.Equal(HttpStatusCode.OK, (await admin.PutAsJsonAsync($"/api/classes/{lopThuBa.Id}", lopDangHoc)).StatusCode);
+        Assert.Equal(new[] { new DateOnly(2026, 11, 24), new DateOnly(2026, 12, 1) },
+            (await LayBuoi(lopThuBa.Id)).Select(x => x.SessionDate));
+        Assert.Equal(HttpStatusCode.OK, (await admin.PutAsJsonAsync($"/api/classes/{lopThuBa.Id}", lopDangHoc)).StatusCode);
+        Assert.Equal(2, (await LayBuoi(lopThuBa.Id)).Count);
+    }
+
     [KiemThuSqlServer]
     public async Task TaoLopGhiDanhBaoLuuVaNhanXet_KiemTraQuyenVaRangBuoc()
     {

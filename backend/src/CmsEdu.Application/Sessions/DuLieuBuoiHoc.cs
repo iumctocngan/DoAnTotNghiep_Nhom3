@@ -38,4 +38,5 @@ public sealed record PhanHoiBuoiHoc(
     TimeOnly StartTime,
     TimeOnly EndTime,
     SessionStatus Status,
-    string? Note);
+    string? Note,
+    bool FollowsClassSchedule = false);

@@ -1,6 +1,7 @@
 using System.Data;
 using CmsEdu.Application.Common.Interfaces;
 using CmsEdu.Application.Common.Models;
+using CmsEdu.Application.Curriculum;
 using CmsEdu.Domain.Entities;
 using CmsEdu.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -44,6 +45,30 @@ public class KhoDuLieuQuanLyLop(AppDbContext duLieu) :
     public async Task<bool> CoDuLieuLienQuanAsync(int id, CancellationToken maHuy) =>
         await duLieu.Enrollments.AnyAsync(x => x.ClassId == id, maHuy) ||
         await duLieu.Sessions.AnyAsync(x => x.ClassId == id, maHuy);
+
+    public async Task<List<int>> LayBaiHocHoatDongAsync(int capDoId, CancellationToken maHuy) =>
+        LessonOrdering.ByNumber(await duLieu.Lessons.AsNoTracking().Where(x => x.LevelId == capDoId && x.IsActive)
+            .ToListAsync(maHuy)).Select(x => x.Id).ToList();
+
+    public Task<List<Session>> LayBuoiCungKhungGioAsync(Class lop, DateOnly tuNgay, DateOnly denNgay, CancellationToken maHuy) =>
+        duLieu.Sessions.AsNoTracking().Where(x => x.SessionDate >= tuNgay && x.SessionDate <= denNgay &&
+            ((x.ClassId == lop.Id && x.IsRegular != false) ||
+                ((x.ClassId == lop.Id || (x.Status != SessionStatus.Cancelled &&
+                    x.Class.MainTeacherUserId == lop.MainTeacherUserId)) &&
+                    x.StartTime < lop.EndTime && lop.StartTime < x.EndTime))).ToListAsync(maHuy);
+
+    public async Task DongBoGioBuoiDinhKyAsync(Class lop, CancellationToken maHuy)
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow.AddHours(7));
+        var sessions = await duLieu.Sessions.Where(x => x.ClassId == lop.Id && x.IsRegular == true &&
+            x.Status == SessionStatus.Scheduled && x.SessionDate >= today && !x.Attendances.Any() &&
+            !duLieu.Set<Assessment>().Any(a => a.SessionId == x.Id)).ToListAsync(maHuy);
+        foreach (var session in sessions)
+        {
+            session.StartTime = lop.StartTime;
+            session.EndTime = lop.EndTime;
+        }
+    }
 
     public void Them(Class lop) => duLieu.Classes.Add(lop);
     public void Xoa(Class lop) => duLieu.Classes.Remove(lop);

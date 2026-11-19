@@ -8,14 +8,15 @@ interface ModalProps {
   titleClassName?: string;
   closeDisabled?: boolean;
   wide?: boolean;
+  large?: boolean;
 }
 
-export function Modal({ title, titleClassName, onClose, children, closeDisabled = false, wide = false }: ModalProps) {
+export function Modal({ title, titleClassName, onClose, children, closeDisabled = false, wide = false, large = false }: ModalProps) {
   return (
     <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center z-50 p-4 overflow-y-auto">
       <section
         className={`bg-white rounded-md border border-slate-200 ${
-          wide ? 'max-w-[500px]' : 'max-w-[440px]'
+          large ? 'max-w-6xl' : wide ? 'max-w-[500px]' : 'max-w-[440px]'
         } w-full max-h-[calc(100vh-2rem)] p-6 shadow-xl overflow-y-auto m-auto`}
         role="dialog"
         aria-modal="true"

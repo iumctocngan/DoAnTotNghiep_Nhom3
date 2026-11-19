@@ -314,17 +314,12 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
         var data = Validate(request);
         await EnsureActiveLevelAsync(request.LevelId, cancellationToken);
 
-        var sortOrder = request.SortOrder.HasValue && request.SortOrder.Value > 0
-            ? request.SortOrder.Value
-            : await repository.GetNextLessonSortOrderAsync(request.LevelId, cancellationToken);
-
         var lesson = new Lesson
         {
             LevelId = request.LevelId,
             Code = data.Code,
             Name = data.Name,
             Objective = data.Objective,
-            SortOrder = sortOrder,
             IsActive = true
         };
 
@@ -354,11 +349,6 @@ public class CurriculumService(ICurriculumRepository repository, ICurrentUser cu
         lesson.Code = data.Code;
         lesson.Name = data.Name;
         lesson.Objective = data.Objective;
-        if (request.SortOrder.HasValue && request.SortOrder.Value > 0)
-        {
-            lesson.SortOrder = request.SortOrder.Value;
-        }
-
         await repository.SaveLessonAsync(
             lesson,
             currentUser.UserId,

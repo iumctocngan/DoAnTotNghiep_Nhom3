@@ -33,16 +33,19 @@ public class DichVuLopHoc(IKhoDuLieuLopHoc kho, ICurrentUser nguoiDung)
         return ChuyenDoi(lop, await kho.DemSiSoAsync(id, maHuy));
     }
 
-    public async Task<ThongTinLopHoc> Tao(YeuCauLopHoc yeuCau, CancellationToken maHuy)
-    {
-        KiemTraQuyen(UserRole.Admin);
-        await KiemTra(yeuCau, null, maHuy);
-        var lop = new Class();
-        Gan(lop, yeuCau);
-        kho.Them(lop);
-        await kho.LuuAsync(maHuy);
-        return ChuyenDoi(lop, 0);
-    }
+    public Task<ThongTinLopHoc> Tao(YeuCauLopHoc yeuCau, CancellationToken maHuy) =>
+        kho.TrongGiaoDichAsync(async () =>
+        {
+            KiemTraQuyen(UserRole.Admin);
+            await KiemTra(yeuCau, null, maHuy);
+            var lop = new Class();
+            Gan(lop, yeuCau);
+            if (lop.Status == ClassStatus.Active)
+                await XepBuoiHangTuan(lop, maHuy);
+            kho.Them(lop);
+            await kho.LuuAsync(maHuy);
+            return ChuyenDoi(lop, 0);
+        }, maHuy);
 
     public Task<ThongTinLopHoc> CapNhat(int id, YeuCauLopHoc yeuCau, CancellationToken maHuy) =>
         kho.TrongGiaoDichAsync(async () =>
@@ -56,10 +59,51 @@ public class DichVuLopHoc(IKhoDuLieuLopHoc kho, ICurrentUser nguoiDung)
                 throw new ConflictException("Sĩ số tối đa không được nhỏ hơn số học viên đang ghi danh hoặc bảo lưu.");
             if (siSo > 0 && yeuCau.TrangThai is ClassStatus.Completed or ClassStatus.Cancelled)
                 throw new ConflictException("Cần kết thúc các ghi danh trước khi đóng lớp.");
+            var moLop = lop.Status != ClassStatus.Active && yeuCau.TrangThai == ClassStatus.Active;
+            var doiGioDinhKy = lop.Status == ClassStatus.Active && yeuCau.TrangThai == ClassStatus.Active &&
+                lop.DayOfWeek == yeuCau.Thu && (lop.StartTime != yeuCau.GioBatDau || lop.EndTime != yeuCau.GioKetThuc);
             Gan(lop, yeuCau);
+            if (moLop)
+                await XepBuoiHangTuan(lop, maHuy);
+            else if (doiGioDinhKy)
+                await kho.DongBoGioBuoiDinhKyAsync(lop, maHuy);
             await kho.LuuAsync(maHuy);
             return ChuyenDoi(lop, siSo);
         }, maHuy);
+
+    private async Task XepBuoiHangTuan(Class lop, CancellationToken maHuy)
+    {
+        var baiHoc = await kho.LayBaiHocHoatDongAsync(lop.LevelId, maHuy);
+        if (lop.EndDate == null && baiHoc.Count == 0)
+            throw new ValidationException("Nhập ngày kết thúc hoặc bổ sung bài học cho cấp độ để xếp lịch hằng tuần.");
+
+        var lechNgay = ((int)lop.DayOfWeek - (int)lop.StartDate.DayOfWeek + 7) % 7;
+        var ngayDau = lop.StartDate.DayNumber + lechNgay;
+        var ngayCuoi = lop.EndDate?.DayNumber ?? ngayDau + 7L * (baiHoc.Count - 1);
+        if (ngayDau > ngayCuoi || ngayCuoi > DateOnly.MaxValue.DayNumber)
+            throw new ValidationException("Khoảng ngày của lớp không có đủ ngày học theo lịch đã chọn.");
+
+        var trungKhung = (await kho.LayBuoiCungKhungGioAsync(lop,
+            DateOnly.FromDayNumber(ngayDau), DateOnly.FromDayNumber((int)ngayCuoi), maHuy))
+            .ToLookup(x => x.SessionDate);
+
+        for (var ngay = ngayDau; ngay <= ngayCuoi; ngay += 7)
+        {
+            var ngayHoc = DateOnly.FromDayNumber(ngay);
+            if (trungKhung[ngayHoc].Any(x => x.ClassId != lop.Id))
+                throw new ConflictException($"Giáo viên đã có buổi học trùng giờ ngày {ngayHoc:dd/MM/yyyy}.");
+            if (trungKhung[ngayHoc].Any(x => x.ClassId == lop.Id))
+                continue;
+
+            var thuTu = (ngay - ngayDau) / 7;
+            lop.Sessions.Add(new Session
+            {
+                IsRegular = true,
+                LessonId = thuTu < baiHoc.Count ? baiHoc[thuTu] : null,
+                SessionDate = ngayHoc, StartTime = lop.StartTime, EndTime = lop.EndTime
+            });
+        }
+    }
 
     public async Task Xoa(int id, CancellationToken maHuy)
     {

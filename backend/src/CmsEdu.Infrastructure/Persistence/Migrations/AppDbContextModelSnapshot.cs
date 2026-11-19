@@ -937,6 +937,9 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                     b.Property<TimeOnly>("EndTime")
                         .HasColumnType("time");
 
+                    b.Property<bool?>("IsRegular")
+                        .HasColumnType("bit");
+
                     b.Property<int?>("LessonId")
                         .HasColumnType("int");
 
@@ -958,6 +961,8 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                     b.HasIndex("ClassId");
 
                     b.HasIndex("LessonId");
+
+                    b.HasIndex("ClassId", "SessionDate").IsUnique().HasFilter("[IsRegular] = 1");
 
                     b.ToTable("Sessions", null, t =>
                         {

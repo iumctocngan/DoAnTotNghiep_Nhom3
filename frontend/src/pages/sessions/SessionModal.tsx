@@ -13,6 +13,8 @@ interface SessionModalProps {
   onClose: () => void;
   session?: SessionResponse | null;
   defaultClassId?: number;
+  defaultDate?: string;
+  onSaved?: (date: string) => void;
 }
 
 export const SessionModal: React.FC<SessionModalProps> = ({
@@ -20,6 +22,8 @@ export const SessionModal: React.FC<SessionModalProps> = ({
   onClose,
   session,
   defaultClassId,
+  defaultDate,
+  onSaved,
 }) => {
   const queryClient = useQueryClient();
   const showToast = useToast();
@@ -33,12 +37,13 @@ export const SessionModal: React.FC<SessionModalProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const isEditing = Boolean(session);
+  const followsClassSchedule = session?.followsClassSchedule === true;
 
   // Danh sách lớp học để chọn
   const { data: classes } = useQuery({
     queryKey: ['classes'],
     queryFn: () => classApi.getClasses(),
-    enabled: isOpen && !isEditing,
+    enabled: isOpen,
   });
 
   // Tìm lớp được chọn để lấy cấp độ
@@ -62,13 +67,22 @@ export const SessionModal: React.FC<SessionModalProps> = ({
     } else {
       setClassId(defaultClassId || '');
       setLessonId('');
-      setSessionDate('');
+      setSessionDate(defaultDate ?? '');
       setStartTime('08:00');
       setEndTime('09:30');
       setNote('');
     }
     setErrorMessage(null);
-  }, [session, defaultClassId, isOpen]);
+  }, [session, defaultClassId, defaultDate, isOpen]);
+
+  const classStartTime = selectedClass?.gioBatDau;
+  const classEndTime = selectedClass?.gioKetThuc;
+  useEffect(() => {
+    if (isOpen && !isEditing && classStartTime && classEndTime) {
+      setStartTime(classStartTime.slice(0, 5));
+      setEndTime(classEndTime.slice(0, 5));
+    }
+  }, [isOpen, isEditing, classId, classStartTime, classEndTime]);
 
   const mutation = useMutation({
     mutationFn: (data: CreateSessionRequest) =>
@@ -81,13 +95,14 @@ export const SessionModal: React.FC<SessionModalProps> = ({
             note: data.note,
           })
         : sessionApi.createSession(data),
-    onSuccess: () => {
+    onSuccess: (_, data) => {
       showToast(
-        isEditing ? 'Cập nhật buổi học thành công!' : 'Tạo buổi học thành công!',
+        isEditing ? 'Cập nhật buổi học thành công!' : 'Đã thêm buổi học bù.',
         'success'
       );
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
       queryClient.invalidateQueries({ queryKey: ['teacher-schedule'] });
+      onSaved?.(data.sessionDate);
       onClose();
     },
     onError: (err: unknown) => {
@@ -130,7 +145,7 @@ export const SessionModal: React.FC<SessionModalProps> = ({
 
   return (
     <Modal
-      title={isEditing ? 'Chỉnh sửa thông tin buổi học' : 'Thêm buổi học mới'}
+      title={isEditing ? 'Chỉnh sửa thông tin buổi học' : 'Thêm buổi học bù'}
       onClose={onClose}
       closeDisabled={mutation.isPending}
       wide
@@ -161,7 +176,7 @@ export const SessionModal: React.FC<SessionModalProps> = ({
               required
             >
               <option value="">-- Chọn lớp học --</option>
-              {classes?.map((c) => (
+              {classes?.filter(c => c.trangThai === 2).map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.tenLop} ({c.maLop})
                 </option>
@@ -198,7 +213,7 @@ export const SessionModal: React.FC<SessionModalProps> = ({
             type="date"
             value={sessionDate}
             onChange={(e) => setSessionDate(e.target.value)}
-            disabled={mutation.isPending}
+            disabled={mutation.isPending || followsClassSchedule}
             required
           />
         </div>
@@ -213,7 +228,7 @@ export const SessionModal: React.FC<SessionModalProps> = ({
               type="time"
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
-              disabled={mutation.isPending}
+              disabled={mutation.isPending || followsClassSchedule}
               required
             />
           </div>
@@ -227,7 +242,7 @@ export const SessionModal: React.FC<SessionModalProps> = ({
               type="time"
               value={endTime}
               onChange={(e) => setEndTime(e.target.value)}
-              disabled={mutation.isPending}
+              disabled={mutation.isPending || followsClassSchedule}
               required
             />
           </div>
@@ -260,7 +275,7 @@ export const SessionModal: React.FC<SessionModalProps> = ({
             className="btn btn-primary text-xs"
             disabled={mutation.isPending}
           >
-            {mutation.isPending ? 'Đang lưu...' : isEditing ? 'Lưu thay đổi' : 'Tạo buổi học'}
+            {mutation.isPending ? 'Đang lưu...' : isEditing ? 'Lưu thay đổi' : 'Tạo buổi học bù'}
           </button>
         </div>
       </form>

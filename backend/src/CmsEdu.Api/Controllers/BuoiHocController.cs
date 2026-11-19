@@ -36,6 +36,19 @@ public class BuoiHocController(
             maLop, tuNgay, denNgay, trang, kichThuocTrang, maHuy));
     }
 
+    [HttpPost("weekly-sync")]
+    [HasPermission(Permissions.Sessions.View)]
+    public async Task<IActionResult> DongBoLichTuan(
+        [FromQuery(Name = "classId")] int? maLop,
+        [FromQuery] string? teacherId,
+        [FromQuery(Name = "fromDate")] DateOnly tuNgay,
+        [FromQuery(Name = "toDate")] DateOnly denNgay,
+        CancellationToken maHuy)
+    {
+        await dichVuBuoiHoc.DongBoLichTuanAsync(maLop, teacherId, tuNgay, denNgay, maHuy);
+        return NoContent();
+    }
+
     /// <summary>
     /// Lấy thông tin chi tiết của một buổi học theo phạm vi quyền của người dùng hiện tại.
     /// </summary>

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using CmsEdu.Application.Curriculum;
 using CmsEdu.Application.Knowledge;
 using CmsEdu.Domain.Authorization;
 using CmsEdu.Domain.Entities;
@@ -15,8 +16,8 @@ public partial class AssessmentsController
     public async Task<IActionResult> CloLessons(int id, CancellationToken ct)
     {
         var lop = await CheckClass(id, ct);
-        return Ok(await db.Lessons.AsNoTracking().Where(x => x.LevelId == lop.LevelId && x.IsActive)
-            .OrderBy(x => x.SortOrder).ThenBy(x => x.Id).Select(x => new { x.Id, x.Name, x.Code }).ToListAsync(ct));
+        var lessons = await db.Lessons.AsNoTracking().Where(x => x.LevelId == lop.LevelId && x.IsActive).ToListAsync(ct);
+        return Ok(LessonOrdering.ByNumber(lessons).Select(x => new { x.Id, x.Name, x.Code }));
     }
 
     [HttpPost("classes/{id:int}/lessons/{lessonId:int}/clo")]

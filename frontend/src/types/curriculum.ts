@@ -45,7 +45,6 @@ export interface LessonRequest {
   code: string;
   name: string;
   objective?: string | null;
-  sortOrder?: number;
 }
 
 export interface CurriculumFilterParams {

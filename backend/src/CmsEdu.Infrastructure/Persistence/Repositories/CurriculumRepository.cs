@@ -1,5 +1,6 @@
 using CmsEdu.Application.Common.Exceptions;
 using CmsEdu.Application.Common.Interfaces;
+using CmsEdu.Application.Curriculum;
 using CmsEdu.Application.Common.Models;
 using CmsEdu.Domain.Common;
 using CmsEdu.Domain.Entities;
@@ -145,23 +146,22 @@ public class CurriculumRepository(AppDbContext dbContext) : ICurriculumRepositor
         int pageSize,
         CancellationToken cancellationToken = default)
     {
-        var query = dbContext.Lessons
-            .AsNoTracking()
-            .Where(lesson => lesson.LevelId == levelId);
+        var query = dbContext.Lessons.AsNoTracking().Where(lesson => lesson.LevelId == levelId);
+        var ordered = LessonOrdering.ByNumber(await query.ToListAsync(cancellationToken));
+        AssignLessonOrder(ordered);
+        IEnumerable<Lesson> filtered = ordered;
         if (!string.IsNullOrWhiteSpace(search))
-            query = query.Where(lesson => lesson.Code.Contains(search) || lesson.Name.Contains(search));
+        {
+            var matchingIds = (await query.Where(lesson => lesson.Code.Contains(search) || lesson.Name.Contains(search))
+                .Select(lesson => lesson.Id).ToListAsync(cancellationToken)).ToHashSet();
+            filtered = filtered.Where(lesson => matchingIds.Contains(lesson.Id));
+        }
         if (isActive is not null)
-            query = query.Where(lesson => lesson.IsActive == isActive);
+            filtered = filtered.Where(lesson => lesson.IsActive == isActive);
 
-        var totalItems = await query.CountAsync(cancellationToken);
-        var items = await query
-            .OrderBy(lesson => lesson.SortOrder)
-            .ThenBy(lesson => lesson.Code)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(cancellationToken);
-
-        return new PagedResult<Lesson>(items, page, pageSize, totalItems);
+        var results = filtered.ToList();
+        return new PagedResult<Lesson>(results.Skip((page - 1) * pageSize).Take(pageSize).ToList(),
+            page, pageSize, results.Count);
     }
 
     public Task<Lesson?> GetLessonAsync(int id, CancellationToken cancellationToken = default)
@@ -169,12 +169,39 @@ public class CurriculumRepository(AppDbContext dbContext) : ICurriculumRepositor
         return dbContext.Lessons.SingleOrDefaultAsync(lesson => lesson.Id == id, cancellationToken);
     }
 
-    public async Task<int> GetNextLessonSortOrderAsync(int levelId, CancellationToken cancellationToken = default)
+    public async Task<int> ReorderNumberedLessonsAsync(int levelId, string? userId, CancellationToken cancellationToken = default)
     {
-        var max = await dbContext.Lessons
-            .Where(ls => ls.LevelId == levelId)
-            .MaxAsync(ls => (int?)ls.SortOrder, cancellationToken);
-        return (max ?? 0) + 1;
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable, cancellationToken);
+        var lessons = await dbContext.Lessons.Where(x => x.LevelId == levelId)
+            .OrderBy(x => x.SortOrder).ThenBy(x => x.Id).ToListAsync(cancellationToken);
+        var ordered = LessonOrdering.ByNumber(lessons);
+        var updated = AssignLessonOrder(ordered);
+        if (updated == 0) return 0;
+        dbContext.AuditLogs.Add(new AuditLog
+        {
+            UserId = userId,
+            Action = "Lesson.ReorderByNumber",
+            EntityType = nameof(Level),
+            EntityId = levelId.ToString(),
+            Description = $"Reordered {updated} lessons in level {levelId}.",
+            OccurredAt = DateTime.UtcNow
+        });
+        await dbContext.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+        return updated;
+    }
+
+    private static int AssignLessonOrder(IReadOnlyList<Lesson> ordered)
+    {
+        var updated = 0;
+        for (var index = 0; index < ordered.Count; index++)
+        {
+            var lesson = ordered[index];
+            if (lesson.SortOrder == index + 1) continue;
+            lesson.SortOrder = index + 1;
+            updated++;
+        }
+        return updated;
     }
 
     public Task SaveLessonAsync(
@@ -186,7 +213,11 @@ public class CurriculumRepository(AppDbContext dbContext) : ICurriculumRepositor
     {
         return SaveAsync(
             lesson, userId, action, description,
-            "Mã bài học đã tồn tại trong cấp độ này.", cancellationToken);
+            "Mã bài học đã tồn tại trong cấp độ này.", cancellationToken, async () =>
+            {
+                var levelLessons = await dbContext.Lessons.Where(x => x.LevelId == lesson.LevelId).ToListAsync(cancellationToken);
+                AssignLessonOrder(LessonOrdering.ByNumber(levelLessons, lesson.Id == 0 ? lesson : null));
+            });
     }
 
     private async Task SaveAsync<TEntity>(
@@ -195,10 +226,15 @@ public class CurriculumRepository(AppDbContext dbContext) : ICurriculumRepositor
         string action,
         string description,
         string conflictMessage,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        Func<Task>? prepare = null)
         where TEntity : BaseEntity
     {
-        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        await using var transaction = prepare == null
+            ? await dbContext.Database.BeginTransactionAsync(cancellationToken)
+            : await dbContext.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable, cancellationToken);
+        if (prepare != null)
+            await prepare();
         if (entity.Id == 0)
             dbContext.Set<TEntity>().Add(entity);
 

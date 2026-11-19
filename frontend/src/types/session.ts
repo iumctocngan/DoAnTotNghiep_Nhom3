@@ -16,6 +16,7 @@ export interface SessionResponse {
   endTime: string; // HH:mm:ss
   status: SessionStatus;
   note?: string | null;
+  followsClassSchedule?: boolean;
 }
 
 export interface CreateSessionRequest {

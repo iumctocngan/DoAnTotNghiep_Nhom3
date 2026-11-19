@@ -15,6 +15,9 @@ export const sessionApi = {
       params: params as Record<string, unknown>,
     }),
 
+  synchronizeWeek: (fromDate: string, toDate: string, filters: { classId?: number; teacherId?: string }) =>
+    apiClient<void>('/api/sessions/weekly-sync', { method: 'POST', params: { fromDate, toDate, ...filters } }),
+
   getSessionById: (id: number) =>
     apiClient<SessionResponse>(`/api/sessions/${id}`),
 

@@ -1,10 +1,11 @@
 import { MaterialIcon } from '../../components/common/MaterialIcon';
 import React, { useState } from 'react';
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { sessionApi } from '../../api/sessionApi';
 import { classApi } from '../../api/classApi';
 import { useAuth } from '../../context/AuthContext';
 import { formatDateDisplay, formatTimeDisplay } from '../../utils/date';
+import { addDays, mondayOf, todayInVietnam } from '../../utils/weekDates';
 import { AttendanceModal } from './AttendanceModal';
 import { SessionModal } from './SessionModal';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
@@ -12,12 +13,15 @@ import { useToast } from '../../components/common/ToastProvider';
 import type { SessionResponse } from '../../types/session';
 import type { ApiError } from '../../types/auth';
 
+const weekdays = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
 export const SessionListPage: React.FC = () => {
-  const { hasPermission } = useAuth();
+  const { hasPermission, user } = useAuth();
   const queryClient = useQueryClient();
   const showToast = useToast();
 
   const [selectedClassId, setSelectedClassId] = useState<number | ''>('');
+  const [view, setView] = useState<'week' | 'range'>('week');
+  const [weekStart, setWeekStart] = useState(todayInVietnam);
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
   const [page, setPage] = useState(1);
@@ -27,6 +31,7 @@ export const SessionListPage: React.FC = () => {
   const [attendanceSessionId, setAttendanceSessionId] = useState<number | null>(null);
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
   const [editingSession, setEditingSession] = useState<SessionResponse | null>(null);
+  const [newSessionDate, setNewSessionDate] = useState<string>();
   const [confirmDialog, setConfirmDialog] = useState<{
     title: string;
     message: string;
@@ -40,6 +45,13 @@ export const SessionListPage: React.FC = () => {
     queryFn: () => classApi.getClasses(),
   });
 
+  const weekDates = weekdays.map((_, i) => addDays(weekStart, i));
+  const weekEnd = weekDates[6];
+  const today = todayInVietnam();
+  const filterFrom = view === 'week' ? weekStart : fromDate;
+  const filterTo = view === 'week' ? weekEnd : toDate;
+  const invalidRange = !!filterFrom && !!filterTo && filterFrom > filterTo;
+
   // TanStack Query lấy danh sách buổi học
   const {
     data: pagedData,
@@ -47,16 +59,24 @@ export const SessionListPage: React.FC = () => {
     isError,
     error,
   } = useQuery({
-    queryKey: ['sessions', { classId: selectedClassId, fromDate, toDate, page, pageSize }],
-    queryFn: () =>
-      sessionApi.getSessions({
+    queryKey: ['sessions', { view, classId: selectedClassId, fromDate: filterFrom, toDate: filterTo, page }],
+    enabled: !invalidRange,
+    queryFn: async () => {
+      if (view === 'week' && (user?.role === 'Admin' || user?.role === 'Teacher'))
+        await sessionApi.synchronizeWeek(weekStart, weekEnd, { classId: selectedClassId || undefined });
+      const params = {
         classId: selectedClassId ? Number(selectedClassId) : undefined,
-        fromDate: fromDate || undefined,
-        toDate: toDate || undefined,
-        page,
-        pageSize,
-      }),
-    placeholderData: keepPreviousData,
+        fromDate: filterFrom || undefined,
+        toDate: filterTo || undefined,
+        page: view === 'week' ? 1 : page,
+        pageSize: view === 'week' ? 100 : pageSize,
+      };
+      const first = await sessionApi.getSessions(params);
+      if (view === 'range' || first.totalItems <= params.pageSize) return first;
+      const remaining = await Promise.all(Array.from({ length: Math.ceil(first.totalItems / params.pageSize) - 1 }, (_, i) =>
+        sessionApi.getSessions({ ...params, page: i + 2 })));
+      return { ...first, items: [...first.items, ...remaining.flatMap(result => result.items)] };
+    },
   });
 
   // Hủy buổi học mutation
@@ -88,9 +108,17 @@ export const SessionListPage: React.FC = () => {
   const canManageSession = hasPermission('sessions.manage');
   const canAttendance = hasPermission('sessions.attendance');
   const totalPages = pagedData ? Math.ceil(pagedData.totalItems / pageSize) : 1;
+  const sessions = pagedData?.items ?? [];
+  const tableRows = view === 'week' ? weekDates.flatMap(date => {
+    const daySessions = sessions.filter(session => session.sessionDate === date)
+      .sort((a, b) => a.startTime.localeCompare(b.startTime) || a.classId - b.classId);
+    const label = weekdays[new Date(`${date}T00:00:00Z`).getUTCDay()];
+    return [{ date, label, count: daySessions.length }, ...daySessions];
+  }) : sessions;
 
-  const handleCreate = () => {
+  const handleCreate = (date?: string) => {
     setEditingSession(null);
+    setNewSessionDate(date ?? (view === 'week' ? (today >= weekStart && today <= weekEnd ? today : weekStart) : undefined));
     setIsSessionModalOpen(true);
   };
 
@@ -108,14 +136,29 @@ export const SessionListPage: React.FC = () => {
         </div>
 
         {canManageSession && (
-          <button type="button" className="btn btn-primary" onClick={handleCreate}>
-            <MaterialIcon name="add" /> Thêm buổi học mới
+          <button type="button" className="btn btn-primary" onClick={() => handleCreate()}>
+            <MaterialIcon name="add" /> Thêm buổi học bù
           </button>
         )}
       </div>
 
       {/* Bộ lọc */}
       <div className="card p-4">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            {view === 'week' && <>
+              <button type="button" className="btn btn-secondary" onClick={() => setWeekStart(addDays(weekStart, -7))}>Tuần trước</button>
+              <button type="button" className="btn btn-secondary" onClick={() => setWeekStart(mondayOf(today))}>Tuần này</button>
+              <button type="button" className="btn btn-secondary" onClick={() => setWeekStart(addDays(weekStart, 7))}>Tuần sau</button>
+              <button type="button" className="btn btn-secondary" aria-pressed={weekStart === today} onClick={() => setWeekStart(today)}>7 ngày tới</button>
+              <strong aria-live="polite">{formatDateDisplay(weekStart)} – {formatDateDisplay(weekEnd)}</strong>
+            </>}
+          </div>
+          <button type="button" className="btn btn-secondary" onClick={() => {
+            setPage(1);
+            setView(view === 'week' ? 'range' : 'week');
+          }}>{view === 'week' ? 'Xem theo khoảng ngày' : 'Xem theo tuần'}</button>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
           <div className="sm:col-span-2">
             <label htmlFor="filterClass" className="text-xs uppercase text-slate-500 font-semibold mb-1">
@@ -138,7 +181,7 @@ export const SessionListPage: React.FC = () => {
             </select>
           </div>
 
-          <div>
+          {view === 'range' && <><div>
             <label htmlFor="fromDate" className="text-xs uppercase text-slate-500 font-semibold mb-1">
               Từ ngày
             </label>
@@ -166,13 +209,16 @@ export const SessionListPage: React.FC = () => {
                 setPage(1);
               }}
             />
-          </div>
+          </div></>}
         </div>
       </div>
 
+
       {/* Danh sách buổi học */}
       <div className="card !p-0 overflow-hidden">
-        {isLoading ? (
+        {invalidRange ? (
+          <p role="alert" className="p-4">Từ ngày phải trước hoặc bằng đến ngày.</p>
+        ) : isLoading ? (
           <div className="p-8 text-center text-slate-500">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-sky-600 border-t-transparent mb-3" />
             <p>Đang tải danh sách buổi học...</p>
@@ -181,7 +227,7 @@ export const SessionListPage: React.FC = () => {
           <div className="p-6 text-center text-red-600">
             <p>Đã xảy ra lỗi: {(error as unknown as ApiError)?.message || 'Vui lòng thử lại.'}</p>
           </div>
-        ) : !pagedData || pagedData.items.length === 0 ? (
+        ) : view === 'range' && (!pagedData || pagedData.items.length === 0) ? (
           <div className="p-8 text-center text-slate-500">
             <p className="font-medium text-slate-700 mb-1">Chưa có buổi học nào</p>
             <p className="text-sm">Hãy thử chọn khoảng thời gian khác hoặc tạo buổi học mới.</p>
@@ -207,7 +253,23 @@ export const SessionListPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {pagedData.items.map((s) => (
+                {tableRows.map((s) => 'label' in s ? (
+                    <tr key={s.date}>
+                      <td colSpan={7} className="!bg-slate-100">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span className="font-semibold">{s.label}, {formatDateDisplay(s.date)}
+                            {s.date === today && <span className="ml-2 text-sky-700">· Hôm nay</span>}
+                            {!s.count && <span className="ml-2 font-normal text-slate-500">· Chưa có buổi học</span>}
+                          </span>
+                          {canManageSession && <button type="button" className="btn btn-secondary text-xs"
+                            aria-label={`Thêm buổi học bù ngày ${formatDateDisplay(s.date)}`}
+                            onClick={() => handleCreate(s.date)}>
+                            <MaterialIcon name="add" /> Thêm buổi học bù
+                          </button>}
+                        </div>
+                      </td>
+                    </tr>
+                ) : (
                   <tr key={s.id}>
                     <td>
                       <div className="font-semibold text-slate-900">{s.className}</div>
@@ -298,7 +360,7 @@ export const SessionListPage: React.FC = () => {
         )}
 
         {/* Phân trang */}
-        {pagedData && pagedData.totalItems > 0 && (
+        {view === 'range' && pagedData && pagedData.totalItems > 0 && (
           <div className="flex flex-wrap items-center justify-between p-4 border-t border-slate-200 text-sm gap-2">
             <span className="text-slate-600">
               Hiển thị <strong>{(page - 1) * pageSize + 1}</strong> -{' '}
@@ -342,7 +404,9 @@ export const SessionListPage: React.FC = () => {
         isOpen={isSessionModalOpen}
         onClose={() => setIsSessionModalOpen(false)}
         session={editingSession}
-        defaultClassId={selectedClassId ? Number(selectedClassId) : undefined}
+        defaultClassId={selectedClassId || undefined}
+        defaultDate={newSessionDate}
+        onSaved={date => { if (view === 'week' && (date < weekStart || date > weekEnd)) setWeekStart(mondayOf(date)); }}
       />
 
       {confirmDialog && (

@@ -14,6 +14,8 @@ public class SessionConfiguration : IEntityTypeConfiguration<Session>
         });
 
         builder.HasKey(s => s.Id);
+        builder.HasIndex(s => s.ClassId);
+        builder.HasIndex(s => new { s.ClassId, s.SessionDate }).IsUnique().HasFilter("[IsRegular] = 1");
 
         builder.Property(s => s.Status)
             .HasConversion<int>()

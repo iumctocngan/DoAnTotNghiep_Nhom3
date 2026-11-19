@@ -627,7 +627,7 @@ export const CurriculumPage: React.FC = () => {
             </button>
           </div>
 
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
             <h3 className="text-base font-semibold text-slate-800">Danh sách bài học thuộc cấp độ</h3>
             {isAdmin && (
               <button
@@ -655,7 +655,7 @@ export const CurriculumPage: React.FC = () => {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th className="w-[60px]">STT</th>
+                  <th className="w-[60px]">Thứ tự</th>
                   <th>Mã bài học</th>
                   <th>Tên bài học</th>
                   <th>Mục tiêu bài học</th>

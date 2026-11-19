@@ -137,7 +137,7 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ sessionId, isO
       }
       onClose={onClose}
       closeDisabled={saveMutation.isPending}
-      wide
+      large
     >
       <div className="space-y-4">
         {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
@@ -154,7 +154,7 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ sessionId, isO
         ) : !attendanceData ? null : (
           <>
             {/* Session info banner */}
-            <div className="bg-slate-50 p-3 rounded border border-slate-200 text-xs text-slate-700 flex flex-wrap items-center justify-between gap-2">
+            <div className="bg-slate-50 p-3 rounded border border-slate-200 text-sm text-slate-700 flex flex-wrap items-center justify-between gap-2">
               <div>
                 <strong>Ngày học:</strong> {formatDateDisplay(attendanceData.sessionDate)} |{' '}
                 <strong>Giờ:</strong> {formatTimeDisplay(attendanceData.startTime)} -{' '}
@@ -175,7 +175,7 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ sessionId, isO
 
             {/* Thống kê & Nút thao tác nhanh */}
             <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-2.5 rounded border border-slate-200">
-              <div className="flex items-center gap-4 text-xs">
+              <div className="flex flex-wrap items-center gap-4 text-sm">
                 <span>
                   Sĩ số: <strong>{total}</strong>
                 </span>
@@ -191,14 +191,14 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ sessionId, isO
                 <div className="flex items-center gap-1.5">
                   <button
                     type="button"
-                    className="btn btn-secondary text-xs !py-1 !px-2.5 text-emerald-700 border-emerald-300 hover:bg-emerald-50"
+                    className="btn btn-secondary text-sm text-emerald-700 border-emerald-300 hover:bg-emerald-50"
                     onClick={() => setStatusAll(1)}
                   >
                     <MaterialIcon name="check" /> Tất cả có mặt
                   </button>
                   <button
                     type="button"
-                    className="btn btn-secondary text-xs !py-1 !px-2.5 text-red-700 border-red-300 hover:bg-red-50"
+                    className="btn btn-secondary text-sm text-red-700 border-red-300 hover:bg-red-50"
                     onClick={() => setStatusAll(2)}
                   >
                     <MaterialIcon name="close" /> Tất cả vắng
@@ -213,15 +213,15 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ sessionId, isO
               <ul>{attendanceData.khongTheDiemDanh.map((item, index) => <li key={index}>{item.fullName}: {item.reason} · còn {item.remainingSessions} buổi</li>)}</ul>
             </div>}
             {/* Danh sách học viên */}
-            <div className="table-container max-h-[360px] overflow-y-auto border border-slate-200 rounded">
-              <table className="data-table text-xs">
+            <div className="table-container max-h-[58vh] overflow-y-auto border border-slate-200 rounded">
+              <table className="data-table min-w-[780px]">
                 <thead className="sticky top-0 bg-slate-100 z-10">
                   <tr>
                     <th>STT</th>
                     <th>Mã HV</th>
                     <th>Họ và tên</th>
-                    <th className="text-center w-[180px]">Trạng thái</th>
-                    <th>Buổi còn lại</th><th>Ghi chú</th>
+                    <th className="text-center min-w-[205px]">Trạng thái</th>
+                    <th>Buổi còn lại</th><th className="min-w-[220px]">Ghi chú</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -240,7 +240,7 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ sessionId, isO
                       return (
                         <tr
                           key={item.enrollmentId}
-                          className={current.status === 2 ? 'bg-red-50/40' : ''}
+                          className={current.status === 2 ? 'bg-red-50' : 'even:bg-slate-50'}
                         >
                           <td className="text-slate-500">{idx + 1}</td>
                           <td className="font-mono font-medium">{item.studentCode}</td>
@@ -249,24 +249,26 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ sessionId, isO
                             <div className="inline-flex rounded border border-slate-300 p-0.5 bg-white">
                               <button
                                 type="button"
-                                className={`px-2.5 py-1 text-xs font-semibold rounded transition-colors ${
+                                className={`px-3 py-2 text-sm font-semibold rounded transition-colors ${
                                   current.status === 1
                                     ? 'bg-emerald-600 text-white'
                                     : 'text-slate-600 hover:bg-slate-100'
                                 }`}
                                 onClick={() => handleStatusChange(item.enrollmentId, 1)}
+                                aria-pressed={current.status === 1}
                                 disabled={isReadOnly}
                               >
                                 Có mặt
                               </button>
                               <button
                                 type="button"
-                                className={`px-2.5 py-1 text-xs font-semibold rounded transition-colors ${
+                                className={`px-3 py-2 text-sm font-semibold rounded transition-colors ${
                                   current.status === 2
                                     ? 'bg-red-600 text-white'
                                     : 'text-slate-600 hover:bg-slate-100'
                                 }`}
                                 onClick={() => handleStatusChange(item.enrollmentId, 2)}
+                                aria-pressed={current.status === 2}
                                 disabled={isReadOnly}
                               >
                                 Vắng mặt
@@ -283,7 +285,8 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ sessionId, isO
                                 handleNoteChange(item.enrollmentId, e.target.value)
                               }
                               disabled={isReadOnly}
-                              className="!h-7 !text-xs !py-0"
+                              className="w-full !text-sm"
+                              aria-label={`Ghi chú cho ${item.studentFullName}`}
                               maxLength={200}
                             />
                           </td>
