@@ -50,9 +50,9 @@ export const SessionModal: React.FC<SessionModalProps> = ({
   const selectedClass = classes?.find((c) => c.id === Number(classId));
 
   // Danh sách bài học của cấp độ lớp
-  const { data: lessons } = useQuery({
-    queryKey: ['lessons', selectedClass?.capDoId],
-    queryFn: () => curriculumApi.getLessons(selectedClass!.capDoId, { pageSize: 100 }),
+  const { data: lessons, isError: lessonsError } = useQuery({
+    queryKey: ['lessons', selectedClass?.capDoId, 'active-options'],
+    queryFn: ({ signal }) => curriculumApi.getActiveLessons(selectedClass!.capDoId, signal),
     enabled: isOpen && !!selectedClass?.capDoId,
   });
 
@@ -137,8 +137,8 @@ export const SessionModal: React.FC<SessionModalProps> = ({
       classId: Number(classId),
       lessonId: lessonId ? Number(lessonId) : null,
       sessionDate,
-      startTime: startTime.length === 5 ? `${startTime}:00` : startTime,
-      endTime: endTime.length === 5 ? `${endTime}:00` : endTime,
+      startTime: followsClassSchedule && session ? session.startTime : startTime.length === 5 ? `${startTime}:00` : startTime,
+      endTime: followsClassSchedule && session ? session.endTime : endTime.length === 5 ? `${endTime}:00` : endTime,
       note: note.trim() || null,
     });
   };
@@ -185,17 +185,20 @@ export const SessionModal: React.FC<SessionModalProps> = ({
           )}
         </div>
 
-        {lessons && lessons.items.length > 0 && (
+        {(selectedClass || isEditing) && (
           <div>
             <label htmlFor="sessionLesson">Bài học (tùy chọn)</label>
             <select
               id="sessionLesson"
               value={lessonId}
               onChange={(e) => setLessonId(e.target.value ? Number(e.target.value) : '')}
-              disabled={mutation.isPending}
+              disabled={mutation.isPending || !lessons}
             >
-              <option value="">-- Chưa gắn bài học cụ thể --</option>
-              {lessons.items.map((l) => (
+              <option value="">{lessonsError ? 'Không tải được danh sách bài' : !lessons ? 'Đang tải bài học…' : '-- Chưa gắn bài học cụ thể --'}</option>
+              {lessonId !== '' && !lessons?.some(bai => bai.id === lessonId) && (
+                <option value={lessonId}>{session?.lessonName ?? 'Bài hiện tại'}</option>
+              )}
+              {lessons?.map((l) => (
                 <option key={l.id} value={l.id}>
                   {l.code} - {l.name}
                 </option>

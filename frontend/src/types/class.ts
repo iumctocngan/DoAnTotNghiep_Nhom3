@@ -8,6 +8,7 @@ export interface ClassResponse {
   maLop: string;
   tenLop: string;
   capDoId: number;
+  baiHocBatDauId?: number | null;
   giaoVienId: string;
   siSoToiDa: number;
   siSoHienTai: number;
@@ -23,6 +24,7 @@ export interface CreateClassRequest {
   maLop: string;
   tenLop: string;
   capDoId: number;
+  baiHocBatDauId?: number | null;
   giaoVienId: string;
   siSoToiDa: number;
   ngayBatDau: string;

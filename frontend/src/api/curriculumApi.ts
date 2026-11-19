@@ -40,6 +40,17 @@ export const curriculumApi = {
     apiClient<PagedResult<LessonResponse>>('/api/lessons', {
       params: { levelId, ...params } as Record<string, unknown>,
     }),
+  getActiveLessons: async (levelId: number, signal?: AbortSignal) => {
+    const lessons: LessonResponse[] = [];
+    for (let page = 1; ; page++) {
+      const result = await apiClient<PagedResult<LessonResponse>>('/api/lessons', {
+        params: { levelId, isActive: true, page, pageSize: 100 },
+        signal,
+      });
+      lessons.push(...result.items);
+      if (!result.items.length || lessons.length >= result.totalItems) return lessons;
+    }
+  },
   getLesson: (id: number) => apiClient<LessonResponse>(`/api/lessons/${id}`),
   createLesson: (body: LessonRequest) =>
     apiClient<LessonResponse>('/api/lessons', { method: 'POST', body: JSON.stringify(body) }),

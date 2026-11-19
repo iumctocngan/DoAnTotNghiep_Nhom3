@@ -85,7 +85,9 @@ public class DichVuBuoiHoc(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai) 
             if (slot.Any(x => x.Status != SessionStatus.Cancelled && x.StartTime < lop.EndTime && lop.StartTime < x.EndTime))
                 continue;
 
-            var lesson = lessons[lop.LevelId].FirstOrDefault(x => !usedLessons.Contains(new { ClassId = lop.Id, LessonId = (int?)x.Id }));
+            var curriculum = lessons[lop.LevelId].ToList();
+            var startingIndex = lop.StartingLessonId is int startId ? curriculum.FindIndex(x => x.Id == startId) : 0;
+            var lesson = curriculum.Skip(startingIndex < 0 ? curriculum.Count : startingIndex).FirstOrDefault(x => !usedLessons.Contains(new { ClassId = lop.Id, LessonId = (int?)x.Id }));
             nguCanh.Sessions.Add(new Session
             {
                 ClassId = lop.Id, SessionDate = date, StartTime = lop.StartTime, EndTime = lop.EndTime,

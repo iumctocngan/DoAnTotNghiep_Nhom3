@@ -57,12 +57,18 @@ public class KhoDuLieuQuanLyLop(AppDbContext duLieu) :
                     x.Class.MainTeacherUserId == lop.MainTeacherUserId)) &&
                     x.StartTime < lop.EndTime && lop.StartTime < x.EndTime))).ToListAsync(maHuy);
 
-    public async Task DongBoGioBuoiDinhKyAsync(Class lop, CancellationToken maHuy)
+    public Task<List<Session>> LayBuoiDinhKyCoTheSuaAsync(int lopId, CancellationToken maHuy)
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow.AddHours(7));
-        var sessions = await duLieu.Sessions.Where(x => x.ClassId == lop.Id && x.IsRegular == true &&
+        return duLieu.Sessions.Where(x => x.ClassId == lopId && x.IsRegular == true &&
             x.Status == SessionStatus.Scheduled && x.SessionDate >= today && !x.Attendances.Any() &&
-            !duLieu.Set<Assessment>().Any(a => a.SessionId == x.Id)).ToListAsync(maHuy);
+            !duLieu.Set<Assessment>().Any(a => a.SessionId == x.Id))
+            .OrderBy(x => x.SessionDate).ThenBy(x => x.Id).ToListAsync(maHuy);
+    }
+
+    public async Task DongBoGioBuoiDinhKyAsync(Class lop, CancellationToken maHuy)
+    {
+        var sessions = await LayBuoiDinhKyCoTheSuaAsync(lop.Id, maHuy);
         foreach (var session in sessions)
         {
             session.StartTime = lop.StartTime;

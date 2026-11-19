@@ -125,6 +125,35 @@ public class KiemThuApiLopGhiDanhNhanXet
             (await LayBuoi(lopThuBa.Id)).Select(x => x.SessionDate));
         Assert.Equal(HttpStatusCode.OK, (await admin.PutAsJsonAsync($"/api/classes/{lopThuBa.Id}", lopDangHoc)).StatusCode);
         Assert.Equal(2, (await LayBuoi(lopThuBa.Id)).Count);
+
+        var ngayThuTu = DateOnly.FromDateTime(DateTime.UtcNow.AddHours(7)).AddDays(7);
+        ngayThuTu = ngayThuTu.AddDays(((int)DayOfWeek.Wednesday - (int)ngayThuTu.DayOfWeek + 7) % 7);
+        var lopBatDauBaiHai = lopChuNhat with
+        {
+            TenLop = "Lớp bắt đầu bài 2",
+            Thu = DayOfWeek.Wednesday,
+            NgayBatDau = ngayThuTu,
+            NgayKetThuc = ngayThuTu.AddDays(7),
+            BaiHocBatDauId = baiHai.Id
+        };
+        var lopThuTu = await TaoLop(lopBatDauBaiHai);
+        Assert.Equal(baiHai.Id, lopThuTu.BaiHocBatDauId);
+        Assert.Equal(new int?[] { baiHai.Id, null }, (await LayBuoi(lopThuTu.Id)).Select(x => x.LessonId));
+
+        using var doiBaiBatDau = await admin.PutAsJsonAsync($"/api/classes/{lopThuTu.Id}",
+            lopBatDauBaiHai with { BaiHocBatDauId = baiMot.Id });
+        Assert.Equal(HttpStatusCode.OK, doiBaiBatDau.StatusCode);
+        var buoiThuTu = await LayBuoi(lopThuTu.Id);
+        Assert.Equal(new int?[] { baiMot.Id, baiHai.Id }, buoiThuTu.Select(x => x.LessonId));
+
+        using var doiBaiBuoiHoc = await admin.PutAsJsonAsync($"/api/sessions/{buoiThuTu[0].Id}",
+            new YeuCauCapNhatBuoiHoc(baiHai.Id, ngayThuTu, gioBatDau, gioKetThuc, null));
+        Assert.Equal(HttpStatusCode.OK, doiBaiBuoiHoc.StatusCode);
+        Assert.Equal(new int?[] { baiHai.Id, baiHai.Id }, (await LayBuoi(lopThuTu.Id)).Select(x => x.LessonId));
+
+        using var baiKhongHopLe = await admin.PutAsJsonAsync($"/api/classes/{lopThuTu.Id}",
+            lopBatDauBaiHai with { BaiHocBatDauId = int.MaxValue });
+        Assert.Equal(HttpStatusCode.BadRequest, baiKhongHopLe.StatusCode);
     }
 
     [KiemThuSqlServer]

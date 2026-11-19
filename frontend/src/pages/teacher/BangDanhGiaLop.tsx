@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { MaterialIcon } from '../../components/common/MaterialIcon';
 import { apiClient } from '../../api/apiClient';
 
 export type Criterion = { name: string; clo: string; weight: number; description: string;
@@ -46,8 +47,15 @@ export function BangDanhGiaLop({ buoiId, danhSachLop, rubric, khoa, datDangXuLy 
     const daLuu = bai.get(x.id);
     return daLuu && !daLuu.approvedAt ? [daLuu] : [];
   });
-  const banNhapCu = (x: BaiDaLuu) => x.feedbackSource?.startsWith('LLM:') &&
-    !!x.feedback && x.feedback.trim().split(/\s+/).length < 250;
+  const tenHocSinh = new Map(hocSinh.map(hs => [hs.id, hs.fullName.trim()]));
+  const banNhapCu = (x: BaiDaLuu) => x.feedbackSource?.startsWith('LLM:') && !!x.feedback &&
+    (x.feedback.trim().split(/\s+/).length < 250 ||
+      !x.feedback.toLowerCase().includes(tenHocSinh.get(x.enrollmentId)?.toLowerCase() ?? '') ||
+      /(?:\b(?:CLO(?:[\s-]*[0-9]+)?|rubric)\b|(?<!\p{L})điểm\s*[:=]?\s*\d|\b\d+(?:[.,]\d+)?\s*(?:điểm\b|\/\s*10\b|trên\s+(?:thang\s+)?10\b))/iu.test(x.feedback));
+  const coDiemNgoaiKhoang = canLuu.some(hs => rubric?.criteria.some((tieuChi, i) => {
+    const diem = diemNhap[hs.id]?.[i];
+    return tieuChi.numericScore && diem != null && (diem < 0 || diem > 10);
+  }));
   const canSinh = banNhapDaChon.filter(x => (!x.feedback && !nhanXet(x).trim()) ||
     (banSua[x.id] == null && banNhapCu(x)));
   const canDuyet = banNhapDaChon.filter(x => nhanXet(x).trim());
@@ -85,7 +93,15 @@ export function BangDanhGiaLop({ buoiId, danhSachLop, rubric, khoa, datDangXuLy 
           while (!hetHanMuc && viTri < canSinh.length) {
             const dong = canSinh[viTri++];
             try {
-              await apiClient(`${goc}/${dong.id}/feedback`, { method: 'POST' });
+              const draft = await apiClient<Pick<BaiDaLuu, 'feedback' | 'feedbackSource'>>(
+                `${goc}/${dong.id}/feedback`, { method: 'POST' },
+              );
+              cache.setQueryData<Bang>(queryKey, current => current && ({
+                ...current,
+                grades: current.grades.map(grade => grade.id === dong.id && !grade.approvedAt
+                  ? { ...grade, ...draft }
+                  : grade),
+              }));
             } catch (loi) {
               const { message, statusCode } = loi as { message?: string; statusCode?: number };
               datLoiDong(truoc => ({ ...truoc, [dong.enrollmentId]: message ?? 'Không tạo được nhận xét.' }));
@@ -164,12 +180,19 @@ export function BangDanhGiaLop({ buoiId, danhSachLop, rubric, khoa, datDangXuLy 
               }} /> {hs.fullName}<small>{hs.studentCode}</small></th>
             {rubric?.criteria.map((tieuChi, i) => {
               const diem = daLuu?.scores[i] ?? diemNhap[hs.id]?.[i];
+              const loiDiem = diem != null && (diem < 0 || diem > 10)
+                ? (diem > 10 ? 'Điểm bài tập không được vượt quá 10.' : 'Điểm bài tập phải từ 0 trở lên.')
+                : '';
+              const maLoi = `grade-error-${hs.id}-${i}`;
               if (tieuChi.numericScore) return <td key={i}>
                 <input type="number" min={0} max={10} step="any" placeholder="0–10" value={diem ?? ''}
-                  aria-label={`${hs.fullName} · ${tieuChi.name}`} disabled={biKhoa || !chon || !!daLuu} onChange={e => {
+                  aria-label={`${hs.fullName} · ${tieuChi.name}`} aria-invalid={!!loiDiem}
+                  aria-describedby={loiDiem ? maLoi : undefined}
+                  className={loiDiem ? 'border-red-600' : undefined} disabled={biKhoa || !chon || !!daLuu} onChange={e => {
                     const value = e.currentTarget.valueAsNumber;
                     datDiemNhap(truoc => ({ ...truoc, [hs.id]: { ...truoc[hs.id], [i]: Number.isFinite(value) ? value : undefined } }));
                   }} />
+                {loiDiem && <small id={maLoi} className="text-red-700" role="alert">{loiDiem}</small>}
               </td>;
               return <td key={i}>
                 <div className="assessment-levels" role="group" aria-label={`${hs.fullName} · ${tieuChi.name}`}>
@@ -194,20 +217,27 @@ export function BangDanhGiaLop({ buoiId, danhSachLop, rubric, khoa, datDangXuLy 
         })}
       </tbody></table>
     </div>
-    {rubric && <button type="button" disabled={biKhoa || !canLuu.length} onClick={() => void xuLy('luu')}>Lưu điểm đã chọn</button>}
+    {rubric && <div className="mt-3">
+      <button type="button" className="btn btn-secondary gap-2"
+        disabled={biKhoa || !canLuu.length || coDiemNgoaiKhoang} onClick={() => void xuLy('luu')}>
+        <MaterialIcon name="assignment" /> Lưu điểm đã chọn
+      </button>
+    </div>}
     {tacVu && <p role="status">{tacVu}</p>}
     {loiBang && <p role="alert">{loiBang}</p>}
     {!!bai.size && <div className="nhan-xet-theo-lop">
       <h3>Nhận xét theo lớp</h3>
-      <button type="button" disabled={biKhoa || !canSinh.length || !!canLuu.length}
-        onClick={() => void xuLy('sinh')}>Tạo nhận xét</button>{' '}
-      <button type="button" disabled={biKhoa || !canDuyet.length}
-        onClick={() => void xuLy('duyet')}>Xác nhận và lưu nhận xét đã chọn</button>
+      <div className="mb-3 flex flex-wrap gap-2">
+        <button type="button" className="btn btn-primary gap-2" disabled={biKhoa || !canSinh.length || !!canLuu.length}
+          onClick={() => void xuLy('sinh')}><MaterialIcon name="edit_note" /> Tạo nhận xét</button>
+        <button type="button" className="btn btn-success gap-2" disabled={biKhoa || !canDuyet.length}
+          onClick={() => void xuLy('duyet')}><MaterialIcon name="check" /> Xác nhận và lưu nhận xét đã chọn</button>
+      </div>
       {hocSinh.map(hs => {
         const daLuu = bai.get(hs.id);
         if (!daLuu) return null;
         return <article key={daLuu.id}>
-          <label><strong>{hs.fullName} · {daLuu.approvedAt ? 'Đã xác nhận' : banNhapCu(daLuu) ? 'Bản nháp AI dưới 250 từ'
+          <label><strong>{hs.fullName} · {daLuu.approvedAt ? 'Đã xác nhận' : banNhapCu(daLuu) ? 'Bản nháp AI có thể tạo lại'
             : daLuu.feedback ? 'Chờ xác nhận' : 'Chưa có nhận xét'}</strong>
             <textarea rows={5} value={nhanXet(daLuu)} maxLength={6000}
               disabled={biKhoa || !!daLuu.approvedAt || hs.attendance !== 'Present'}

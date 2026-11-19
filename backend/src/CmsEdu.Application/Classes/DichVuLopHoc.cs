@@ -7,10 +7,10 @@ namespace CmsEdu.Application.Classes;
 
 public record YeuCauLopHoc(string MaLop, string TenLop, int CapDoId, string GiaoVienId,
     int SiSoToiDa, DateOnly NgayBatDau, DateOnly? NgayKetThuc, DayOfWeek Thu,
-    TimeOnly GioBatDau, TimeOnly GioKetThuc, ClassStatus TrangThai);
+    TimeOnly GioBatDau, TimeOnly GioKetThuc, ClassStatus TrangThai, int? BaiHocBatDauId = null);
 public record ThongTinLopHoc(int Id, string MaLop, string TenLop, int CapDoId, string GiaoVienId,
     int SiSoToiDa, int SiSoHienTai, DateOnly NgayBatDau, DateOnly? NgayKetThuc,
-    DayOfWeek Thu, TimeOnly GioBatDau, TimeOnly GioKetThuc, ClassStatus TrangThai);
+    DayOfWeek Thu, TimeOnly GioBatDau, TimeOnly GioKetThuc, ClassStatus TrangThai, int? BaiHocBatDauId = null);
 
 public class DichVuLopHoc(IKhoDuLieuLopHoc kho, ICurrentUser nguoiDung)
 {
@@ -62,18 +62,29 @@ public class DichVuLopHoc(IKhoDuLieuLopHoc kho, ICurrentUser nguoiDung)
             var moLop = lop.Status != ClassStatus.Active && yeuCau.TrangThai == ClassStatus.Active;
             var doiGioDinhKy = lop.Status == ClassStatus.Active && yeuCau.TrangThai == ClassStatus.Active &&
                 lop.DayOfWeek == yeuCau.Thu && (lop.StartTime != yeuCau.GioBatDau || lop.EndTime != yeuCau.GioKetThuc);
+            var doiBaiBatDau = lop.StartingLessonId != yeuCau.BaiHocBatDauId || lop.LevelId != yeuCau.CapDoId;
             Gan(lop, yeuCau);
             if (moLop)
                 await XepBuoiHangTuan(lop, maHuy);
-            else if (doiGioDinhKy)
-                await kho.DongBoGioBuoiDinhKyAsync(lop, maHuy);
+            else
+            {
+                if (doiGioDinhKy)
+                    await kho.DongBoGioBuoiDinhKyAsync(lop, maHuy);
+                if (doiBaiBatDau && lop.Status == ClassStatus.Active)
+                {
+                    var baiHoc = await LayBaiTuDiemBatDau(lop, maHuy);
+                    var cacBuoi = await kho.LayBuoiDinhKyCoTheSuaAsync(lop.Id, maHuy);
+                    for (var i = 0; i < cacBuoi.Count; i++)
+                        cacBuoi[i].LessonId = i < baiHoc.Count ? baiHoc[i] : null;
+                }
+            }
             await kho.LuuAsync(maHuy);
             return ChuyenDoi(lop, siSo);
         }, maHuy);
 
     private async Task XepBuoiHangTuan(Class lop, CancellationToken maHuy)
     {
-        var baiHoc = await kho.LayBaiHocHoatDongAsync(lop.LevelId, maHuy);
+        var baiHoc = await LayBaiTuDiemBatDau(lop, maHuy);
         if (lop.EndDate == null && baiHoc.Count == 0)
             throw new ValidationException("Nhập ngày kết thúc hoặc bổ sung bài học cho cấp độ để xếp lịch hằng tuần.");
 
@@ -103,6 +114,15 @@ public class DichVuLopHoc(IKhoDuLieuLopHoc kho, ICurrentUser nguoiDung)
                 SessionDate = ngayHoc, StartTime = lop.StartTime, EndTime = lop.EndTime
             });
         }
+    }
+
+    private async Task<List<int>> LayBaiTuDiemBatDau(Class lop, CancellationToken maHuy)
+    {
+        var baiHoc = await kho.LayBaiHocHoatDongAsync(lop.LevelId, maHuy);
+        var viTri = lop.StartingLessonId is int id ? baiHoc.IndexOf(id) : 0;
+        if (viTri < 0)
+            throw new ValidationException("Bài học bắt đầu phải đang hoạt động và thuộc cấp độ của lớp.");
+        return baiHoc.GetRange(viTri, baiHoc.Count - viTri);
     }
 
     public async Task Xoa(int id, CancellationToken maHuy)
@@ -137,6 +157,9 @@ public class DichVuLopHoc(IKhoDuLieuLopHoc kho, ICurrentUser nguoiDung)
             throw new ConflictException("Mã lớp đã tồn tại.");
         if (!await kho.CapDoHoatDongAsync(r.CapDoId, maHuy))
             throw new ValidationException("Cấp độ không tồn tại hoặc đã ngừng sử dụng.");
+        if (r.BaiHocBatDauId is int baiBatDau &&
+            !(await kho.LayBaiHocHoatDongAsync(r.CapDoId, maHuy)).Contains(baiBatDau))
+            throw new ValidationException("Bài học bắt đầu phải đang hoạt động và thuộc cấp độ của lớp.");
         if (!await kho.GiaoVienHopLeAsync(r.GiaoVienId, maHuy))
             throw new ValidationException("Tài khoản giáo viên không hợp lệ hoặc đã nghỉ việc.");
         if (r.TrangThai is not (ClassStatus.Cancelled or ClassStatus.Completed) &&
@@ -147,6 +170,7 @@ public class DichVuLopHoc(IKhoDuLieuLopHoc kho, ICurrentUser nguoiDung)
 
     private static void Gan(Class x, YeuCauLopHoc r)
     {
+        x.StartingLessonId = r.BaiHocBatDauId;
         x.ClassCode = r.MaLop.Trim(); x.Name = r.TenLop.Trim(); x.LevelId = r.CapDoId;
         x.MainTeacherUserId = r.GiaoVienId; x.Capacity = r.SiSoToiDa;
         x.StartDate = r.NgayBatDau; x.EndDate = r.NgayKetThuc; x.DayOfWeek = r.Thu;
@@ -155,5 +179,5 @@ public class DichVuLopHoc(IKhoDuLieuLopHoc kho, ICurrentUser nguoiDung)
 
     private static ThongTinLopHoc ChuyenDoi(Class x, int siSo) => new(x.Id, x.ClassCode, x.Name,
         x.LevelId, x.MainTeacherUserId, x.Capacity, siSo, x.StartDate, x.EndDate,
-        x.DayOfWeek, x.StartTime, x.EndTime, x.Status);
+        x.DayOfWeek, x.StartTime, x.EndTime, x.Status, x.StartingLessonId);
 }

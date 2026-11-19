@@ -98,7 +98,17 @@ public class LessonCloAssessmentTests
         using var tooShort = await client.PostAsync($"/api/assessments/{assessmentId}/feedback", null);
         Assert.Equal(HttpStatusCode.BadGateway, tooShort.StatusCode);
         Assert.Null(await db.Set<Assessment>().AsNoTracking().Select(x => x.Feedback).SingleAsync());
-        feedback.Text = string.Join(' ', Enumerable.Repeat("đạt", 250));
+        var fullFeedback = string.Join(' ', Enumerable.Repeat("Em đã chia hình thành các phần bằng nhau.", 30));
+        feedback.Text = fullFeedback;
+        using var withoutName = await client.PostAsync($"/api/assessments/{assessmentId}/feedback", null);
+        Assert.Equal(HttpStatusCode.BadGateway, withoutName.StatusCode);
+        feedback.Text = $"Học sinh thử đã đạt CLO1. {fullFeedback}";
+        using var withJargon = await client.PostAsync($"/api/assessments/{assessmentId}/feedback", null);
+        Assert.Equal(HttpStatusCode.BadGateway, withJargon.StatusCode);
+        feedback.Text = $"Học sinh thử được 7,5 điểm bài tập. {fullFeedback}";
+        using var withScore = await client.PostAsync($"/api/assessments/{assessmentId}/feedback", null);
+        Assert.Equal(HttpStatusCode.BadGateway, withScore.StatusCode);
+        feedback.Text = $"Học sinh thử đã làm tốt phần chia hình. {fullFeedback}";
         using var accepted = await client.PostAsync($"/api/assessments/{assessmentId}/feedback", null);
         Assert.Equal(HttpStatusCode.OK, accepted.StatusCode);
 
@@ -165,7 +175,12 @@ public class LessonCloAssessmentTests
         {
             Assert.EndsWith(":generateContent", request.RequestUri?.AbsolutePath);
             var body = await request.Content!.ReadAsStringAsync(cancellationToken);
-            Assert.Contains("CloDescription", body);
+            using var payload = JsonDocument.Parse(body);
+            using var input = JsonDocument.Parse(payload.RootElement.GetProperty("contents")[0]
+                .GetProperty("parts")[0].GetProperty("text").GetString()!);
+            Assert.Equal("Học sinh thử", input.RootElement.GetProperty("StudentName").GetString());
+            Assert.StartsWith("Chia hình thành phần bằng nhau", input.RootElement.GetProperty("Criteria")[0]
+                .GetProperty("CloDescription").GetString());
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = JsonContent.Create(new
             {
                 candidates = new[] { new { content = new { parts = new[] { new { text = Text } } } } }
