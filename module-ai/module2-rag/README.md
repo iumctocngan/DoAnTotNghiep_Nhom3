@@ -11,7 +11,7 @@ Dịch vụ RAG (Retrieval-Augmented Generation) phục vụ hỏi đáp thông 
   - Trả lời chính xác, kèm số trang trích dẫn và văn bản nguồn làm minh chứng trực tiếp; chủ động báo `insufficient_evidence` hoặc `out_of_scope` khi câu hỏi nằm ngoài phạm vi tài liệu để chống ảo giác (hallucination).
 - **Tự động sinh Chuẩn đầu ra (CLO) & Ma trận Rubric**: 
   - Quét phạm vi bài học (in-context window lớn), trích xuất mục tiêu và phân loại hành vi theo 6 cấp độ thang đo tư duy Bloom.
-  - Tự động sinh bảng tiêu chí đánh giá năng lực đa cấp độ và xuất trực tiếp ra file Excel (`.xlsx`) phục vụ công tác giảng dạy.
+  - Sinh bảng tiêu chí đánh giá năng lực dạng Excel (`.xlsx`). Khi giáo viên chọn **Tạo CLO & Rubric** trong **Hỏi đáp học liệu**, backend CMS Edu lưu tệp cùng nội dung CLO theo lớp và bài học để Module 1 tự lấy khi chọn buổi học.
 
 ---
 

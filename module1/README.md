@@ -4,11 +4,11 @@ Project `CmsEdu.Module1.csproj` chứa API đánh giá, đọc rubric Excel, tí
 
 Mở **Đánh giá học sinh AI** tại `/assessments` bằng tài khoản Admin hoặc Teacher. Giáo viên chỉ truy cập lớp mình phụ trách.
 
-1. Chọn lớp và nhập tệp rubric Excel .xlsx do Module 2 xuất. Hệ thống đọc trang **Danh sách CLO chi tiết**, giữ mã và nội dung CLO, tiêu chí và mô tả năm mức, đồng thời chia trọng số gần đều với tổng đúng 100%. Rubric được lưu và chọn tự động. Mỗi tiêu chí xuất hiện thành một cột trong bảng đánh giá. Giáo viên cũng có thể khai báo rubric thủ công. Rubric được lưu bất biến để giữ đúng lịch sử điểm.
-2. Chọn buổi học và rubric. Bảng hiển thị cả lớp ở cột đầu, các tiêu chí ở hàng đầu. Chỉ học sinh có mặt trong điểm danh của đúng buổi mới được đánh giá.
-3. Tích mức 1–5 cho từng tiêu chí và bấm **Lưu điểm đã chọn**. Mỗi mức tương ứng 2 điểm trên thang 10. Chọn lại lớp, buổi và rubric để mở bảng đã lưu.
-4. Bấm **Tạo nhận xét**, chỉnh sửa bản nháp rồi bấm **Xác nhận và lưu nhận xét đã chọn**. Gemini dựa vào mô tả CLO, điểm và mô tả mức rubric đã chọn để nêu điểm mạnh và việc cần luyện. Hệ thống cũng gửi chênh lệch điểm của các tiêu chí tương đương và nhận xét đã xác nhận trước đó. Bảng xử lý tối đa ba yêu cầu cùng lúc và tái sử dụng bản nháp đã lưu theo từng bài đánh giá.
-5. Dùng **Xem báo cáo cá nhân** để xem lịch sử và kết quả CLO. Bấm **Xuất báo cáo PDF** rồi chọn **Lưu dưới dạng PDF** trong hộp thoại in của trình duyệt.
+1. Trong **Hỏi đáp học liệu**, chọn lớp, bấm **Tạo CLO & Rubric**, chọn bài học trong chương trình và tài liệu PDF. Hệ thống lưu tệp gốc và tiêu chí đã tách vào bảng `LessonClo` theo lớp và bài.
+2. Trong Module 1, chọn lớp và buổi học. Nếu buổi đã gắn đúng bài, hệ thống tự chọn rubric từ CLO đã lưu. Buổi đã có điểm tiếp tục dùng phiên bản rubric đã chấm. Nhập Excel và tạo rubric thủ công vẫn dùng được khi cần. Chỉ học sinh có mặt trong buổi mới được đánh giá.
+3. Rubric mới chia 70% cho CLO bài học và 10% cho mỗi mục **Thái độ học tập**, **Kỹ năng học tập**, **Điểm sách bài tập**. Chọn mức 1–5 cho các tiêu chí rubric và nhập điểm sách bài tập trực tiếp trên thang 0–10. Sau đó bấm **Lưu điểm đã chọn**.
+4. Bấm **Tạo nhận xét**, chỉnh sửa bản nháp rồi bấm **Xác nhận và lưu nhận xét đã chọn**. Nhận xét mới từ Gemini có tối thiểu 250 từ, dựa vào mô tả CLO, điểm, mức rubric và lịch sử đối chiếu. Bảng xử lý tối đa ba yêu cầu cùng lúc và tái sử dụng bản nháp đã lưu.
+5. Dùng **Xem báo cáo cá nhân** và chọn lượt đánh giá. Báo cáo hiển thị tên, lớp, ngày, điểm, mức đánh giá, cảnh báo nếu có, nội dung đã học, bảng đánh giá, nhận xét và phần cần luyện tập. Chọn **Xuất báo cáo PDF** để lưu bố cục này.
 
 ## Cách tính
 
@@ -20,7 +20,7 @@ Mở **Đánh giá học sinh AI** tại `/assessments` bằng tài khoản Admi
 
 ## Khởi chạy
 
-Backend dùng `DbInitializer` để áp dụng migration khi khởi động. Migration `20261119100000_AddAssessmentSession` liên kết điểm mới với buổi học. Điểm cũ tiếp tục xuất hiện trong báo cáo và lịch sử dùng để đối chiếu. Cần SQL Server hoạt động và tài khoản có quyền migration.
+Backend dùng `DbInitializer` để áp dụng migration khi khởi động trong Development. Migration `20261120010000_AddLessonClo` lưu đầu ra Module 2 và liên kết rubric mới với phiên bản CLO của bài. Cần SQL Server hoạt động và tài khoản có quyền migration.
 
 Model mặc định là `gemini-3.5-flash-lite`. Để lưu API key một lần trên máy phát triển, chạy từ thư mục gốc dự án:
 

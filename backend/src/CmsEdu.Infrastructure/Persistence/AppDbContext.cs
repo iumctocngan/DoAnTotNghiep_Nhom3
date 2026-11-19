@@ -41,6 +41,13 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
         base.OnModelCreating(builder);
         builder.Entity<AssessmentRubric>().Property(x => x.Name).HasMaxLength(200);
         builder.Entity<AssessmentRubric>().HasOne(x => x.Class).WithMany().HasForeignKey(x => x.ClassId).OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<AssessmentRubric>().HasOne<LessonClo>().WithMany().HasForeignKey(x => x.LessonCloId).OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<AssessmentRubric>().HasIndex(x => x.ClassId);
+        builder.Entity<AssessmentRubric>().HasIndex(x => new { x.ClassId, x.LessonCloId }).IsUnique().HasFilter("[LessonCloId] IS NOT NULL");
+        builder.Entity<LessonClo>().Property(x => x.FileName).HasMaxLength(255);
+        builder.Entity<LessonClo>().HasOne<Class>().WithMany().HasForeignKey(x => x.ClassId).OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<LessonClo>().HasOne<Lesson>().WithMany().HasForeignKey(x => x.LessonId).OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<LessonClo>().HasIndex(x => new { x.ClassId, x.LessonId, x.Id });
         builder.Entity<Assessment>().HasOne(x => x.Enrollment).WithMany().HasForeignKey(x => x.EnrollmentId).OnDelete(DeleteBehavior.Restrict);
         builder.Entity<Assessment>().HasOne(x => x.Rubric).WithMany().HasForeignKey(x => x.RubricId).OnDelete(DeleteBehavior.Restrict);
         builder.Entity<Assessment>().Property(x => x.Score).HasPrecision(5, 2);

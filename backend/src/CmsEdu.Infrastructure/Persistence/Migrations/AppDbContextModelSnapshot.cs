@@ -101,6 +101,9 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("LessonCloId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -110,7 +113,30 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ClassId");
 
+                    b.HasIndex("LessonCloId");
+
+                    b.HasIndex("ClassId", "LessonCloId")
+                        .IsUnique()
+                        .HasFilter("[LessonCloId] IS NOT NULL");
+
                     b.ToTable("AssessmentRubric");
+                });
+
+            modelBuilder.Entity("CmsEdu.Domain.Entities.LessonClo", b =>
+                {
+                    b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<int>("ClassId").HasColumnType("int");
+                    b.Property<int>("LessonId").HasColumnType("int");
+                    b.Property<Guid>("DocumentId").HasColumnType("uniqueidentifier");
+                    b.Property<DateTime>("CreatedAt").HasColumnType("datetime2");
+                    b.Property<string>("FileName").IsRequired().HasMaxLength(255).HasColumnType("nvarchar(255)");
+                    b.Property<byte[]>("Workbook").IsRequired().HasColumnType("varbinary(max)");
+                    b.Property<string>("DefinitionJson").IsRequired().HasColumnType("nvarchar(max)");
+                    b.HasKey("Id");
+                    b.HasIndex("LessonId");
+                    b.HasIndex("ClassId", "LessonId", "Id");
+                    b.ToTable("LessonClo");
                 });
 
             modelBuilder.Entity("CmsEdu.Domain.Entities.Attendance", b =>
@@ -1428,7 +1454,18 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("CmsEdu.Domain.Entities.LessonClo", null)
+                        .WithMany().HasForeignKey("LessonCloId").OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Class");
+                });
+
+            modelBuilder.Entity("CmsEdu.Domain.Entities.LessonClo", b =>
+                {
+                    b.HasOne("CmsEdu.Domain.Entities.Class", null)
+                        .WithMany().HasForeignKey("ClassId").OnDelete(DeleteBehavior.Restrict).IsRequired();
+                    b.HasOne("CmsEdu.Domain.Entities.Lesson", null)
+                        .WithMany().HasForeignKey("LessonId").OnDelete(DeleteBehavior.Restrict).IsRequired();
                 });
 
             modelBuilder.Entity("CmsEdu.Domain.Entities.Attendance", b =>

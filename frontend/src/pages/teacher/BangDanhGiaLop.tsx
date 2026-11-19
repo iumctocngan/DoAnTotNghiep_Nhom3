@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/apiClient';
 
-export type Criterion = { name: string; clo: string; weight: number; description: string; mucDanhGia?: string[] };
+export type Criterion = { name: string; clo: string; weight: number; description: string;
+  mucDanhGia?: string[]; numericScore?: boolean; fixedCriterion?: boolean };
 export type Rubric = { id: number; name: string; criteria: Criterion[] };
 export type HocSinhLop = { id: number; fullName: string; studentCode: string };
 type HocSinh = HocSinhLop & { attendance: string };
-type BaiDaLuu = { id: number; enrollmentId: number; scores: number[]; feedback: string | null; approvedAt: string | null };
+type BaiDaLuu = { id: number; enrollmentId: number; scores: number[]; feedback: string | null;
+  feedbackSource: string | null; approvedAt: string | null };
 type Bang = { students: HocSinh[]; grades: BaiDaLuu[] };
 type ThuocTinh = {
   buoiId: number; danhSachLop: HocSinhLop[]; rubric?: Rubric;
@@ -23,7 +25,7 @@ const diemDanh: Record<string, string> = {
 export function BangDanhGiaLop({ buoiId, danhSachLop, rubric, khoa, datDangXuLy }: ThuocTinh) {
   const cache = useQueryClient();
   const [boChon, datBoChon] = useState<Set<number>>(new Set());
-  const [diemNhap, datDiemNhap] = useState<Record<number, Record<number, number>>>({});
+  const [diemNhap, datDiemNhap] = useState<Record<number, Record<number, number | undefined>>>({});
   const [banSua, datBanSua] = useState<Record<number, string>>({});
   const [loiDong, datLoiDong] = useState<Record<number, string>>({});
   const [loiBang, datLoiBang] = useState('');
@@ -44,7 +46,10 @@ export function BangDanhGiaLop({ buoiId, danhSachLop, rubric, khoa, datDangXuLy 
     const daLuu = bai.get(x.id);
     return daLuu && !daLuu.approvedAt ? [daLuu] : [];
   });
-  const canSinh = banNhapDaChon.filter(x => !x.feedback && !nhanXet(x).trim());
+  const banNhapCu = (x: BaiDaLuu) => x.feedbackSource?.startsWith('LLM:') &&
+    !!x.feedback && x.feedback.trim().split(/\s+/).length < 250;
+  const canSinh = banNhapDaChon.filter(x => (!x.feedback && !nhanXet(x).trim()) ||
+    (banSua[x.id] == null && banNhapCu(x)));
   const canDuyet = banNhapDaChon.filter(x => nhanXet(x).trim());
   const biKhoa = khoa || !!tacVu;
 
@@ -56,9 +61,12 @@ export function BangDanhGiaLop({ buoiId, danhSachLop, rubric, khoa, datDangXuLy 
       enrollmentId: x.id,
       scores: rubric.criteria.map((_, i) => diemNhap[x.id]?.[i]),
     }));
-    if (loai === 'luu' && rows.some(x => x.scores.some(diem => diem == null))) {
-      datLoiDong(Object.fromEntries(rows.filter(x => x.scores.some(diem => diem == null))
-        .map(x => [x.enrollmentId, 'Chọn mức cho từng tiêu chí trước khi lưu.'])));
+    const invalidRows = rows.filter(x => x.scores.some(diem => diem == null || diem < 0 || diem > 10));
+    if (loai === 'luu' && invalidRows.length) {
+      const message = rubric.criteria.some(criterion => criterion.numericScore)
+        ? 'Điền đầy đủ các tiêu chí và điểm sách bài tập từ 0 đến 10.'
+        : 'Chọn mức cho từng tiêu chí trước khi lưu.';
+      datLoiDong(Object.fromEntries(invalidRows.map(x => [x.enrollmentId, message])));
       return;
     }
 
@@ -134,7 +142,7 @@ export function BangDanhGiaLop({ buoiId, danhSachLop, rubric, khoa, datDangXuLy 
         {rubric?.criteria.map((tieuChi, i) => <th scope="col" key={i}>
           {tieuChi.name}<small>{tieuChi.clo} · {tieuChi.weight}%</small>
           <details><summary>Mô tả mức</summary><p>{tieuChi.description}</p>
-            <ol>{mucDo.map((muc, j) => <li key={muc}>{tieuChi.mucDanhGia?.[j] || muc}</li>)}</ol>
+            {!tieuChi.numericScore && <ol>{mucDo.map((muc, j) => <li key={muc}>{tieuChi.mucDanhGia?.[j] || muc}</li>)}</ol>}
           </details>
         </th>)}
         <th scope="col">Điểm danh và đánh giá</th>
@@ -156,6 +164,13 @@ export function BangDanhGiaLop({ buoiId, danhSachLop, rubric, khoa, datDangXuLy 
               }} /> {hs.fullName}<small>{hs.studentCode}</small></th>
             {rubric?.criteria.map((tieuChi, i) => {
               const diem = daLuu?.scores[i] ?? diemNhap[hs.id]?.[i];
+              if (tieuChi.numericScore) return <td key={i}>
+                <input type="number" min={0} max={10} step="any" placeholder="0–10" value={diem ?? ''}
+                  aria-label={`${hs.fullName} · ${tieuChi.name}`} disabled={biKhoa || !chon || !!daLuu} onChange={e => {
+                    const value = e.currentTarget.valueAsNumber;
+                    datDiemNhap(truoc => ({ ...truoc, [hs.id]: { ...truoc[hs.id], [i]: Number.isFinite(value) ? value : undefined } }));
+                  }} />
+              </td>;
               return <td key={i}>
                 <div className="assessment-levels" role="group" aria-label={`${hs.fullName} · ${tieuChi.name}`}>
                   {mucDo.map((muc, j) => {
@@ -192,8 +207,9 @@ export function BangDanhGiaLop({ buoiId, danhSachLop, rubric, khoa, datDangXuLy 
         const daLuu = bai.get(hs.id);
         if (!daLuu) return null;
         return <article key={daLuu.id}>
-          <label><strong>{hs.fullName} · {daLuu.approvedAt ? 'Đã xác nhận' : daLuu.feedback ? 'Chờ xác nhận' : 'Chưa có nhận xét'}</strong>
-            <textarea rows={4} value={nhanXet(daLuu)} maxLength={4000}
+          <label><strong>{hs.fullName} · {daLuu.approvedAt ? 'Đã xác nhận' : banNhapCu(daLuu) ? 'Bản nháp AI dưới 250 từ'
+            : daLuu.feedback ? 'Chờ xác nhận' : 'Chưa có nhận xét'}</strong>
+            <textarea rows={5} value={nhanXet(daLuu)} maxLength={6000}
               disabled={biKhoa || !!daLuu.approvedAt || hs.attendance !== 'Present'}
               onChange={e => datBanSua(truoc => ({ ...truoc, [daLuu.id]: e.target.value }))} />
           </label>

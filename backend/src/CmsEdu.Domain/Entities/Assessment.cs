@@ -5,6 +5,7 @@ public class AssessmentRubric
     public int Id { get; set; }
     public int ClassId { get; set; }
     public Class Class { get; set; } = null!;
+    public int? LessonCloId { get; set; }
     public string Name { get; set; } = "";
     // Immutable definition: preserves the rubric/CLO used by historical grades.
     public string DefinitionJson { get; set; } = "";

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Modal } from '../../components/common/Modal';
 import { MaterialIcon } from '../../components/common/MaterialIcon';
 import { useToast } from '../../components/common/ToastProvider';
@@ -10,6 +10,7 @@ interface CloRubricModalProps {
   isOpen: boolean;
   onClose: () => void;
   documents: KnowledgeDocument[];
+  classId: number;
   defaultDocId?: string;
 }
 
@@ -17,6 +18,7 @@ export const CloRubricModal: React.FC<CloRubricModalProps> = ({
   isOpen,
   onClose,
   documents,
+  classId,
   defaultDocId,
 }) => {
   const readyPdfs = documents.filter((d) => d.status === 'ready' && d.documentType === 'pdf');
@@ -24,7 +26,14 @@ export const CloRubricModal: React.FC<CloRubricModalProps> = ({
   const [startPage, setStartPage] = useState('');
   const [endPage, setEndPage] = useState('');
   const [exporting, setExporting] = useState(false);
+  const [lessonId, setLessonId] = useState(0);
   const showToast = useToast();
+  const queryClient = useQueryClient();
+  const lessons = useQuery({
+    queryKey: ['class-clo-lessons', classId],
+    queryFn: () => knowledgeApi.getCloLessons(classId),
+    enabled: isOpen,
+  });
 
   const { data: outline = [] } = useQuery({
     queryKey: ['document', docId, 'outline'],
@@ -41,7 +50,7 @@ export const CloRubricModal: React.FC<CloRubricModalProps> = ({
   if (!isOpen) return null;
 
   const handleSelectOutline = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const item = outline[Number(e.target.value)];
+    const item = e.target.value === '' ? undefined : outline[Number(e.target.value)];
     if (item) {
       setStartPage(String(item.startPage));
       setEndPage(String(item.endPage));
@@ -50,36 +59,38 @@ export const CloRubricModal: React.FC<CloRubricModalProps> = ({
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!docId) return showToast('Vui lòng chọn tài liệu PDF.', 'error');
+    if (!docId || !lessonId) return showToast('Vui lòng chọn bài học và tài liệu PDF.', 'error');
 
     setExporting(true);
     try {
-      const blob = await knowledgeApi.generateCloRubric(docId, {
+      const saved = await knowledgeApi.saveLessonClo(classId, lessonId, docId, {
         startPage: startPage ? parseInt(startPage, 10) : undefined,
         endPage: endPage ? parseInt(endPage, 10) : undefined,
       });
 
-      const selectedDoc = readyPdfs.find((d) => d.id === docId);
-      const docBaseName = selectedDoc?.fileName.replace(/\.[^/.]+$/, '') || docId.slice(0, 8);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `CLO_Rubric_${docBaseName}.xlsx`;
-      a.click();
-      URL.revokeObjectURL(url);
-
-      showToast('Đã tạo và tải bảng ma trận CLO & Rubric thành công.', 'success');
+      await queryClient.invalidateQueries({ queryKey: ['assessment-lesson-rubric', classId] });
+      showToast(`Đã lưu ${saved.criterionCount} tiêu chí cho bài ${saved.lessonName} để dùng trong Module 1.`, 'success');
       onClose();
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Xuất CLO & Rubric thất bại.', 'error');
+      showToast((err as { message?: string }).message ?? 'Không thể tạo và lưu CLO.', 'error');
     } finally {
       setExporting(false);
     }
   };
 
   return (
-    <Modal title="Xuất Ma trận Chuẩn đầu ra CLO & Rubric (.xlsx)" onClose={onClose} wide closeDisabled={exporting}>
+    <Modal title="Tạo CLO & Rubric theo bài học" onClose={onClose} wide closeDisabled={exporting}>
       <form onSubmit={handleGenerate} className="flex flex-col gap-3.5 text-sm">
+        <label className="block font-medium text-slate-700">
+          Bài học trong chương trình
+          <select value={lessonId || ''} onChange={e => setLessonId(Number(e.target.value))}
+            disabled={exporting || lessons.isPending} required
+            className="mt-1 w-full border border-slate-300 rounded px-3 py-2 bg-white text-slate-800">
+            <option value="">{lessons.isPending ? 'Đang tải bài học…' : 'Chọn bài học để lưu CLO'}</option>
+            {lessons.data?.map(lesson => <option key={lesson.id} value={lesson.id}>{lesson.code} · {lesson.name}</option>)}
+          </select>
+        </label>
+        {lessons.isError && <p role="alert">Không tải được danh sách bài học của lớp.</p>}
         <div>
           <label className="block font-medium text-slate-700 mb-1">Tài liệu tham chiếu</label>
           <select
@@ -164,7 +175,7 @@ export const CloRubricModal: React.FC<CloRubricModalProps> = ({
           </button>
           <button
             type="submit"
-            disabled={exporting || !docId}
+            disabled={exporting || !docId || !lessonId}
             className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-medium flex items-center gap-2 disabled:opacity-50 cursor-pointer"
           >
             {exporting ? (
@@ -172,12 +183,12 @@ export const CloRubricModal: React.FC<CloRubricModalProps> = ({
                 <span className="animate-spin">
                   <MaterialIcon name="schedule" />
                 </span>
-                Đang tạo file...
+                Đang tạo CLO…
               </>
             ) : (
               <>
                 <MaterialIcon name="assignment" />
-                Tạo và tải Excel (.xlsx)
+                Tạo và lưu CLO
               </>
             )}
           </button>

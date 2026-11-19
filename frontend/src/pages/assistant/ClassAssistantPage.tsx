@@ -278,12 +278,12 @@ export const ClassAssistantPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsCloModalOpen(true)}
-            disabled={!classKnowledge || classKnowledge.documents.length === 0}
+            disabled={!classKnowledge?.classId || classKnowledge.documents.length === 0}
             className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white rounded text-xs font-semibold flex items-center gap-1.5 shadow-xs shrink-0 whitespace-nowrap transition-colors cursor-pointer disabled:cursor-not-allowed"
-            title="Xuất Ma trận Chuẩn đầu ra CLO & Rubric đánh giá ra file Excel (.xlsx)"
+            title="Tạo CLO & Rubric theo bài học"
           >
             <MaterialIcon name="assignment" className="text-sm" />
-            <span>Xuất CLO & Rubric (.xlsx)</span>
+            <span>{selectedClassId === 0 ? 'Chọn lớp để tạo CLO' : 'Tạo CLO & Rubric'}</span>
           </button>
         </div>
       </div>
@@ -662,8 +662,10 @@ export const ClassAssistantPage: React.FC = () => {
       </div>
 
       {/* CLO & Rubric Export Modal */}
-      {isCloModalOpen && classKnowledge && (
+      {isCloModalOpen && !!classKnowledge?.classId && (
         <CloRubricModal
+          key={classKnowledge.classId}
+          classId={classKnowledge.classId}
           isOpen={isCloModalOpen}
           onClose={() => setIsCloModalOpen(false)}
           documents={classKnowledge.documents}

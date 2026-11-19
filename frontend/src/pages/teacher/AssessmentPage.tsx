@@ -4,12 +4,14 @@ import { BangDanhGiaLop, type Criterion, type HocSinhLop, type Rubric } from './
 import { apiClient } from '../../api/apiClient';
 import reportPrintStyles from './assessment-report-print.css?inline';
 
-type BuoiHoc = { id: number; sessionDate: string; startTime: string; endTime: string };
-type History = { id: number; title: string; date: string; score: number; feedback: string | null; feedbackSource: string | null; approvedAt: string | null };
-type Report = { fullName: string; average: number | null; attendanceRate: number | null; progress: number | null; risk: string;
-  recommendations: string[]; cloReport: { code: string; attainment: number }[];
-  rubricReport: { name: string; clo: string; score: number; weight: number }[]; history: History[] };
+type BuoiHoc = { id: number; sessionDate: string; startTime: string; endTime: string; lessonName?: string };
+type History = { id: number; title: string; date: string; sessionId: number | null; score: number;
+  feedback: string | null; approvedAt: string | null; lesson: { name: string; objective: string | null } | null;
+  criteria: (Criterion & { score: number })[] };
+type Report = { fullName: string; className: string; risk: string; history: History[] };
 const root = '/api/assessments';
+const ngayVietNam = (date: string) => date.split('-').reverse().join('/');
+const mucDanhGia = (score: number) => score >= 9 ? 'Rất tốt' : score >= 8 ? 'Tốt' : score >= 6.5 ? 'Đạt' : score >= 5 ? 'Cần cải thiện' : 'Chưa đạt';
 export function AssessmentPage() {
   const client = useQueryClient();
   const [classId, setClassId] = useState(0);
@@ -23,13 +25,19 @@ export function AssessmentPage() {
   const [message, setMessage] = useState('');
   const reportContent = useRef<HTMLDivElement>(null);
   const [printError, setPrintError] = useState('');
+  const [reportAssessmentId, setReportAssessmentId] = useState(0);
   const classes = useQuery({ queryKey: ['assessment-classes'], queryFn: () => apiClient<{ id: number; name: string }[]>(`${root}/classes`) });
   const students = useQuery({ queryKey: ['assessment-students', classId], enabled: !!classId,
     queryFn: () => apiClient<HocSinhLop[]>(`${root}/classes/${classId}/students`) });
   const sessions = useQuery({ queryKey: ['assessment-sessions', classId], enabled: !!classId,
     queryFn: () => apiClient<BuoiHoc[]>(`${root}/classes/${classId}/sessions`) });
   const rubrics = useQuery({ queryKey: ['assessment-rubrics', classId], enabled: !!classId, queryFn: () => apiClient<Rubric[]>(`${root}/classes/${classId}/rubrics`) });
+  const lessonRubric = useQuery({ queryKey: ['assessment-lesson-rubric', classId, buoiId], enabled: !!buoiId,
+    queryFn: () => apiClient<Rubric | null>(`${root}/sessions/${buoiId}/lesson-rubric`, { method: 'POST' }) });
   const report = useQuery({ queryKey: ['assessment-report', studentId], enabled: !!studentId, queryFn: () => apiClient<Report>(`${root}/enrollments/${studentId}/report`) });
+  const history = report.data?.history ?? [];
+  const selectedAssessment = history.find(item => item.id === reportAssessmentId) ??
+    history.findLast(item => item.sessionId === buoiId) ?? history.at(-1);
 
   async function luuVaChonRubric(ten: string, tieuChi: Criterion[]) {
     const saved = await apiClient<Rubric>(`${root}/rubrics`, {
@@ -84,7 +92,7 @@ export function AssessmentPage() {
     printWindow.opener = null;
     const printDocument = printWindow.document;
     printDocument.documentElement.lang = 'vi';
-    printDocument.title = `Báo cáo học tập - ${report.data.fullName}`;
+    printDocument.title = `Báo cáo học tập - ${report.data.fullName} - ${selectedAssessment?.date ?? ''}`;
     const styles = printDocument.createElement('style');
     styles.textContent = reportPrintStyles;
     printDocument.head.append(styles);
@@ -95,13 +103,16 @@ export function AssessmentPage() {
   }
 
   const khoa = busy || dangCham;
-  const rubric = rubrics.data?.find(x => x.id === rubricId) ?? (rubricId === 0 && rubrics.data?.length === 1 ? rubrics.data[0] : undefined);
+  const rubric = rubrics.data?.find(x => x.id === rubricId) ?? lessonRubric.data ??
+    ((!buoiId || lessonRubric.isSuccess) && rubrics.data?.length === 1 ? rubrics.data[0] : undefined);
+  const improvements = selectedAssessment?.criteria.filter(c => c.score < 8) ?? [];
 
   return <div className="assessment-page">
     <h1>Đánh giá và nhận xét theo lớp</h1>
     <label>Lớp phụ trách<select value={classId} disabled={khoa} onChange={e => {
       setClassId(+e.target.value);
       setStudentId(0);
+      setReportAssessmentId(0);
       setRubricId(0);
       setBuoiId(0);
       setName('');
@@ -128,23 +139,32 @@ export function AssessmentPage() {
       </form></details>
     </>}
     {!!classId && <>
-      <label>Buổi học<select value={buoiId} disabled={khoa || sessions.isPending} onChange={e => setBuoiId(+e.target.value)}>
+      <label>Buổi học<select value={buoiId} disabled={khoa || sessions.isPending} onChange={e => {
+        setBuoiId(+e.target.value);
+        setRubricId(0);
+        setReportAssessmentId(0);
+      }}>
         <option value={0}>Chọn buổi học đã điểm danh</option>
         {sessions.data?.map(x => <option key={x.id} value={x.id}>
-          {x.sessionDate.split('-').reverse().join('/')} · {x.startTime.slice(0, 5)}–{x.endTime.slice(0, 5)}
+          {ngayVietNam(x.sessionDate)} · {x.startTime.slice(0, 5)}–{x.endTime.slice(0, 5)}{x.lessonName ? ` · ${x.lessonName}` : ''}
         </option>)}
       </select></label>
       {sessions.data?.length === 0 && <p>Lớp chưa có buổi học để đánh giá.</p>}
-      <label>Rubric<select value={rubric?.id ?? 0} disabled={khoa} onChange={e => setRubricId(+e.target.value)}>
+      <label>Rubric<select value={rubric?.id ?? 0} disabled={khoa || (!!buoiId && lessonRubric.isPending)} onChange={e => setRubricId(+e.target.value)}>
         <option value={0}>Chọn rubric</option>
+        {lessonRubric.data && <option value={lessonRubric.data.id}>{lessonRubric.data.name} · CLO theo bài học</option>}
         {rubrics.data?.map(x => <option key={x.id} value={x.id}>{x.name}</option>)}
       </select></label>
-      {rubrics.data?.length === 0 && <p>Nhập tệp CLO hoặc tạo rubric để chấm điểm.</p>}
+      {!!buoiId && lessonRubric.isPending && <p role="status">Đang lấy CLO của bài học…</p>}
+      {lessonRubric.isError && <p role="alert">Không tải được CLO theo bài học. <button type="button" onClick={() => void lessonRubric.refetch()}>Thử lại</button></p>}
+      {!!buoiId && lessonRubric.isSuccess && !lessonRubric.data &&
+        <p>Buổi này chưa có CLO đã lưu. Kiểm tra bài học gắn với buổi, hoặc chọn rubric có sẵn.</p>}
       {students.isPending ? <p role="status">Đang tải danh sách lớp…</p> :
         <BangDanhGiaLop key={`${classId}-${buoiId}-${rubric?.id ?? 0}`} buoiId={buoiId}
           danhSachLop={students.data ?? []} rubric={rubric} khoa={busy} datDangXuLy={setDangCham} />}
       <label>Xem báo cáo cá nhân<select value={studentId} disabled={khoa} onChange={e => {
         setPrintError('');
+        setReportAssessmentId(0);
         setStudentId(+e.target.value);
       }}>
         <option value={0}>Chọn học sinh</option>
@@ -153,19 +173,34 @@ export function AssessmentPage() {
     </>}
     {!!studentId && <>
     {report.isFetching && <p>Đang tải báo cáo…</p>}
-    {report.data && <section><div ref={reportContent} className="assessment-report">
-      <h2>Báo cáo học tập — {report.data.fullName}</h2>
-      <p>Điểm trung bình: {report.data.average ?? 'Chưa có'} / 10 · Chuyên cần: {report.data.attendanceRate == null ? 'Chưa có' : `${report.data.attendanceRate}%`} · Thay đổi đầu/cuối: {report.data.progress ?? 'Cần ít nhất 2 bài'} · Cảnh báo: { { High: 'Cao', Medium: 'Trung bình', Low: 'Thấp', Unknown: 'Chưa đủ dữ liệu' }[report.data.risk] }</p>
-      <h3>Báo cáo CLO / năng lực</h3><table><thead><tr><th>CLO</th><th>Mức đạt</th><th>Đánh giá</th></tr></thead><tbody>{report.data.cloReport.map(c => <tr key={c.code}><td>{c.code}</td><td>{c.attainment}%</td><td>{c.attainment >= 80 ? 'Điểm mạnh' : c.attainment < 50 ? 'Cần hỗ trợ' : 'Đang phát triển'}</td></tr>)}</tbody></table>
-      <h3>Nội dung cần ôn</h3>{report.data.recommendations.length ? <ul>{report.data.recommendations.map(x => <li key={x}>{x}</li>)}</ul> : <p>Chưa có đề xuất từ điểm tiêu chí.</p>}
-      <h3>Báo cáo Rubric</h3><table><thead><tr><th>Tiêu chí</th><th>CLO</th><th>Trọng số</th><th>Điểm</th></tr></thead><tbody>{report.data.rubricReport.map((x, i) => <tr key={i}><td>{x.name}</td><td>{x.clo}</td><td>{x.weight}%</td><td>{x.score}/10</td></tr>)}</tbody></table>
-      <h3>Lịch sử và nhận xét</h3>
-      {!report.data.history.length && <p>Chưa có bài đánh giá.</p>}
-      {report.data.history.map(x => <article key={x.id}>
-        <h4>{x.date} · {x.title} · {x.score}/10</h4>
-        <p>{x.approvedAt ? 'Đã xác nhận' : 'Chờ xác nhận'}</p>
-        {x.feedback && <p>{x.feedback}</p>}
-      </article>)}
+    {report.data && !selectedAssessment && <p>Học sinh chưa có bài đánh giá.</p>}
+    {report.data && selectedAssessment && <section>
+      <label>Buổi đánh giá<select value={selectedAssessment.id} onChange={e => setReportAssessmentId(+e.target.value)}>
+        {history.map(item => <option key={item.id} value={item.id}>{ngayVietNam(item.date)} · {item.title}</option>)}
+      </select></label>
+      <div ref={reportContent} className="assessment-report">
+      <h2>{report.data.fullName} – {report.data.className} – {ngayVietNam(selectedAssessment.date)}</h2>
+      <p>Điểm trung bình: {selectedAssessment.score}/10 · Mức độ đánh giá: {mucDanhGia(selectedAssessment.score)}
+        {report.data.risk === 'High' ? ' · Mức độ cảnh báo: Cao' : report.data.risk === 'Medium' ? ' · Mức độ cảnh báo: Trung bình' : ''}</p>
+      <h3>Nội dung đã học</h3>
+      <p><strong>{selectedAssessment.lesson?.name ?? selectedAssessment.title}</strong></p>
+      {selectedAssessment.lesson?.objective && <p>{selectedAssessment.lesson.objective}</p>}
+      <ul>{selectedAssessment.criteria.filter(c => !c.fixedCriterion).map((c, i) => <li key={i}>{c.clo} · {c.description}</li>)}</ul>
+      <h3>Bảng đánh giá</h3>
+      <table><thead><tr><th>Tiêu chí</th><th>CLO</th><th>Trọng số</th><th>Điểm</th></tr></thead><tbody>
+        {selectedAssessment.criteria.map((c, i) => <tr key={i}><td>{c.name}</td><td>{c.clo}</td><td>{c.weight}%</td><td>{c.score}/10</td></tr>)}
+      </tbody></table>
+      <h3>Nhận xét</h3>
+      {selectedAssessment.feedback ? <>
+        <p>{selectedAssessment.approvedAt ? 'Đã xác nhận' : 'Chờ xác nhận'}</p>
+        <p style={{ whiteSpace: 'pre-line' }}>{selectedAssessment.feedback}</p>
+      </> : <p>Chưa có nhận xét.</p>}
+      <h3>Điểm cần cải thiện và luyện tập</h3>
+      {improvements.length ? <ul>{improvements.map((c, i) => {
+        const nextLevel = c.mucDanhGia?.[Math.floor(c.score / 2)];
+        const practice = c.numericScore ? 'Làm lại các câu sai trong sách và ghi rõ cách giải.' : nextLevel || c.description;
+        return <li key={i}><strong>{c.name} ({c.score}/10)</strong> · {practice}</li>;
+      })}</ul> : <p>Không có tiêu chí dưới 8/10.</p>}
       </div>
       <button type="button" onClick={xuatBaoCaoPdf}>Xuất báo cáo PDF</button>
       {printError && <p role="alert">{printError}</p>}

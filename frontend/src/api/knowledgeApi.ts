@@ -1,4 +1,4 @@
-import { apiClient, getAccessToken } from './apiClient';
+import { apiClient } from './apiClient';
 import type {
   ClassChatResult,
   ClassConversation,
@@ -86,24 +86,19 @@ export const knowledgeApi = {
       body: JSON.stringify(data),
     }),
 
-  generateCloRubric: async (
+  getCloLessons: (classId: number) =>
+    apiClient<{ id: number; name: string; code: string }[]>(`/api/assessments/classes/${classId}/clo-lessons`),
+
+  saveLessonClo: (
+    classId: number,
+    lessonId: number,
     documentId: string,
     data: GenerateCloRubricRequest
-  ): Promise<Blob> => {
-    const token = getAccessToken();
-    const response = await fetch(`/api/knowledge-documents/${documentId}/clo-rubric`, {
+  ) => apiClient<{ id: number; lessonName: string; criterionCount: number }>(
+    `/api/assessments/classes/${classId}/lessons/${lessonId}/clo`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) {
-      throw new Error('Không thể tạo file CLO & Rubric.');
-    }
-    return await response.blob();
-  },
+      body: JSON.stringify({ ...data, documentId }),
+    }),
 
   getDocumentOutline: (documentId: string): Promise<DocumentOutlineItem[]> =>
     apiClient<DocumentOutlineItem[]>(`/api/knowledge-documents/${documentId}/outline`),
