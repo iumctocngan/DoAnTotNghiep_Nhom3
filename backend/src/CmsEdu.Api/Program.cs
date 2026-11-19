@@ -14,7 +14,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 
 var khoiPhucAdmin = args.Contains("--khoi-phuc-admin");
-var builder = WebApplication.CreateBuilder(args.Where(thamSo => thamSo != "--khoi-phuc-admin").ToArray());
+var taoAdmin = args.Contains("--tao-admin");
+var builder = WebApplication.CreateBuilder(args.Where(thamSo => thamSo is not ("--khoi-phuc-admin" or "--tao-admin")).ToArray());
 
 // Add services to the container.
 builder.Services.AddControllers().AddApplicationPart(typeof(AssessmentsController).Assembly);
@@ -82,15 +83,20 @@ builder.Services.AddAuthorization(options =>
 
 var app = builder.Build();
 
-if (khoiPhucAdmin)
+if (khoiPhucAdmin || taoAdmin)
 {
     try
     {
-        await KhoiPhucMatKhauAdmin.ThucHienAsync(app.Services, app.Environment.IsDevelopment());
+        if (khoiPhucAdmin && taoAdmin)
+            throw new InvalidOperationException("Chỉ dùng một lệnh quản trị tài khoản mỗi lần.");
+        if (taoAdmin)
+            await TaoTaiKhoanAdmin.ThucHienAsync(app.Services, app.Environment.IsDevelopment());
+        else
+            await KhoiPhucMatKhauAdmin.ThucHienAsync(app.Services, app.Environment.IsDevelopment());
     }
     catch (Exception loi)
     {
-        Console.Error.WriteLine($"Không thể khôi phục: {loi.Message}");
+        Console.Error.WriteLine($"Không thể {(taoAdmin ? "tạo tài khoản Admin" : "khôi phục")}: {loi.Message}");
         Environment.ExitCode = 1;
     }
     return;

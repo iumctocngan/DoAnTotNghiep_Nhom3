@@ -1,0 +1,79 @@
+@page {
+  size: A4;
+  margin: 16mm;
+}
+
+body {
+  margin: 0;
+  color: #142436;
+  font: 11pt/1.5 "Segoe UI", Arial, sans-serif;
+  overflow-wrap: anywhere;
+}
+
+.assessment-report h2 {
+  margin: 0 0 8pt;
+  padding-bottom: 8pt;
+  border-bottom: 2pt solid #315c72;
+  font-size: 19pt;
+  line-height: 1.25;
+}
+
+.assessment-report h3 {
+  margin: 16pt 0 5pt;
+  font-size: 13pt;
+}
+
+.assessment-report h4 {
+  margin: 0 0 3pt;
+  font-size: 11pt;
+}
+
+.assessment-report h2,
+.assessment-report h3,
+.assessment-report h4 {
+  break-after: avoid;
+}
+
+.assessment-report p {
+  margin: 0 0 5pt;
+  white-space: pre-line;
+  orphans: 3;
+  widows: 3;
+}
+
+.assessment-report ul {
+  margin: 0;
+  padding-left: 18pt;
+}
+
+.assessment-report table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.assessment-report thead {
+  display: table-header-group;
+}
+
+.assessment-report th,
+.assessment-report td {
+  padding: 4pt 6pt;
+  border-bottom: 0.6pt solid #b7c5cd;
+  text-align: left;
+  vertical-align: top;
+}
+
+.assessment-report th {
+  border-bottom: 1pt solid #315c72;
+}
+
+.assessment-report tr,
+.assessment-report article {
+  break-inside: avoid;
+}
+
+.assessment-report article {
+  margin-bottom: 8pt;
+  padding: 6pt 0;
+  border-top: 0.6pt solid #b7c5cd;
+}

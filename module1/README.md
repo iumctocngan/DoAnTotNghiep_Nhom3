@@ -7,8 +7,8 @@ Mở **Đánh giá học sinh AI** tại `/assessments` bằng tài khoản Admi
 1. Chọn lớp và nhập tệp rubric Excel .xlsx do Module 2 xuất. Hệ thống đọc trang **Danh sách CLO chi tiết**, giữ mã và nội dung CLO, tiêu chí và mô tả năm mức, đồng thời chia trọng số gần đều với tổng đúng 100%. Rubric được lưu và chọn tự động. Mỗi tiêu chí xuất hiện thành một cột trong bảng đánh giá. Giáo viên cũng có thể khai báo rubric thủ công. Rubric được lưu bất biến để giữ đúng lịch sử điểm.
 2. Chọn buổi học và rubric. Bảng hiển thị cả lớp ở cột đầu, các tiêu chí ở hàng đầu. Chỉ học sinh có mặt trong điểm danh của đúng buổi mới được đánh giá.
 3. Tích mức 1–5 cho từng tiêu chí và bấm **Lưu điểm đã chọn**. Mỗi mức tương ứng 2 điểm trên thang 10. Chọn lại lớp, buổi và rubric để mở bảng đã lưu.
-4. Bấm **Tạo nhận xét**, chỉnh sửa bản nháp rồi bấm **Xác nhận và lưu nhận xét đã chọn**. Gemini nhận điểm của các tiêu chí tương đương, chênh lệch điểm và nhận xét đã xác nhận trước đó của học sinh trong lớp. Bảng xử lý tối đa ba yêu cầu cùng lúc và tái sử dụng bản nháp đã lưu theo từng bài đánh giá.
-5. Dùng **Xem báo cáo cá nhân** để xem lịch sử, kết quả CLO và xuất JSON.
+4. Bấm **Tạo nhận xét**, chỉnh sửa bản nháp rồi bấm **Xác nhận và lưu nhận xét đã chọn**. Gemini dựa vào mô tả CLO, điểm và mô tả mức rubric đã chọn để nêu điểm mạnh và việc cần luyện. Hệ thống cũng gửi chênh lệch điểm của các tiêu chí tương đương và nhận xét đã xác nhận trước đó. Bảng xử lý tối đa ba yêu cầu cùng lúc và tái sử dụng bản nháp đã lưu theo từng bài đánh giá.
+5. Dùng **Xem báo cáo cá nhân** để xem lịch sử và kết quả CLO. Bấm **Xuất báo cáo PDF** rồi chọn **Lưu dưới dạng PDF** trong hộp thoại in của trình duyệt.
 
 ## Cách tính
 
@@ -22,15 +22,19 @@ Mở **Đánh giá học sinh AI** tại `/assessments` bằng tài khoản Admi
 
 Backend dùng `DbInitializer` để áp dụng migration khi khởi động. Migration `20261119100000_AddAssessmentSession` liên kết điểm mới với buổi học. Điểm cũ tiếp tục xuất hiện trong báo cáo và lịch sử dùng để đối chiếu. Cần SQL Server hoạt động và tài khoản có quyền migration.
 
-Cấu hình qua biến môi trường (không ghi API key vào Git):
+Model mặc định là `gemini-3.5-flash-lite`. Để lưu API key một lần trên máy phát triển, chạy từ thư mục gốc dự án:
 
 ```powershell
-$env:AssessmentAI__ApiKey = '<Gemini API key>'
-$env:AssessmentAI__Model = '<tên model Gemini>'
+$geminiKeys = Read-Host 'Dán Gemini API key, cách nhau bằng dấu phẩy nếu có nhiều key' -AsSecureString
+@{ 'AssessmentAI:ApiKey' = [System.Net.NetworkCredential]::new('', $geminiKeys).Password } |
+    ConvertTo-Json -Compress | dotnet user-secrets set --project backend/src/CmsEdu.Api
+Remove-Variable geminiKeys
 dotnet run --project backend/src/CmsEdu.Api
 ```
 
-Backend mặc định gọi endpoint Chat Completions tương thích của Gemini. Có thể đặt `AssessmentAI__Endpoint` nếu môi trường triển khai dùng endpoint riêng. Khi cần tạo bản nháp, yêu cầu gửi dữ liệu rubric, điểm và nhận xét lịch sử phục vụ đối chiếu. Thiếu cấu hình trả 503, vượt hạn mức trả 429 và các lỗi khác từ dịch vụ AI trả 502.
+ASP.NET Core tự đọc User Secrets khi chạy ở môi trường Development. Nếu máy đã cấp biến môi trường `GEMINI_API_KEY`, Module 1 dùng biến này với endpoint Gemini mặc định khi chưa có `AssessmentAI:ApiKey`. Môi trường triển khai có thể cấp `AssessmentAI__ApiKey` qua kho bí mật hoặc biến môi trường. `AssessmentAI__Model` từ cấu hình triển khai sẽ ghi đè model mặc định. Khi cần tạo bản nháp, yêu cầu gửi dữ liệu rubric, điểm và nhận xét lịch sử phục vụ đối chiếu. Thiếu cấu hình trả 503, vượt hạn mức trả 429 và các lỗi khác từ dịch vụ AI trả 502.
+
+`AssessmentAI:ApiKey` nhận một key hoặc danh sách key cách nhau bằng dấu phẩy. Module 1 gọi API `generateContent` của Gemini theo mặc định. Hệ thống thử theo thứ tự đã lưu và chuyển sang key tiếp theo khi dịch vụ báo key không hợp lệ, từ chối truy cập hoặc vượt hạn mức. Các key chung một Google Cloud project có thể dùng chung hạn mức.
 
 ## API tích hợp
 

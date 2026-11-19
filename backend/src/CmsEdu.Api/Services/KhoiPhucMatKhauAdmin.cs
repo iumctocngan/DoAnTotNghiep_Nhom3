@@ -43,20 +43,20 @@ public static class KhoiPhucMatKhauAdmin
         Console.WriteLine("Đã đặt lại mật khẩu admin. Hãy chạy backend bình thường rồi đăng nhập bằng mật khẩu mới.");
     }
 
-    private static string DocMatKhau()
+    internal static string DocMatKhau()
     {
         var ketQua = new System.Text.StringBuilder();
         while (true)
         {
             var phim = Console.ReadKey(intercept: true);
             if (phim.Key == ConsoleKey.Enter) { Console.WriteLine(); return ketQua.ToString(); }
-            if (phim.Key == ConsoleKey.Escape) throw new OperationCanceledException("Đã hủy khôi phục.");
+            if (phim.Key == ConsoleKey.Escape) throw new OperationCanceledException("Đã hủy thao tác.");
             if (phim.Key == ConsoleKey.Backspace) { if (ketQua.Length > 0) ketQua.Length--; }
             else if (!char.IsControl(phim.KeyChar)) ketQua.Append(phim.KeyChar);
         }
     }
 
-    private static void KiemTra(IdentityResult ketQua)
+    internal static void KiemTra(IdentityResult ketQua)
     {
         if (!ketQua.Succeeded)
             throw new InvalidOperationException(string.Join("; ", ketQua.Errors.Select(loi => loi.Description)));

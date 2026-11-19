@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { BangDanhGiaLop, type Criterion, type HocSinhLop, type Rubric } from './BangDanhGiaLop';
 import { apiClient } from '../../api/apiClient';
+import reportPrintStyles from './assessment-report-print.css?inline';
 
 type BuoiHoc = { id: number; sessionDate: string; startTime: string; endTime: string };
 type History = { id: number; title: string; date: string; score: number; feedback: string | null; feedbackSource: string | null; approvedAt: string | null };
@@ -20,6 +21,8 @@ export function AssessmentPage() {
   const [dangCham, setDangCham] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
+  const reportContent = useRef<HTMLDivElement>(null);
+  const [printError, setPrintError] = useState('');
   const classes = useQuery({ queryKey: ['assessment-classes'], queryFn: () => apiClient<{ id: number; name: string }[]>(`${root}/classes`) });
   const students = useQuery({ queryKey: ['assessment-students', classId], enabled: !!classId,
     queryFn: () => apiClient<HocSinhLop[]>(`${root}/classes/${classId}/students`) });
@@ -69,6 +72,28 @@ export function AssessmentPage() {
       setBusy(false);
     }
   }
+  function xuatBaoCaoPdf() {
+    if (!reportContent.current || !report.data) return;
+    setPrintError('');
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      setPrintError('Hãy cho phép cửa sổ bật lên để xuất báo cáo PDF.');
+      return;
+    }
+
+    printWindow.opener = null;
+    const printDocument = printWindow.document;
+    printDocument.documentElement.lang = 'vi';
+    printDocument.title = `Báo cáo học tập - ${report.data.fullName}`;
+    const styles = printDocument.createElement('style');
+    styles.textContent = reportPrintStyles;
+    printDocument.head.append(styles);
+    printDocument.body.append(printDocument.importNode(reportContent.current, true));
+    printWindow.addEventListener('afterprint', () => printWindow.close(), { once: true });
+    printWindow.focus();
+    printWindow.print();
+  }
+
   const khoa = busy || dangCham;
   const rubric = rubrics.data?.find(x => x.id === rubricId) ?? (rubricId === 0 && rubrics.data?.length === 1 ? rubrics.data[0] : undefined);
 
@@ -118,14 +143,18 @@ export function AssessmentPage() {
       {students.isPending ? <p role="status">Đang tải danh sách lớp…</p> :
         <BangDanhGiaLop key={`${classId}-${buoiId}-${rubric?.id ?? 0}`} buoiId={buoiId}
           danhSachLop={students.data ?? []} rubric={rubric} khoa={busy} datDangXuLy={setDangCham} />}
-      <label>Xem báo cáo cá nhân<select value={studentId} disabled={khoa} onChange={e => setStudentId(+e.target.value)}>
+      <label>Xem báo cáo cá nhân<select value={studentId} disabled={khoa} onChange={e => {
+        setPrintError('');
+        setStudentId(+e.target.value);
+      }}>
         <option value={0}>Chọn học sinh</option>
         {students.data?.map(x => <option key={x.id} value={x.id}>{x.fullName}</option>)}
       </select></label>
     </>}
     {!!studentId && <>
     {report.isFetching && <p>Đang tải báo cáo…</p>}
-    {report.data && <section><h2>Báo cáo học tập — {report.data.fullName}</h2>
+    {report.data && <section><div ref={reportContent} className="assessment-report">
+      <h2>Báo cáo học tập — {report.data.fullName}</h2>
       <p>Điểm trung bình: {report.data.average ?? 'Chưa có'} / 10 · Chuyên cần: {report.data.attendanceRate == null ? 'Chưa có' : `${report.data.attendanceRate}%`} · Thay đổi đầu/cuối: {report.data.progress ?? 'Cần ít nhất 2 bài'} · Cảnh báo: { { High: 'Cao', Medium: 'Trung bình', Low: 'Thấp', Unknown: 'Chưa đủ dữ liệu' }[report.data.risk] }</p>
       <h3>Báo cáo CLO / năng lực</h3><table><thead><tr><th>CLO</th><th>Mức đạt</th><th>Đánh giá</th></tr></thead><tbody>{report.data.cloReport.map(c => <tr key={c.code}><td>{c.code}</td><td>{c.attainment}%</td><td>{c.attainment >= 80 ? 'Điểm mạnh' : c.attainment < 50 ? 'Cần hỗ trợ' : 'Đang phát triển'}</td></tr>)}</tbody></table>
       <h3>Nội dung cần ôn</h3>{report.data.recommendations.length ? <ul>{report.data.recommendations.map(x => <li key={x}>{x}</li>)}</ul> : <p>Chưa có đề xuất từ điểm tiêu chí.</p>}
@@ -137,7 +166,9 @@ export function AssessmentPage() {
         <p>{x.approvedAt ? 'Đã xác nhận' : 'Chờ xác nhận'}</p>
         {x.feedback && <p>{x.feedback}</p>}
       </article>)}
-      <button type="button" onClick={() => { const url = URL.createObjectURL(new Blob([JSON.stringify(report.data, null, 2)], { type: 'application/json' })); const a = document.createElement('a'); a.href = url; a.download = `bao-cao-${studentId}.json`; a.click(); URL.revokeObjectURL(url); }}>Xuất báo cáo JSON</button>
+      </div>
+      <button type="button" onClick={xuatBaoCaoPdf}>Xuất báo cáo PDF</button>
+      {printError && <p role="alert">{printError}</p>}
     </section>}</>}
   </div>;
 }
