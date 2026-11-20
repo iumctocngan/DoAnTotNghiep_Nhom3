@@ -49,7 +49,9 @@ public class TeacherRepository(AppDbContext dbContext) : ITeacherRepository
                 item.DayOfWeek,
                 item.StartTime,
                 item.EndTime,
-                item.Status))
+                item.Status,
+                item.Enrollments.Count(enrollment => enrollment.Status == EnrollmentStatus.Active ||
+                    enrollment.Status == EnrollmentStatus.Paused)))
             .ToListAsync(cancellationToken);
 
         return new PagedResult<TeacherClassResponse>(items, page, pageSize, totalItems);
@@ -66,6 +68,11 @@ public class TeacherRepository(AppDbContext dbContext) : ITeacherRepository
         var query = dbContext.Sessions
             .AsNoTracking()
             .Where(item => item.Class.MainTeacherUserId == teacherId);
+
+        var teacherName = await dbContext.Users.AsNoTracking()
+            .Where(user => user.Id == teacherId)
+            .Select(user => user.FullName)
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (fromDate is not null)
             query = query.Where(item => item.SessionDate >= fromDate);
@@ -91,7 +98,8 @@ public class TeacherRepository(AppDbContext dbContext) : ITeacherRepository
                 item.StartTime,
                 item.EndTime,
                 item.Status,
-                item.Note))
+                item.Note,
+                teacherName))
             .ToListAsync(cancellationToken);
 
         return new PagedResult<TeacherScheduleResponse>(items, page, pageSize, totalItems);

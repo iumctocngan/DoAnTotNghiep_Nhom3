@@ -7,6 +7,7 @@ public class Class : BaseEntity
 {
     public string ClassCode { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
+    public string? Classroom { get; set; }
     public int? StartingLessonId { get; set; }
     public int LevelId { get; set; }
     public Level Level { get; set; } = null!;

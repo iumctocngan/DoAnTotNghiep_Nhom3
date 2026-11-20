@@ -14,7 +14,8 @@ public record TeacherClassResponse(
     DayOfWeek DayOfWeek,
     TimeOnly StartTime,
     TimeOnly EndTime,
-    ClassStatus Status);
+    ClassStatus Status,
+    int CurrentEnrollmentCount = 0);
 
 public record TeacherScheduleResponse(
     int SessionId,
@@ -28,4 +29,5 @@ public record TeacherScheduleResponse(
     TimeOnly StartTime,
     TimeOnly EndTime,
     SessionStatus Status,
-    string? Note);
+    string? Note,
+    string? TeacherName = null);

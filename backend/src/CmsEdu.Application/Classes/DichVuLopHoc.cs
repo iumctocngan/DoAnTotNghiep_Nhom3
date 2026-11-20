@@ -7,10 +7,12 @@ namespace CmsEdu.Application.Classes;
 
 public record YeuCauLopHoc(string MaLop, string TenLop, int CapDoId, string GiaoVienId,
     int SiSoToiDa, DateOnly NgayBatDau, DateOnly? NgayKetThuc, DayOfWeek Thu,
-    TimeOnly GioBatDau, TimeOnly GioKetThuc, ClassStatus TrangThai, int? BaiHocBatDauId = null);
+    TimeOnly GioBatDau, TimeOnly GioKetThuc, ClassStatus TrangThai, int? BaiHocBatDauId = null,
+    string? PhongHoc = null);
 public record ThongTinLopHoc(int Id, string MaLop, string TenLop, int CapDoId, string GiaoVienId,
     int SiSoToiDa, int SiSoHienTai, DateOnly NgayBatDau, DateOnly? NgayKetThuc,
-    DayOfWeek Thu, TimeOnly GioBatDau, TimeOnly GioKetThuc, ClassStatus TrangThai, int? BaiHocBatDauId = null);
+    DayOfWeek Thu, TimeOnly GioBatDau, TimeOnly GioKetThuc, ClassStatus TrangThai, int? BaiHocBatDauId = null,
+    string? PhongHoc = null);
 
 public class DichVuLopHoc(IKhoDuLieuLopHoc kho, ICurrentUser nguoiDung)
 {
@@ -149,6 +151,7 @@ public class DichVuLopHoc(IKhoDuLieuLopHoc kho, ICurrentUser nguoiDung)
     {
         if (string.IsNullOrWhiteSpace(r.MaLop) || r.MaLop.Trim().Length > 50 ||
             string.IsNullOrWhiteSpace(r.TenLop) || r.TenLop.Trim().Length > 100 ||
+            r.PhongHoc?.Trim().Length > 100 ||
             string.IsNullOrWhiteSpace(r.GiaoVienId) || r.SiSoToiDa < 1 ||
             r.GioBatDau >= r.GioKetThuc || r.NgayKetThuc < r.NgayBatDau ||
             !Enum.IsDefined(r.Thu) || !Enum.IsDefined(r.TrangThai))
@@ -170,6 +173,7 @@ public class DichVuLopHoc(IKhoDuLieuLopHoc kho, ICurrentUser nguoiDung)
 
     private static void Gan(Class x, YeuCauLopHoc r)
     {
+        x.Classroom = string.IsNullOrWhiteSpace(r.PhongHoc) ? null : r.PhongHoc.Trim();
         x.StartingLessonId = r.BaiHocBatDauId;
         x.ClassCode = r.MaLop.Trim(); x.Name = r.TenLop.Trim(); x.LevelId = r.CapDoId;
         x.MainTeacherUserId = r.GiaoVienId; x.Capacity = r.SiSoToiDa;
@@ -179,5 +183,5 @@ public class DichVuLopHoc(IKhoDuLieuLopHoc kho, ICurrentUser nguoiDung)
 
     private static ThongTinLopHoc ChuyenDoi(Class x, int siSo) => new(x.Id, x.ClassCode, x.Name,
         x.LevelId, x.MainTeacherUserId, x.Capacity, siSo, x.StartDate, x.EndDate,
-        x.DayOfWeek, x.StartTime, x.EndTime, x.Status, x.StartingLessonId);
+        x.DayOfWeek, x.StartTime, x.EndTime, x.Status, x.StartingLessonId, x.Classroom);
 }

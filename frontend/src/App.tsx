@@ -57,7 +57,7 @@ export const App: React.FC = () => {
                   </Route>
 
                   {/* Vận hành: Lớp học & Ghi danh */}
-                  <Route element={<ProtectedRoute requiredPermission="classes.view" />}>
+                  <Route element={<ProtectedRoute allowedRoles={['Admin', 'Accountant', 'CustomerCare']} requiredPermission="classes.view" />}>
                     <Route path="/lop-hoc" element={<TrangQuanLy key="lop-hoc" phanHe="lop-hoc" />} />
                   </Route>
 
@@ -102,8 +102,11 @@ export const App: React.FC = () => {
                   </Route>
 
                   {/* Giảng dạy & Đánh giá AI */}
-                  <Route element={<ProtectedRoute requiredPermission="teacher.classes" />}>
+                  <Route element={<ProtectedRoute allowedRoles={['Teacher']} requiredPermission="teacher.classes" />}>
                     <Route path="/teacher/classes" element={<TeacherClassesPage />} />
+                  </Route>
+
+                  <Route element={<ProtectedRoute requiredPermission="teacher.classes" />}>
                     <Route path="/teacher/schedule" element={<TeacherSchedulePage />} />
                   </Route>
 

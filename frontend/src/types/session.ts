@@ -8,6 +8,7 @@ export interface SessionResponse {
   classId: number;
   classCode: string;
   className: string;
+  teacherName?: string | null;
   lessonId?: number | null;
   lessonCode?: string | null;
   lessonName?: string | null;

@@ -263,6 +263,10 @@ namespace CmsEdu.Infrastructure.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("Classroom")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<int?>("StartingLessonId")
                         .HasColumnType("int");
 

@@ -1,3 +1,4 @@
+import { quanHeNguoiGiamHo } from './quanHeNguoiGiamHo';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/apiClient';
@@ -76,7 +77,12 @@ export function DangKyHocVien({ dong }: { dong: () => void }) {
           </div>
           <Pagination totalItems={danhSach.data?.totalItems ?? 0} page={trang} onPageChange={datTrang} itemLabel="người giám hộ" />
         </>}
-        <label>Quan hệ với học viên<input type="text" required maxLength={50} placeholder="Ví dụ: Bố, Mẹ, Ông, Bà" value={quanHe} onChange={suKien => datQuanHe(suKien.target.value)} /></label>
+        <label>Quan hệ với học viên
+          <select required value={quanHe} onChange={suKien => datQuanHe(suKien.target.value)}>
+            <option value="">— Chọn quan hệ —</option>
+            {quanHeNguoiGiamHo.map(vaiTro => <option key={vaiTro} value={vaiTro}>{vaiTro}</option>)}
+          </select>
+        </label>
         <div className="modal-footer"><button type="button" className="btn btn-secondary" onClick={dong}>Hủy</button><button className="btn btn-primary">{dangLuu ? 'Đang đăng ký…' : 'Đăng ký học viên'}</button></div>
       </fieldset>
     </form>

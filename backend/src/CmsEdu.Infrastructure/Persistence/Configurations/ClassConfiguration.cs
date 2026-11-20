@@ -31,6 +31,9 @@ public class ClassConfiguration : IEntityTypeConfiguration<Class>
             .HasMaxLength(100)
             .IsRequired();
 
+        builder.Property(c => c.Classroom)
+            .HasMaxLength(100);
+
         builder.Property(c => c.MainTeacherUserId)
             .HasMaxLength(450)
             .IsRequired();

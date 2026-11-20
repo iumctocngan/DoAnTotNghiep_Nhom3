@@ -39,4 +39,5 @@ public sealed record PhanHoiBuoiHoc(
     TimeOnly EndTime,
     SessionStatus Status,
     string? Note,
-    bool FollowsClassSchedule = false);
+    bool FollowsClassSchedule = false,
+    string? TeacherName = null);

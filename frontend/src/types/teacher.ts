@@ -10,6 +10,7 @@ export interface TeacherClassResponse {
   levelId: number;
   levelName: string;
   capacity: number;
+  currentEnrollmentCount: number;
   startDate: string;
   endDate?: string | null;
   dayOfWeek: number; // 0: Sunday, 1: Monday, ..., 6: Saturday
@@ -23,6 +24,7 @@ export interface TeacherScheduleResponse {
   classId: number;
   classCode: string;
   className: string;
+  teacherName?: string | null;
   lessonId?: number | null;
   lessonCode?: string | null;
   lessonName?: string | null;

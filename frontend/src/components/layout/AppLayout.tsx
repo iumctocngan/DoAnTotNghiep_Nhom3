@@ -75,6 +75,8 @@ export const AppLayout: React.FC = () => {
     return () => document.removeEventListener("keydown", handleChatbotShortcut);
   }, [navigate, user?.role]);
 
+  const canViewClassManagement = user?.role !== "Teacher" && hasPermission("classes.view");
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -171,7 +173,7 @@ export const AppLayout: React.FC = () => {
             </NavLink>
           )}
 
-          {(hasPermission("classes.view") ||
+          {(canViewClassManagement ||
             hasPermission("sessions.view") ||
             hasPermission("invoices.view") ||
             hasPermission("curriculum.view") ||
@@ -179,7 +181,7 @@ export const AppLayout: React.FC = () => {
             user?.role === "CustomerCare") && (
             <div className="nhom-dieu-huong">Vận hành</div>
           )}
-          {hasPermission("classes.view") && (
+          {canViewClassManagement && (
             <NavLink
               to="/lop-hoc"
               className={({ isActive }) =>
@@ -245,14 +247,16 @@ export const AppLayout: React.FC = () => {
             <>
               {hasPermission("teacher.classes") && (
                 <>
-                  <NavLink
-                    to="/teacher/classes"
-                    className={({ isActive }) =>
-                      isActive ? "nav-link active" : "nav-link"
-                    }
-                  >
-                    Lớp học phụ trách
-                  </NavLink>
+                  {user?.role === "Teacher" && (
+                    <NavLink
+                      to="/teacher/classes"
+                      className={({ isActive }) =>
+                        isActive ? "nav-link active" : "nav-link"
+                      }
+                    >
+                      Lớp học phụ trách
+                    </NavLink>
+                  )}
                   <NavLink
                     to="/teacher/schedule"
                     className={({ isActive }) =>

@@ -140,7 +140,14 @@ public class DichVuBuoiHoc(AppDbContext nguCanh, ICurrentUser nguoiDungHienTai) 
             .Take(kichThuocTrang)
             .ToListAsync(maHuy);
 
-        var danhSachPhanHoi = danhSachThucThe.Select(ChuyenThanhPhanHoi).ToList();
+        var giaoVienIds = danhSachThucThe.Select(x => x.Class.MainTeacherUserId).Distinct().ToArray();
+        var tenGiaoVien = await nguCanh.Users.AsNoTracking()
+            .Where(x => giaoVienIds.Contains(x.Id))
+            .ToDictionaryAsync(x => x.Id, x => x.FullName, maHuy);
+        var danhSachPhanHoi = danhSachThucThe.Select(x => ChuyenThanhPhanHoi(x) with
+        {
+            TeacherName = tenGiaoVien.GetValueOrDefault(x.Class.MainTeacherUserId)
+        }).ToList();
 
         return new PagedResult<PhanHoiBuoiHoc>(danhSachPhanHoi, trang, kichThuocTrang, tongSo);
     }

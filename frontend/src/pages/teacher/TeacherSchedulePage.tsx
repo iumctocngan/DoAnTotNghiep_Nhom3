@@ -1,14 +1,11 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './teacher-schedule.css';
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { teacherApi } from '../../api/teacherApi';
 import { sessionApi } from '../../api/sessionApi';
-import { staffApi } from '../../api/staffApi';
 import { useAuth } from '../../context/AuthContext';
-import { TeacherSelect } from '../../components/TeacherSelect';
 import { MaterialIcon } from '../../components/common/MaterialIcon';
-import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { formatDateDisplay, formatTimeDisplay } from '../../utils/date';
 import { addDays, mondayOf, todayInVietnam } from '../../utils/weekDates';
 import { AttendanceModal } from '../sessions/AttendanceModal';
@@ -39,10 +36,7 @@ export function TeacherSchedulePage() {
   const navigate = useNavigate();
   const canAssess = hasPermission('assessments.view');
   const isAdmin = user?.role === 'Admin';
-  const [selectedTeacherId, setSelectedTeacherId] = useState('');
-  const teacherId = isAdmin ? selectedTeacherId : user?.userId;
-  const [teacherSearch, setTeacherSearch] = useState('');
-  const debouncedTeacherSearch = useDebouncedValue(teacherSearch);
+  const teacherId = user?.userId;
   const [weekStart, setWeekStart] = useState(() => mondayOf(todayInVietnam()));
   const today = todayInVietnam();
   const weekDates = weekdays.map((_, i) => addDays(weekStart, i));
@@ -52,21 +46,21 @@ export function TeacherSchedulePage() {
     ? assessmentLink(attendanceSession)
     : null;
 
-  const teachers = useQuery({
-    queryKey: ['staff', 'teachers', debouncedTeacherSearch],
-    queryFn: () => staffApi.getStaff({ role: 'Teacher', search: debouncedTeacherSearch, pageSize: 100 }),
-    enabled: isAdmin,
-    placeholderData: keepPreviousData,
-  });
   const schedule = useQuery({
-    queryKey: ['teacher-schedule', teacherId, weekStart, weekEnd],
+    queryKey: ['teacher-schedule', isAdmin, teacherId, weekStart, weekEnd],
     enabled: !!teacherId,
     queryFn: async () => {
-      await sessionApi.synchronizeWeek(weekStart, weekEnd, { teacherId });
+      await sessionApi.synchronizeWeek(weekStart, weekEnd, isAdmin ? {} : { teacherId });
       const params = { fromDate: weekStart, toDate: weekEnd, page: 1, pageSize: 100 };
-      const first = await teacherApi.getSchedule(teacherId!, params);
-      const extra = await Promise.all(Array.from({ length: Math.max(0, Math.ceil(first.totalItems / params.pageSize) - 1) }, (_, i) =>
-        teacherApi.getSchedule(teacherId!, { ...params, page: i + 2 })));
+      const getPage = async (page: number) => {
+        const pageParams = { ...params, page };
+        if (!isAdmin) return teacherApi.getSchedule(teacherId!, pageParams);
+        const result = await sessionApi.getSessions(pageParams);
+        return { ...result, items: result.items.map(({ id, ...session }) => ({ ...session, sessionId: id })) };
+      };
+      const first = await getPage(1);
+      const extra = await Promise.all(Array.from(
+        { length: Math.max(0, Math.ceil(first.totalItems / params.pageSize) - 1) }, (_, i) => getPage(i + 2)));
       return [...first.items, ...extra.flatMap(page => page.items)];
     },
   });
@@ -76,14 +70,6 @@ export function TeacherSchedulePage() {
     <div>
       <div className="page-header"><h1>Lịch giảng dạy</h1></div>
       <div className="card flex flex-wrap items-end justify-between gap-4">
-        {isAdmin && <div className="w-full sm:w-72">
-          <label htmlFor="scheduleTeacherSelect">Giáo viên</label>
-          <TeacherSelect id="scheduleTeacherSelect" teachers={teachers.data?.items ?? []} value={selectedTeacherId}
-            search={teacherSearch} isLoading={teachers.isLoading && !teachers.data}
-            isSearching={teachers.isFetching || teacherSearch !== debouncedTeacherSearch}
-            disabled={teachers.isError} onSearchChange={setTeacherSearch} onChange={setSelectedTeacherId} />
-          {teachers.isError && <p role="alert">Không tải được danh sách giáo viên.</p>}
-        </div>}
         <div className="flex flex-wrap items-center gap-2">
           <button type="button" className="btn btn-secondary gap-1.5" onClick={() => setWeekStart(addDays(weekStart, -7))}>
             <MaterialIcon name="arrow_back" /> Tuần trước
@@ -120,7 +106,8 @@ export function TeacherSchedulePage() {
                       const canOpenAssessment = canAssess && date <= today;
                       return <article key={session.sessionId} className="teaching-calendar-session" data-status={session.status}>
                         <p className="font-semibold break-words">{session.className}</p>
-                        <p className="text-xs text-slate-600">{session.classCode}</p>
+                        <p className="break-words text-xs text-slate-600">Mã lớp: {session.classCode}</p>
+                        <p className="break-words text-xs text-slate-600">Giáo viên: {session.teacherName || 'Chưa có thông tin'}</p>
                         <span className="teaching-calendar-status">{status}</span>
                         {session.lessonName && <p className="mt-1 break-words">{session.lessonName}</p>}
                         {session.note && <p className="mt-1 break-words text-xs text-slate-600">{session.note}</p>}
@@ -140,7 +127,7 @@ export function TeacherSchedulePage() {
                 </td>)}
               </tr>)}
               {!slots.length && <tr><td colSpan={8} className="!py-8 text-center text-slate-500">
-                {!teacherId ? 'Chọn giáo viên để xem lịch dạy.' : schedule.isLoading ? 'Đang tải lịch…' : 'Không có buổi học trong tuần này.'}
+                {schedule.isLoading ? 'Đang tải lịch…' : 'Không có buổi học trong tuần này.'}
               </td></tr>}
             </tbody>
           </table>
