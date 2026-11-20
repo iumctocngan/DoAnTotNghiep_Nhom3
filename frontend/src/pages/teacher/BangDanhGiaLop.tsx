@@ -237,7 +237,7 @@ export function BangDanhGiaLop({ buoiId, danhSachLop, rubric, khoa, datDangXuLy 
         const daLuu = bai.get(hs.id);
         if (!daLuu) return null;
         return <article key={daLuu.id}>
-          <label><strong>{hs.fullName} · {daLuu.approvedAt ? 'Đã xác nhận' : banNhapCu(daLuu) ? 'Bản nháp AI có thể tạo lại'
+          <label><strong>{hs.fullName} · {daLuu.approvedAt ? 'Đã xác nhận' : banNhapCu(daLuu) ? 'Có thể tạo lại bản nháp'
             : daLuu.feedback ? 'Chờ xác nhận' : 'Chưa có nhận xét'}</strong>
             <textarea rows={5} value={nhanXet(daLuu)} maxLength={6000}
               disabled={biKhoa || !!daLuu.approvedAt || hs.attendance !== 'Present'}

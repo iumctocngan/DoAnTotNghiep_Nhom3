@@ -1,4 +1,7 @@
 import { useRef, useState } from 'react';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { MaterialIcon } from '../../components/common/MaterialIcon';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { BangDanhGiaLop, type Criterion, type HocSinhLop, type Rubric } from './BangDanhGiaLop';
 import { apiClient } from '../../api/apiClient';
@@ -13,13 +16,27 @@ const root = '/api/assessments';
 const ngayVietNam = (date: string) => date.split('-').reverse().join('/');
 const mucDanhGia = (score: number) => score >= 9 ? 'Rất tốt' : score >= 8 ? 'Tốt' : score >= 6.5 ? 'Đạt' : score >= 5 ? 'Cần cải thiện' : 'Chưa đạt';
 export function AssessmentPage() {
+  const [params] = useSearchParams();
+  const { user } = useAuth();
+  const readId = (key: string) => {
+    const id = Number(params.get(key));
+    return Number.isSafeInteger(id) && id > 0 ? id : 0;
+  };
+  const classId = readId('classId');
+  const sessionId = readId('sessionId');
+  if (user?.role === 'Teacher' && (!classId || !sessionId))
+    return <Navigate to="/teacher/schedule" replace />;
+  return <AssessmentWorkspace key={`${classId}-${sessionId}`} initialClassId={classId} initialSessionId={sessionId} />;
+}
+
+function AssessmentWorkspace({ initialClassId, initialSessionId }: { initialClassId: number; initialSessionId: number }) {
   const client = useQueryClient();
-  const [classId, setClassId] = useState(0);
+  const [classId, setClassId] = useState(initialClassId);
   const [studentId, setStudentId] = useState(0);
   const [rubricId, setRubricId] = useState(0);
   const [name, setName] = useState('');
   const [criteria, setCriteria] = useState<Criterion[]>([{ name: '', weight: 100, clo: '', description: '' }]);
-  const [buoiId, setBuoiId] = useState(0);
+  const [sessionId, setBuoiId] = useState(initialClassId ? initialSessionId : 0);
   const [dangCham, setDangCham] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
@@ -31,6 +48,7 @@ export function AssessmentPage() {
     queryFn: () => apiClient<HocSinhLop[]>(`${root}/classes/${classId}/students`) });
   const sessions = useQuery({ queryKey: ['assessment-sessions', classId], enabled: !!classId,
     queryFn: () => apiClient<BuoiHoc[]>(`${root}/classes/${classId}/sessions`) });
+  const buoiId = sessions.data?.some(session => session.id === sessionId) ? sessionId : 0;
   const rubrics = useQuery({ queryKey: ['assessment-rubrics', classId], enabled: !!classId, queryFn: () => apiClient<Rubric[]>(`${root}/classes/${classId}/rubrics`) });
   const lessonRubric = useQuery({ queryKey: ['assessment-lesson-rubric', classId, buoiId], enabled: !!buoiId,
     queryFn: () => apiClient<Rubric | null>(`${root}/sessions/${buoiId}/lesson-rubric`, { method: 'POST' }) });
@@ -108,6 +126,9 @@ export function AssessmentPage() {
   const improvements = selectedAssessment?.criteria.filter(c => c.score < 8) ?? [];
 
   return <div className="assessment-page">
+    {initialSessionId > 0 && <Link to="/teacher/schedule" className="btn btn-secondary mb-3 gap-1.5">
+      <MaterialIcon name="arrow_back" /> Về lịch giảng dạy
+    </Link>}
     <h1>Đánh giá và nhận xét theo lớp</h1>
     <label>Lớp phụ trách<select value={classId} disabled={khoa} onChange={e => {
       setClassId(+e.target.value);
@@ -149,6 +170,7 @@ export function AssessmentPage() {
           {ngayVietNam(x.sessionDate)} · {x.startTime.slice(0, 5)}–{x.endTime.slice(0, 5)}{x.lessonName ? ` · ${x.lessonName}` : ''}
         </option>)}
       </select></label>
+      {!!sessionId && sessions.isSuccess && !buoiId && <p role="alert">Buổi học này không có trong danh sách đánh giá của lớp.</p>}
       {sessions.data?.length === 0 && <p>Lớp chưa có buổi học để đánh giá.</p>}
       <label>Rubric<select value={rubric?.id ?? 0} disabled={khoa || (!!buoiId && lessonRubric.isPending)} onChange={e => setRubricId(+e.target.value)}>
         <option value={0}>Chọn rubric</option>

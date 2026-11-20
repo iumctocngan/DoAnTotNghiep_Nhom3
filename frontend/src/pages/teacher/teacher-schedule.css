@@ -1,0 +1,110 @@
+.teaching-calendar {
+  overflow-x: auto;
+  border: 1px solid #d3e0e8;
+  border-radius: 8px;
+}
+
+.teaching-calendar .data-table {
+  min-width: 960px;
+}
+
+.teaching-calendar .data-table th,
+.teaching-calendar .data-table td {
+  padding: 12px 8px;
+  border-right: 1px solid #dce6ed;
+  border-bottom: 1px solid #dce6ed;
+}
+
+.teaching-calendar .data-table th {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.teaching-calendar .data-table thead th {
+  background: #e8f0f5;
+  color: #223f53;
+}
+
+.teaching-calendar .teaching-calendar-time {
+  width: 102px;
+}
+
+.teaching-calendar .data-table tbody th {
+  background: #f1f5f8;
+  color: #223f53;
+  vertical-align: middle;
+  font-variant-numeric: tabular-nums;
+}
+
+.teaching-calendar .data-table th.teaching-calendar-today {
+  background: #325a73;
+  color: #fff;
+}
+
+.teaching-calendar-today-label {
+  display: inline-block;
+  margin-top: 3px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.teaching-calendar .data-table td {
+  background: #fff;
+  vertical-align: top;
+}
+
+.teaching-calendar .data-table td.teaching-calendar-today {
+  background: #f0f6fa;
+}
+
+.teaching-calendar-session {
+  padding: 9px;
+  border: 1px solid #d3e2eb;
+  border-radius: 6px;
+  background: #f4f8fb;
+  color: #243b4d;
+  text-align: left;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.teaching-calendar-session[data-status='2'] {
+  border-color: #d5e3dc;
+  background: #f1f6f3;
+}
+
+.teaching-calendar-session[data-status='3'] {
+  border-color: #e1e5e9;
+  background: #f5f6f7;
+}
+
+.teaching-calendar-status {
+  display: inline-block;
+  margin-top: 4px;
+  color: #405b70;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.teaching-calendar-action {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 5px 6px;
+  border: 1px solid #c5d7e4;
+  border-radius: 4px;
+  background: #fff;
+  color: #244e68;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.teaching-calendar-action:hover,
+.teaching-calendar-action:focus-visible {
+  background: #e6f0f6;
+  color: #18394d;
+}

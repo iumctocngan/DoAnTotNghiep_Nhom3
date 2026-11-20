@@ -13,9 +13,10 @@ interface AttendanceModalProps {
   sessionId: number | null;
   isOpen: boolean;
   onClose: () => void;
+  onContinueToAssessment?: () => void;
 }
 
-export const AttendanceModal: React.FC<AttendanceModalProps> = ({ sessionId, isOpen, onClose }) => {
+export const AttendanceModal: React.FC<AttendanceModalProps> = ({ sessionId, isOpen, onClose, onContinueToAssessment }) => {
   const queryClient = useQueryClient();
   const showToast = useToast();
 
@@ -78,7 +79,9 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ sessionId, isO
       queryClient.invalidateQueries({ queryKey: ['teacher-schedule'] });
       queryClient.invalidateQueries({ queryKey: ['quan-ly'] });
       queryClient.invalidateQueries({ queryKey: ['students'] });
+      queryClient.invalidateQueries({ queryKey: ['assessment-matrix', sessionId] });
       onClose();
+      if (!shouldComplete) onContinueToAssessment?.();
     },
     onError: (err: unknown) => {
       const apiErr = err as ApiError;
@@ -313,15 +316,15 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ sessionId, isO
                 <div className="flex gap-2">
                   <button
                     type="button"
-                    className="btn btn-secondary text-xs"
+                    className={`btn ${onContinueToAssessment ? 'btn-primary' : 'btn-secondary'} text-xs`}
                     onClick={() => saveMutation.mutate(false)}
                     disabled={saveMutation.isPending}
                   >
-                    {saveMutation.isPending ? 'Đang lưu...' : 'Lưu điểm danh'}
+                    {saveMutation.isPending ? 'Đang lưu...' : onContinueToAssessment ? 'Lưu điểm danh và đánh giá' : 'Lưu điểm danh'}
                   </button>
                   <button
                     type="button"
-                    className="btn btn-primary text-xs"
+                    className={`btn ${onContinueToAssessment ? 'btn-secondary' : 'btn-primary'} text-xs`}
                     onClick={() => saveMutation.mutate(true)}
                     disabled={saveMutation.isPending}
                   >

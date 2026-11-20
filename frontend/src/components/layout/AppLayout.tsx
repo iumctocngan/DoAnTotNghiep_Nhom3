@@ -240,20 +240,9 @@ export const AppLayout: React.FC = () => {
             </NavLink>
           )}
 
-          {(hasPermission("assessments.view") ||
-            hasPermission("teacher.classes") ||
+          {(hasPermission("teacher.classes") ||
             hasPermission("assistant.view")) && (
             <>
-              {hasPermission("assessments.view") && (
-                <NavLink
-                  to="/assessments"
-                  className={({ isActive }) =>
-                    isActive ? "nav-link active" : "nav-link"
-                  }
-                >
-                  Đánh giá học sinh AI
-                </NavLink>
-              )}
               {hasPermission("teacher.classes") && (
                 <>
                   <NavLink
