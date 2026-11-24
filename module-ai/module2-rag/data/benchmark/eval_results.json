@@ -4,150 +4,140 @@
     "dang_cau_hoi": "Giải toán & Suy luận",
     "cau_hoi": "Trong hoạt động khám phá Tạo các hình vuông ở bài 1 sách P31, các bước thực hành để tạo thành một hình vuông từ hình phụ lục được hướng dẫn như thế nào?",
     "dap_an_chuan": "Hoạt động yêu cầu: cắt các hình trong phần phụ lục ra; chia hình thành 4 phần giống nhau (có cùng kích cỡ và hình dạng); sau đó ghép các phần lại với nhau để tạo thành 1 hình vuông hoàn chỉnh.",
-    "cau_tra_loi_rag": "Trong hoạt động khám phá Tạo các hình vuông (tại trang 14 của tài liệu), các bước thực hành được hướng dẫn như sau:\n1. Cắt các hình trong phần phụ lục ra (học liệu gồm có kéo, hồ dán, thước kẻ, hình ở",
+    "cau_tra_loi_rag": "Trong hoạt động khám phá Tạo các hình vuông ở bài 1 sách P31, các bước thực hành được hướng dẫn như sau: Thứ nhất, cắt các hình trong phần phụ lục ra. Thứ hai, chia hình thành 4 phần giống nhau, đảm b",
     "context_recall": 1.0,
-    "faithfulness": 0.75,
-    "answer_correctness": 0.8865552618752671
+    "faithfulness": 1.0,
+    "answer_correctness": 0.9423462104658927
   },
   {
     "ma_cau_hoi": "GT_02",
     "dang_cau_hoi": "Giải toán & Suy luận",
     "cau_hoi": "Trong hoạt động Chia thành các hình giống nhau ở bài 1 sách P31, yêu cầu về kích cỡ và hình dạng của các phần sau khi chia là gì?",
     "dap_an_chuan": "Khi chia hình thành 2 phần, kích cỡ và hình dạng của phần bị cắt rời phải bằng nhau và giống nhau.",
-    "cau_tra_loi_rag": "Trong hoạt động Chia thành các hình giống nhau ở bài 1, yêu cầu đối với các phần bị cắt rời là kích cỡ và hình dạng của chúng phải bằng nhau (giống nhau).",
+    "cau_tra_loi_rag": "Trong hoạt động Chia thành các hình giống nhau ở bài 1, yêu cầu về kích cỡ và hình dạng của các phần bị cắt rời là phải bằng nhau và giống nhau.",
     "context_recall": 1.0,
     "faithfulness": 1.0,
-    "answer_correctness": 0.9602882960491788
+    "answer_correctness": 0.7874240516656928
   },
   {
     "ma_cau_hoi": "GT_03",
     "dang_cau_hoi": "Giải toán & Suy luận",
     "cau_hoi": "Trong bài toán chuyển Hình chữ nhật thành hình vuông ở bài 1 sách P31, nếu hình chữ nhật có kích thước 9 x 4 với diện tích là 36 thì hình vuông tạo thành khi ghép lại có độ dài cạnh là bao nhiêu?",
     "dap_an_chuan": "Vì diện tích của hình chữ nhật là 36 (9 x 4), nên khi chia thành 2 phần bằng nhau rồi ghép lại, hình vuông tạo thành phải có chiều dài các cạnh là 6.",
-    "cau_tra_loi_rag": "Trong bài toán chuyển Hình chữ nhật thành hình vuông (Nguồn 1), với hình chữ nhật có diện tích là 36, hình vuông tạo thành khi ghép lại có chiều dài các cạnh là 6.",
+    "cau_tra_loi_rag": "Dựa vào tài liệu, vì diện tích của hình chữ nhật là 36, hình vuông tạo thành khi ghép lại phải có chiều dài các cạnh là 6 (tính từ 9 nhân 4).",
     "context_recall": 1.0,
     "faithfulness": 1.0,
-    "answer_correctness": 0.7975200396335569
+    "answer_correctness": 0.8020751552127428
   },
   {
     "ma_cau_hoi": "GT_04",
     "dang_cau_hoi": "Giải toán & Suy luận",
     "cau_hoi": "Trong bài toán lật đồng xu bảng 2x2 ở bài 2 sách P31, nếu ban đầu có 1 đồng xu mặt số và 3 đồng xu mặt chữ, mỗi lần lật 1 hàng hoặc 1 cột 2 đồng xu thì có thể làm cho cả 4 đồng xu cùng về mặt số được không? Giải thích vì sao.",
     "dap_an_chuan": "Không thể. Ban đầu chỉ có 1 đồng xu mặt số (số lẻ). Mỗi lần lật 2 đồng xu: nếu lật 2 mặt số thì giảm 2; nếu lật 2 mặt chữ thì tăng 2; nếu lật 1 số 1 chữ thì không đổi. Số lượng đồng xu mặt số luôn thay đổi một lượng chẵn (tăng hoặc giảm 2). Xuất phát từ số lẻ (1) nên tổng số mặt số luôn luôn là số lẻ, không bao giờ đạt được 4 (số chẵn).",
-    "cau_tra_loi_rag": "Không thể làm cho tất cả 4 đồng xu cùng về mặt số. Dựa theo dữ liệu từ tài liệu, hoạt động này bắt đầu với 1 đồng xu đang ở mặt số (là số lẻ). Khi thực hiện lật các đồng xu ở hàng hoặc cột (mỗi hàng/c",
+    "cau_tra_loi_rag": "Không thể làm cho cả 4 đồng xu cùng về mặt số. Giải thích chi tiết theo các bước:\n1. Xác định dữ kiện: Hoạt động bắt đầu với 4 đồng xu đặt trên hình vuông 2x2, trong đó có 1 đồng xu ở mặt số (số lượng",
     "context_recall": 1.0,
     "faithfulness": 1.0,
-    "answer_correctness": 0.840813053740566
+    "answer_correctness": 0.7958784799461073
   },
   {
     "ma_cau_hoi": "GT_05",
     "dang_cau_hoi": "Giải toán & Suy luận",
     "cau_hoi": "Trong hoạt động Vỗ tay ở bài 2 sách P31, tại sao tổng số lần tay vỗ của các học sinh luôn luôn là số chẵn?",
     "dap_an_chuan": "Tổng số lần tay vỗ luôn luôn là số chẵn vì số lần tay vỗ trước khi bắt đầu là 0 (chẵn), và mỗi lần vỗ tay cần có 2 học sinh nên số lần tay vỗ luôn tăng một lượng là 2. Từ đó suy ra luôn có một số chẵn học sinh đã vỗ tay một số lẻ lần (vì lẻ x chẵn = chẵn).",
-    "cau_tra_loi_rag": "Trong hoạt động Vỗ tay (bài 2), tổng số lần tay vỗ của các học sinh luôn luôn là số chẵn vì: mỗi lần vỗ tay cần có sự tham gia của 2 học sinh, làm cho tổng số lần tay vỗ tăng lên 2. Số lần tay vỗ trướ",
+    "cau_tra_loi_rag": "Theo tài liệu, tổng số lần tay vỗ luôn luôn là chẵn vì số lần tay vỗ trước khi bắt đầu là 0 (chẵn) và số lần tay vỗ luôn tăng lên 2. Việc tăng 2 diễn ra vì phải có 2 học sinh cùng tham gia để thực hiệ",
     "context_recall": 1.0,
     "faithfulness": 1.0,
-    "answer_correctness": 0.8719744687195106
+    "answer_correctness": 0.7903832142395986
   },
   {
     "ma_cau_hoi": "GT_06",
     "dang_cau_hoi": "Giải toán & Suy luận",
     "cau_hoi": "Trong bài toán Phủ một bàn cờ bằng quân domino ở bài 2 sách P31, có thể phủ đầy một bàn cờ 6x6 bị cắt bỏ hai góc bằng 17 quân domino kích thước 2x1 không? Vì sao?",
     "dap_an_chuan": "Không thể. Mỗi quân domino 2x1 luôn phủ đúng 1 ô trắng và 1 ô đen, do đó cần số lượng ô trắng và ô đen bằng nhau. Tuy nhiên, bàn cờ 6x6 sau khi cắt 2 góc chỉ còn lại 18 ô trắng và 16 ô đen (không bằng nhau). Vì vậy không thể phủ kín bàn cờ bằng 17 quân domino.",
-    "cau_tra_loi_rag": "Không thể phủ đầy bàn cờ 6 × 6 bị cắt bỏ hai góc bằng 17 quân domino (2 × 1).\n\n**1. Xác định dữ kiện & quy tắc:**\n- Mỗi 1 quân domino luôn phủ 1 hình vuông màu trắng và 1 hình vuông màu đen, do đó số ",
+    "cau_tra_loi_rag": "Không thể phủ đầy bàn cờ 6x6 bị cắt bỏ hai góc với 17 quân domino kích thước 2x1. Giải thích chi tiết theo các bước như sau: 1. Xác định dữ kiện và quy tắc: Mỗi quân domino luôn phủ 1 hình vuông màu t",
     "context_recall": 1.0,
     "faithfulness": 1.0,
-    "answer_correctness": 0.8800244718642792
+    "answer_correctness": 0.9396274017519168
   },
   {
     "ma_cau_hoi": "GT_07",
     "dang_cau_hoi": "Khái niệm & Định nghĩa",
     "cau_hoi": "Trong bài học Có bao nhiêu thẻ ở sách P31, khi sử dụng 4 thẻ bài số 1, 3, 5, 6 để tạo các số có 3 chữ số (mỗi thẻ dùng tối đa 1 lần trong mỗi số), tổng của tất cả các số có 3 chữ số có thể tạo ra là bao nhiêu?",
     "dap_an_chuan": "Có tất cả 24 số có 3 chữ số (4 x 3 x 2 = 24). Mỗi chữ số 1, 3, 5, 6 xuất hiện 6 lần ở hàng trăm, hàng chục và hàng đơn vị. Tổng các số ở hàng trăm là 9,000; hàng chục là 900; hàng đơn vị là 90. Tổng của tất cả các số tạo được là 9,000 + 900 + 90 = 9,990.",
-    "cau_tra_loi_rag": "Để tính tổng của tất cả các số có 3 chữ số có thể tạo ra từ các thẻ 1, 3, 5, 6 (mỗi thẻ dùng tối đa 1 lần), ta thực hiện các bước sau:\n\n1.  **Tổng số các số có 3 chữ số có thể tạo ra:**\n    Có 4 lựa c",
+    "cau_tra_loi_rag": "Theo tài liệu, khi sử dụng 4 chiếc thẻ bài số 1, 3, 5 và 6 để tạo ra các số có 3 chữ số và chỉ sử dụng mỗi chiếc thẻ 1 lần cho mỗi số, tổng của tất cả các số có 3 chữ số có thể tạo ra là 9,990 (được t",
     "context_recall": 1.0,
     "faithfulness": 1.0,
-    "answer_correctness": 0.6211587966462774
+    "answer_correctness": 0.8338926511472756
   },
   {
     "ma_cau_hoi": "GT_08",
     "dang_cau_hoi": "Giải toán & Suy luận",
     "cau_hoi": "Trong bài toán Máy thẻ bài số ở bài 3 sách P31, nếu chiếc máy tạo thẻ bài số bắt đầu in từ 1 và tổng tất cả các chữ số trên các thẻ vừa tạo ra là 330 thì chiếc thẻ bài cuối cùng máy tạo ra là thẻ số bao nhiêu?",
     "dap_an_chuan": "Chiếc thẻ bài cuối cùng mà chiếc máy tạo ra là thẻ số 50.",
-    "cau_tra_loi_rag": "Dựa trên tài liệu, lời giải chi tiết cho bài toán máy thẻ bài số như sau:\n\n1. Xác định dữ kiện & quy tắc:\n- Máy tạo thẻ bắt đầu từ 1.\n- Tổng tất cả các chữ số trong số các thẻ mà máy vừa tạo ra là 330",
+    "cau_tra_loi_rag": "Theo dữ liệu từ nguồn, nếu chiếc máy bắt đầu tạo thẻ lại từ 1 và tổng tất cả các chữ số trong số các thẻ mà nó vừa tạo ra là 330, chiếc thẻ bài cuối cùng mà máy tạo ra là thẻ số 50. Quá trình tính toá",
     "context_recall": 1.0,
-    "faithfulness": 0.9333333333333333,
-    "answer_correctness": 0.6539987736068806
+    "faithfulness": 1.0,
+    "answer_correctness": 0.7692583979794005
   },
   {
     "ma_cau_hoi": "GT_09",
     "dang_cau_hoi": "Giải toán & Suy luận",
     "cau_hoi": "Trong trò chơi 3-6-9 ở bài 3 sách P31, tính từ số 1 đến số 999 thì chữ số 3 xuất hiện tổng cộng bao nhiêu lần ở các hàng?",
     "dap_an_chuan": "Tính từ 1 đến 999, chữ số 3 xuất hiện 100 lần ở hàng đơn vị, 100 lần ở hàng chục và 100 lần ở hàng trăm. Tổng cộng chữ số 3 xuất hiện 300 lần (tương tự chữ số 6 và chữ số 9 cũng xuất hiện 300 lần).",
-    "cau_tra_loi_rag": "Trong trò chơi 3-6-9 từ 1 đến 999, số các lần chữ số 3 xuất hiện ở các hàng là:\n- Số các lần số 3 ở hàng đơn vị là 100.\n- Số các lần số 3 ở hàng chục là 100.\n- Số các lần số 3 ở hàng trăm là 100.\nTổng",
+    "cau_tra_loi_rag": "Trong trò chơi 3-6-9 tính từ 1 đến 999, số lần chữ số 3 xuất hiện ở các hàng là: số các lần số 3 ở hàng đơn vị là 100 lần, số các lần số 3 ở hàng chục là 100 lần, số các lần số 3 ở hàng trăm là 100 lầ",
     "context_recall": 1.0,
     "faithfulness": 1.0,
-    "answer_correctness": 0.9790308330113158
+    "answer_correctness": 0.9784894416899539
   },
   {
     "ma_cau_hoi": "GT_10",
     "dang_cau_hoi": "Giải toán & Suy luận",
     "cau_hoi": "Trong hoạt động Làm đường ở bài 4 sách P31, cần tối thiểu bao nhiêu con đường để có thể kết nối liên thông tất cả 7 ngôi làng A, B, C, D, E, F và G với nhau?",
     "dap_an_chuan": "Cần tối thiểu ít nhất 6 con đường để kết nối liên thông tất cả 7 ngôi làng A, B, C, D, E, F và G.",
-    "cau_tra_loi_rag": "Dựa trên tài liệu, để nối tất cả 7 ngôi làng A, B, C, D, E, F và G, cần tối thiểu là 6 con đường.",
+    "cau_tra_loi_rag": "Cần ít nhất là 6 con đường để nối tất cả 7 ngôi làng A, B, C, D, E, F và G.",
     "context_recall": 1.0,
     "faithfulness": 1.0,
-    "answer_correctness": 0.985495281564166
+    "answer_correctness": 0.992007834640488
   },
   {
     "ma_cau_hoi": "GT_11",
     "dang_cau_hoi": "Giải toán & Suy luận",
     "cau_hoi": "Trong bài toán Biểu diễn kịch ở bài 4 sách P31, các công việc C, D, E có thể làm đồng thời trong tối đa 7 ngày. Số ngày tối thiểu cần thiết để hoàn thành toàn bộ 6 công việc chuẩn bị cho vở kịch là bao nhiêu ngày?",
     "dap_an_chuan": "Vì các công việc C, D, E có thể làm đồng thời trong cùng khoảng thời gian tối đa là 7 ngày (thời gian của E), nên số ngày tối thiểu để hoàn thành tất cả các công việc là 13 ngày (tính theo chuỗi A + B + CDE + F = 3 + 2 + 7 + 1 = 13 ngày).",
-    "cau_tra_loi_rag": "Theo tài liệu, số ngày tối thiểu cần để hoàn thành toàn bộ các công việc chuẩn bị cho vở kịch là 13 ngày. Cụ thể:\n1. Xác định dữ kiện & quy tắc: Các công việc bao gồm A (3 ngày), B (2 ngày), C (3 ngày",
+    "cau_tra_loi_rag": "Dựa trên dữ liệu từ nguồn, các bước giải thích chi tiết như sau: 1. Xác định dữ kiện: Các công việc chuẩn bị cho vở kịch gồm A (3 ngày), B (2 ngày), C (3 ngày), D (5 ngày), E (7 ngày) và F (1 ngày). T",
     "context_recall": 1.0,
     "faithfulness": 1.0,
-    "answer_correctness": 0.715092753187424
+    "answer_correctness": 0.7839243664046682
   },
   {
     "ma_cau_hoi": "GT_12",
     "dang_cau_hoi": "Giải toán & Suy luận",
     "cau_hoi": "Trong bài toán Chiếc xe đạp bay ở bài 4 sách P31, số ngày tối thiểu cần thiết để hoàn thành sản xuất một chiếc xe đạp bay theo sơ đồ tiến trình công việc là bao nhiêu ngày?",
     "dap_an_chuan": "Số ngày tối thiểu cần để sản xuất 1 chiếc xe đạp bay là 31 ngày, được xác định theo chuỗi công việc dài nhất B(5) + D(3) + F(7) + J(16) = 31 ngày.",
-    "cau_tra_loi_rag": "Theo bài toán Chiếc xe đạp bay ở Bài 4, số ngày tối thiểu cần để sản xuất một chiếc xe đạp bay là 31 ngày, được tính theo chuỗi công việc B(5) + D(3) + F(7) + J(16) = 31 (ngày).",
+    "cau_tra_loi_rag": "Dựa trên dữ liệu từ tài liệu, sơ đồ tiến trình công việc để sản xuất một chiếc xe đạp bay bao gồm các công việc với thời gian hoàn thành từng phần như sau: công việc B mất 5 ngày, công việc D mất 3 ng",
     "context_recall": 1.0,
     "faithfulness": 1.0,
-    "answer_correctness": 0.6887046746141456
+    "answer_correctness": 0.8369537236899176
   },
   {
     "ma_cau_hoi": "GT_13",
     "dang_cau_hoi": "Khái niệm & Định nghĩa",
     "cau_hoi": "Số đầu rồng (dragon head numbers) được định nghĩa theo những điều kiện nào trong bài 1 sách P33?",
     "dap_an_chuan": "Số đầu rồng phải thỏa mãn 2 điều kiện: thứ nhất, chữ số '0' không được coi là một chữ số; thứ hai, tổng của tất cả các chữ số bằng chữ số đầu tiên nhân với 2 (tức là chữ số đầu tiên bằng tổng của các chữ số còn lại).",
-    "cau_tra_loi_rag": "Theo tài liệu, số đầu rồng (dragon head numbers) được định nghĩa dựa trên các điều kiện sau: \n1. ‘0’ không được coi là một chữ số.\n2. Tổng của tất cả các chữ số bằng chữ số đầu tiên nhân với 2 (hoặc n",
+    "cau_tra_loi_rag": "Theo bài 1, số đầu rồng được định nghĩa theo các điều kiện sau: Thứ nhất, số 0 không được coi là một chữ số. Thứ hai, tổng của tất cả các chữ số bằng chữ số đầu tiên nhân với 2. Đặc điểm của số đầu rồ",
     "context_recall": 1.0,
     "faithfulness": 1.0,
-    "answer_correctness": 0.7664597297962188
+    "answer_correctness": 0.8812610029581784
   },
   {
     "ma_cau_hoi": "GT_14",
     "dang_cau_hoi": "Khái niệm & Định nghĩa",
     "cau_hoi": "Trong bài 1 sách P33, số đầu rồng nhỏ nhất có 4 chữ số là số nào và giải thích cách tìm?",
     "dap_an_chuan": "Số đầu rồng nhỏ nhất có 4 chữ số là 3,111. Giải thích: gọi số đó là ABCD thì B + C + D = A. Vì chữ số 0 không được sử dụng nên các giá trị nhỏ nhất của B, C, D là 1, 1, 1; do đó chữ số đầu tiên A nhỏ nhất phải là 1 + 1 + 1 = 3.",
-    "cau_tra_loi_rag": "Số đầu rồng nhỏ nhất có 4 chữ số là 3111.\n\nCách giải thích:\n1. Xác định dữ kiện & quy tắc: Gọi 4 chữ số của số cần tìm là ABCD. Theo quy tắc số đầu rồng, tổng của tất cả các chữ số bằng chữ số đầu tiê",
+    "cau_tra_loi_rag": "Số đầu rồng nhỏ nhất có 4 chữ số là 3111. Cách tìm như sau: Gọi số có 4 chữ số cần tìm là ABCD. Theo định nghĩa số đầu rồng, tổng các chữ số A + B + C + D phải bằng 2A, điều này có nghĩa là B + C + D ",
     "context_recall": 1.0,
     "faithfulness": 1.0,
-    "answer_correctness": 0.8685394668406685
-  },
-  {
-    "ma_cau_hoi": "GT_15",
-    "dang_cau_hoi": "Khái niệm & Định nghĩa",
-    "cau_hoi": "Trong bài 1 sách P33, số cửu chương được định nghĩa với những điều kiện nào?",
-    "dap_an_chuan": "Số cửu chương thỏa mãn 2 điều kiện: thứ nhất, chữ số '0' không được coi là một chữ số; thứ hai, tích của hai chữ số liền kề nhau sẽ tạo thành chữ số ở vị trí tiếp theo trong số đó.",
-    "cau_tra_loi_rag": "Trong tài liệu, số cửu chương được định nghĩa dựa trên các điều kiện và đặc điểm sau:\n- Bảng cửu chương được giả sử là các tích lên tới 9 vì các số nhân là các chữ số đơn.\n- Tích của các số có hai chữ",
-    "context_recall": 0.0,
-    "faithfulness": 1.0,
-    "answer_correctness": 0.5402624298679863
+    "answer_correctness": 0.9268883087569222
   },
   {
     "ma_cau_hoi": "GT_16",
@@ -160,204 +150,174 @@
     "answer_correctness": 1.0
   },
   {
-    "ma_cau_hoi": "GT_17",
-    "dang_cau_hoi": "Giải toán & Suy luận",
-    "cau_hoi": "Trong bài toán Xây nhà trên cây ở sách P33, nếu Tom làm một mình mất 6 ngày và Huckle làm một mình mất 12 ngày thì khi cả hai bạn cùng làm sẽ hoàn thành trong bao nhiêu ngày?",
-    "dap_an_chuan": "Trong 1 ngày Tom làm được 1/6 công việc, Huckle làm được 1/12 công việc. Cả hai cùng làm 1 ngày được 1/6 + 1/12 = 3/12 = 1/4 công việc. Do đó cả hai bạn cùng làm sẽ hoàn thành ngôi nhà trên cây trong 4 ngày.",
-    "cau_tra_loi_rag": "Dựa trên dữ liệu tại [Nguồn 1], bài toán Xây nhà trên cây có các dữ kiện và các bước giải như sau:\n\n1. **Xác định dữ kiện & quy tắc:**\n   - Thời gian Tom tự xây xong ngôi nhà là 18 ngày (Nguồn 1 ghi n",
-    "context_recall": 0.0,
-    "faithfulness": 1.0,
-    "answer_correctness": 0.5671945764430758
-  },
-  {
     "ma_cau_hoi": "GT_18",
     "dang_cau_hoi": "Giải toán & Suy luận",
     "cau_hoi": "Dạng bài toán Cỏ trên trang trại ở bài Tom và Huckle (sách P33) dựa trên nguyên lý tốc độ nào để tính toán lượng cỏ tiêu thụ?",
     "dap_an_chuan": "Bài toán dựa trên nguyên lý: trang trại có lượng cỏ ban đầu có sẵn và mỗi ngày lượng cỏ mới mọc thêm với một tốc độ không đổi, từ đó tính toán sự cân bằng giữa lượng cỏ mọc thêm hàng ngày và số lượng bò ăn mỗi ngày.",
-    "cau_tra_loi_rag": "Dựa trên tài liệu, bài toán Cỏ trên trang trại sử dụng các nguyên lý tốc độ và dữ kiện sau để tính toán:\n1. Giả sử khối lượng cỏ một con bò ăn mỗi ngày là 1 (1-1).\n2. Tính lượng cỏ do bò ăn trong khoả",
+    "cau_tra_loi_rag": "Dựa trên tài liệu, dạng bài toán Co tren trang trai tinh toan luong co tieu thu bang cach gia su khoi luong co mot con bo an moi ngay la 1, sau do tinh tong luong co an duoc trong cac khoang thoi gian",
     "context_recall": 1.0,
     "faithfulness": 1.0,
-    "answer_correctness": 0.5581148569112436
+    "answer_correctness": 0.6738315417257101
   },
   {
     "ma_cau_hoi": "GT_19",
     "dang_cau_hoi": "Khái niệm & Định nghĩa",
     "cau_hoi": "Trong bài 3 sách P33, 5 số đầu tiên của dãy số tam giác là những số nào?",
     "dap_an_chuan": "5 số đầu tiên của dãy số tam giác là 1, 3, 6, 10 và 15.",
-    "cau_tra_loi_rag": "Dựa vào bảng trong Thử thách khám phá 1 (Nguồn 2), 5 số đầu tiên của dãy số tam giác là: 1, 3, 6, 10 và 15.",
+    "cau_tra_loi_rag": "Dựa trên Bảng số tam giác trong Nguồn 2 (Bài 3: Số đa giác), 5 số đầu tiên của dãy số tam giác là: 1, 3, 6, 10 và 15.",
     "context_recall": 1.0,
-    "faithfulness": 1.0,
-    "answer_correctness": 0.9694587950353808
-  },
-  {
-    "ma_cau_hoi": "GT_20",
-    "dang_cau_hoi": "Giải toán & Suy luận",
-    "cau_hoi": "Trong bài 3 sách P33, mối quan hệ giữa hai số tam giác liên tiếp và một số vuông được thể hiện như thế nào?",
-    "dap_an_chuan": "Tổng của hai số tam giác liên tiếp sẽ tạo thành một số vuông (ví dụ: 1 + 3 = 4; 3 + 6 = 9; 6 + 10 = 16).",
-    "cau_tra_loi_rag": "Dựa trên tài liệu, mối quan hệ giữa số tam giác và số vuông được thể hiện như sau:\n- Số vuông thứ n là tổng của số tam giác thứ n và n – 1 (theo Nguồn 3).\n- Ví dụ biểu diễn phương trình mối quan hệ gi",
-    "context_recall": 0.0,
-    "faithfulness": 1.0,
-    "answer_correctness": 0.5390133600100402
-  },
-  {
-    "ma_cau_hoi": "GT_21",
-    "dang_cau_hoi": "Khái niệm & Định nghĩa",
-    "cau_hoi": "Trong bài học Số đa giác ở sách P33, các số đa giác như số ngũ giác và lục giác có thể được phân tách như thế nào?",
-    "dap_an_chuan": "Các số đa giác lớn hơn có thể được phân tách thành tổng của các số tam giác và các số đa giác nhỏ hơn thông qua các lớp điểm chấm mở rộng.",
-    "cau_tra_loi_rag": "Theo tài liệu, các số đa giác như số ngũ giác và số lục giác được phân tách và biểu diễn như sau:\n\n1. **Chia tách số ngũ giác (Sử dụng số ngũ giác khác nhau):**\n   - Hoạt động khám phá yêu cầu tách số",
-    "context_recall": 0.0,
-    "faithfulness": 1.0,
-    "answer_correctness": 0.5182328952951708
+    "faithfulness": 0.5,
+    "answer_correctness": 0.9121860983069249
   },
   {
     "ma_cau_hoi": "GT_22",
     "dang_cau_hoi": "Giải toán & Suy luận",
     "cau_hoi": "Trong trò chơi Jump Jump Puzzle ở bài 4 sách P33, số lần di chuyển ít nhất để tráo đổi vị trí của 3 con chip màu bên trái và 3 con chip khác màu bên phải qua 1 ô trống là bao nhiêu lần?",
     "dap_an_chuan": "Số lần di chuyển ít nhất cần có để tráo đổi vị trí của 3 con chip màu bên trái và 3 con chip khác màu bên phải là 15 lần di chuyển.",
-    "cau_tra_loi_rag": "Trong trò chơi Jump Jump Puzzle (phần Nhảy một mình), số lần di chuyển ít nhất cần có để tráo đổi vị trí của các bộ chip màu là 15 lần di chuyển.",
+    "cau_tra_loi_rag": "Trong tro choi Jump Jump Puzzle o phan Nhy mot minh, so lan di chuyen it nhat can co de trao doi vi tri sap xep cua cac chip mau la 15 lan di chuyen.",
     "context_recall": 1.0,
-    "faithfulness": 0.5,
-    "answer_correctness": 0.7587026059523156
+    "faithfulness": 1.0,
+    "answer_correctness": 0.7360643626319112
   },
   {
     "ma_cau_hoi": "GT_23",
     "dang_cau_hoi": "Giải toán & Suy luận",
     "cau_hoi": "Trong bài 4 sách P33, nếu có 4 con chip cùng màu và 4 con chip khác màu cần tráo đổi vị trí qua 1 ô trống thì số lần di chuyển ít nhất là bao nhiêu lần?",
     "dap_an_chuan": "Số lần di chuyển ít nhất để 4 con chip cùng màu và 4 con chip khác màu tráo đổi vị trí là 24 lần di chuyển.",
-    "cau_tra_loi_rag": "Trong bài 4 sách P33, khi có 4 con chip cùng màu và 4 con chip khác màu được sắp xếp cần tráo đổi vị trí, số lần di chuyển ít nhất là 24 lần. Chi tiết lời giải trong tài liệu: khi một con chip màu di ",
+    "cau_tra_loi_rag": "Theo Nguồn 1, khi có 4 con chip cùng màu và 4 con chip khác màu được sắp xếp, số lần di chuyển ít nhất để các con chip màu tráo đổi vị trí là 24 lần di chuyển. Chi tiết quá trình tính toán: khi một co",
     "context_recall": 1.0,
     "faithfulness": 1.0,
-    "answer_correctness": 0.7261940314630428
+    "answer_correctness": 0.7733064521576842
   },
   {
     "ma_cau_hoi": "GT_24",
     "dang_cau_hoi": "Giải toán & Suy luận",
     "cau_hoi": "Trong hoạt động Nhảy cùng nhau ở bài 4 sách P33, số lần di chuyển ít nhất để di chuyển các con chip màu đang ở cạnh nhau thành vị trí đặt xen kẽ là bao nhiêu lần?",
     "dap_an_chuan": "Số lần di chuyển ít nhất cần có để các con chip màu được đặt xen kẽ nhau là 4 lần di chuyển.",
-    "cau_tra_loi_rag": "Trong hoạt động Nhảy cùng nhau ở bài 4 (Nguồn 1), số lần di chuyển ít nhất cần có để di chuyển các con chip màu thành vị trí đặt xen kẽ là 4 lần di chuyển.",
+    "cau_tra_loi_rag": "Trong hoạt động Nhảy cùng nhau ở bài 4 sách P33, số lần di chuyển ít nhất cần có để các con chip màu đặt xen kẽ là 4 lần di chuyển.",
     "context_recall": 1.0,
     "faithfulness": 0.0,
-    "answer_correctness": 0.9751841179004175
+    "answer_correctness": 0.9682437604205568
   },
   {
     "ma_cau_hoi": "GT_25",
     "dang_cau_hoi": "Giải toán & Suy luận",
     "cau_hoi": "Trong bài toán hai chú ếch Ellie và Flip nhảy quanh ao có chu vi 825 cm (sách P41), cả hai nhảy 15 lần trước khi gặp nhau và bước nhảy của Ellie dài hơn Flip 5 cm. Độ dài bước nhảy của Flip là bao nhiêu cm?",
     "dap_an_chuan": "Phương trình giải là: 15 x (x + x + 5) = 825, tương đương 2x + 5 = 55, suy ra x = 25 cm. Vậy độ dài bước nhảy của chú ếch Flip là 25 cm.",
-    "cau_tra_loi_rag": "Độ dài bước nhảy của Flip là 25 cm. \n\nDiễn giải từng bước:\n1. Xác định dữ kiện: Chu vi bờ ao là 825 cm, tổng số lần nhảy của mỗi chú ếch trước khi gặp nhau là 15 lần, và bước nhảy của Ellie dài hơn bư",
+    "cau_tra_loi_rag": "Theo Nguồn 1, chu vi bờ ao là 825 cm. Cả hai chú ếch Ellie và Flip đã nhảy 15 lần trước khi gặp nhau, và bước nhảy của Ellie dài hơn của Flip 5 cm. Phương trình để tìm độ dài bước nhảy của Flip là: 15",
     "context_recall": 1.0,
     "faithfulness": 1.0,
-    "answer_correctness": 0.6471774336438647
+    "answer_correctness": 0.6915876014571414
   },
   {
     "ma_cau_hoi": "GT_26",
     "dang_cau_hoi": "Khái niệm & Định nghĩa",
     "cau_hoi": "Nhà toán học Diophantus được giới thiệu với danh xưng gì trong lịch sử toán học ở bài 1 sách P41?",
     "dap_an_chuan": "Diophantus là nhà toán học thời kỳ Hellenistic và được coi là cha đẻ của môn đại số học.",
-    "cau_tra_loi_rag": "Trong Bài 1 sách P41, nhà toán học Diophantus được giới thiệu với danh xưng là tổ tiên của nhà toán học Hellenistic, người được coi là cha đẻ của môn đại số học.",
+    "cau_tra_loi_rag": "Diophantus là tổ tiên của nhà toán học Hellenistic, người được coi là cha đẻ của môn đại số học.",
     "context_recall": 1.0,
     "faithfulness": 1.0,
-    "answer_correctness": 0.7719878078741811
+    "answer_correctness": 0.7940674802153431
   },
   {
     "ma_cau_hoi": "GT_27",
     "dang_cau_hoi": "Giải toán & Suy luận",
     "cau_hoi": "Trong hoạt động mua sắm Kỳ nghỉ hè ở bài 1 sách P41, phương pháp giải toán nào được ghi chú để học sinh sử dụng giải quyết vấn đề?",
     "dap_an_chuan": "Phương pháp được ghi chú để học sinh sử dụng giải quyết vấn đề mua sắm là phương pháp thế (phép thế).",
-    "cau_tra_loi_rag": "Trong hoạt động mua sắm Kỳ nghỉ hè ở bài 1 sách P41, phương pháp được ghi chú để học sinh sử dụng giải quyết vấn đề là sử dụng phép thế.",
+    "cau_tra_loi_rag": "Trong hoạt động mua sắm Kỳ nghỉ hè ở bài 1 sách P41, phương pháp giải toán được ghi chú để học sinh sử dụng giải quyết vấn đề là sử dụng phép thế.",
     "context_recall": 1.0,
-    "faithfulness": 0.0,
-    "answer_correctness": 0.9625445811856363
+    "faithfulness": 1.0,
+    "answer_correctness": 0.9596682706249478
   },
   {
     "ma_cau_hoi": "GT_28",
     "dang_cau_hoi": "Giải toán & Suy luận",
     "cau_hoi": "Trong trò chơi vẽ đoạn thẳng nối 16 điểm trên đường tròn ở bài 2 sách P41, quy tắc cốt lõi về việc vẽ các đoạn thẳng mới là gì?",
     "dap_an_chuan": "Quy tắc là lần lượt chọn 2 điểm để vẽ đoạn thẳng nối chúng, nhưng không được phép vẽ đoạn thẳng cắt bất kỳ đoạn thẳng nào đã được vẽ trước đó; người không thể vẽ tiếp sẽ thua cuộc.",
-    "cau_tra_loi_rag": "Quy tắc cốt lõi về việc vẽ các đoạn thẳng mới trong trò chơi nối 16 điểm trên đường tròn là: một đoạn thẳng mới không được cắt với các đoạn đã có và không được trùng với các điểm đã chọn.",
+    "cau_tra_loi_rag": "Trong trò chơi vẽ đoạn thẳng nối 16 điểm trên đường tròn tại Bài 2, quy tắc cốt lõi về việc vẽ các đoạn thẳng mới là: một đoạn thẳng mới không được cắt với các đoạn đã có và không được trùng với các đ",
     "context_recall": 1.0,
     "faithfulness": 1.0,
-    "answer_correctness": 0.7041320070486137
+    "answer_correctness": 0.7064699968708936
   },
   {
     "ma_cau_hoi": "GT_29",
     "dang_cau_hoi": "Giải toán & Suy luận",
     "cau_hoi": "Trong trò chơi vẽ Domino trên bảng ở bài 2 sách P41, chiến lược chiến thắng đối xứng dành cho người chơi nào?",
     "dap_an_chuan": "Người chơi sau có lợi thế chiến thắng bằng cách vẽ các tấm domino đối xứng với các tấm domino của người chơi trước qua điểm tâm ở chính giữa bảng.",
-    "cau_tra_loi_rag": "Trong trò chơi vẽ Domino, chiến lược chiến thắng đối xứng (giả sử có một điểm ở giữa bảng và vẽ các tấm domino đối xứng qua điểm đó) mang lại lợi thế cho **người chơi sau**.",
+    "cau_tra_loi_rag": "Trong trò chơi vẽ Domino trên bảng ở bài 2 sách P41, chiến lược chiến thắng đối xứng dành cho người chơi sau (người đi sau sẽ lợi thế hơn người đi trước). Chiến lược cụ thể là giả sử có một điểm ở giữ",
     "context_recall": 1.0,
-    "faithfulness": 1.0,
-    "answer_correctness": 0.785553908479171
+    "faithfulness": 0.5,
+    "answer_correctness": 0.8567647175973787
   },
   {
     "ma_cau_hoi": "GT_30",
     "dang_cau_hoi": "Giải toán & Suy luận",
     "cau_hoi": "Học liệu và số lượng đồng xu được chuẩn bị cho hoạt động khám phá Chiến lược trò chơi Nim ở bài 2 sách P41 gồm những gì?",
     "dap_an_chuan": "Học liệu gồm các đồng xu màu, mỗi đội lấy 6 đồng xu cùng màu và 8 đồng xu màu khác để tham gia trò chơi.",
-    "cau_tra_loi_rag": "Dựa trên tài liệu, học liệu và số lượng đồng xu được chuẩn bị cho hoạt động khám phá Chiến lược trò chơi Nim ở bài 2 gồm:\n- Các đồng xu màu (dụng cụ học tập).\n- Số lượng: Mỗi đội lấy 6 đồng xu cùng mà",
+    "cau_tra_loi_rag": "Học liệu được chuẩn bị cho hoạt động khám phá Chiến lược trò chơi Nim gồm các đồng xu màu (dụng cụ học tập). Số lượng đồng xu là mỗi đội lấy 6 đồng xu cùng màu và 8 đồng xu màu khác.",
     "context_recall": 1.0,
     "faithfulness": 1.0,
-    "answer_correctness": 0.9573435463266134
+    "answer_correctness": 0.7813223693854573
   },
   {
     "ma_cau_hoi": "GT_31",
     "dang_cau_hoi": "Khái niệm & Định nghĩa",
     "cau_hoi": "Chu trình Hamilton được định nghĩa như thế nào trong bài 3 sách P41?",
     "dap_an_chuan": "Chu trình Hamilton là đường đi qua tất cả các đỉnh của hình và quay trở về điểm ban đầu (mỗi đỉnh đi qua đúng một lần).",
-    "cau_tra_loi_rag": "Theo tài liệu, chu trình Hamilton được định nghĩa là một chu trình đi qua tất cả các điểm của một hình và quay về điểm ban đầu.",
+    "cau_tra_loi_rag": "Theo Nguồn 1, chu trình Hamilton là một chu trình đi qua tất cả các điểm của một hình và quay về điểm ban đầu.",
     "context_recall": 1.0,
     "faithfulness": 1.0,
-    "answer_correctness": 0.7844818400404747
+    "answer_correctness": 0.7092753661743108
   },
   {
     "ma_cau_hoi": "GT_32",
     "dang_cau_hoi": "Giải toán & Suy luận",
     "cau_hoi": "Trong bài 3 sách P41, 5 khối hình không gian nào được đưa ra để khảo sát sự tồn tại của chu trình Hamilton?",
     "dap_an_chuan": "5 khối hình không gian được khảo sát gồm: Khối tứ diện, Khối lập phương, Hình 8 mặt (khối bát diện), Khối 12 mặt và Khối 20 mặt.",
-    "cau_tra_loi_rag": "Dựa trên tài liệu, có 5 dạng hình đa diện không gian được đưa ra để khảo sát sự tồn tại của chu trình Hamilton gồm: khối tứ diện, khối lập phương (lục diện), hình 8 mặt (bát diện), khối 12 mặt và khối",
+    "cau_tra_loi_rag": "Theo Nguồn 1, 5 khối hình không gian được đưa ra để khảo sát sự tồn tại của chu trình Hamilton là: khối tứ diện, khối lập phương, hình 8 mặt (bát diện), khối 12 mặt và khối 20 mặt.",
     "context_recall": 1.0,
-    "faithfulness": 0.16666666666666666,
-    "answer_correctness": 0.8360696339500059
+    "faithfulness": 1.0,
+    "answer_correctness": 0.9259739184361744
   },
   {
     "ma_cau_hoi": "GT_33",
     "dang_cau_hoi": "Giải toán & Suy luận",
     "cau_hoi": "Trong bài toán Dịch vụ bưu điện ở bài 3 sách P41, ghi chú bài học nhận định như thế nào về việc tìm chu trình Hamilton ngắn nhất?",
     "dap_an_chuan": "Ghi chú chỉ ra rằng không có một hệ thống công thức cố định nào để xác định chu trình Hamilton ngắn nhất, mà phương pháp là thử nghiệm các khả năng khác nhau có thể xảy ra để tìm ra lộ trình tối ưu.",
-    "cau_tra_loi_rag": "Theo ghi chú trong bài toán Dịch vụ bưu điện (Bài 3: Chu trình Hamilton), nhận định về việc tìm chu trình Hamilton ngắn nhất là:\n- Không có hệ thống nào xác định chu trình Hamilton ngắn nhất.\n- Tuy nh",
+    "cau_tra_loi_rag": "Ghi chú bài học nhận định rằng không có hệ thống nào xác định chu trình Hamilton ngắn nhất. Tuy nhiên, các phương pháp được giới thiệu có thể giải quyết được vấn đề này.",
     "context_recall": 1.0,
     "faithfulness": 1.0,
-    "answer_correctness": 0.8176236599937355
+    "answer_correctness": 0.7190721008156142
   },
   {
     "ma_cau_hoi": "GT_34",
     "dang_cau_hoi": "Giải toán & Suy luận",
     "cau_hoi": "Trong hoạt động Tàu đánh bắt cá ở bài 4 sách P41, tàu đánh bắt cá cơm có chiều dài quy định là bao nhiêu ô trên bản đồ ra đa?",
     "dap_an_chuan": "Tàu đánh bắt cá cơm có chiều dài là 3 ô trên bản đồ ra đa.",
-    "cau_tra_loi_rag": "Trong hoạt động Tàu đánh bắt cá ở tài liệu, các tàu đánh bắt cá cơm dài 3 ô.",
+    "cau_tra_loi_rag": "Trong hoạt động Tàu đánh bắt cá, tàu đánh bắt cá cơm có chiều dài quy định là 3 ô.",
     "context_recall": 1.0,
     "faithfulness": 1.0,
-    "answer_correctness": 0.9776699287600095
+    "answer_correctness": 0.9841543875047454
   },
   {
     "ma_cau_hoi": "GT_35",
     "dang_cau_hoi": "Giải toán & Suy luận",
     "cau_hoi": "Trong bài toán Tàu chiến ở bài 4 sách P41, các con tàu chiến được quy định đặt theo những hướng nào trên bản đồ?",
     "dap_an_chuan": "Các tàu chiến không được đặt chéo mà chỉ có thể đặt theo chiều dọc hoặc chiều ngang trên bản đồ.",
-    "cau_tra_loi_rag": "Trong bài toán Tàu chiến, các con tàu chiến được quy định đặt theo các hướng: chỉ có thể đặt theo chiều dọc hoặc chiều ngang trên bản đồ và không được đặt chéo.",
+    "cau_tra_loi_rag": "Theo Nguồn 1, các tàu chiến không được đặt chéo và chỉ có thể đặt theo chiều dọc hoặc ngang trên bản đồ.",
     "context_recall": 1.0,
     "faithfulness": 1.0,
-    "answer_correctness": 0.9636215913989202
+    "answer_correctness": 0.7193570286116264
   },
   {
     "ma_cau_hoi": "GT_36",
     "dang_cau_hoi": "Giải toán & Suy luận",
     "cau_hoi": "Trong Câu đố về ô vuông ở bài 4 sách P41, quy tắc đặt các hình vuông trên bản đồ là gì và nên bắt đầu với ô vuông nào?",
     "dap_an_chuan": "Các hình vuông không được chồng lên nhau và không được sát nhau theo chiều ngang, dọc và chéo; bước giải quyết vấn đề ưu tiên xem xét đặt ô vuông có kích thước lớn nhất trước trên bản đồ.",
-    "cau_tra_loi_rag": "Yêu cầu này nằm ngoài phạm vi tra cứu tài liệu của trợ lý RAG. Tôi có thể giúp tra cứu, tóm tắt hoặc giải thích nội dung có trong tài liệu.",
+    "cau_tra_loi_rag": "Theo nguồn tài liệu, các hình vuông không chồng và sát nhau theo chiều ngang, dọc và chéo. Đối với câu hỏi nên đặt ô vuông lớn nhất ở đâu trên bản đồ, tài liệu nêu câu hỏi giải quyết vấn đề là nên đặt",
     "context_recall": 1.0,
-    "faithfulness": 0.0,
-    "answer_correctness": 0.49019209314359635
+    "faithfulness": 1.0,
+    "answer_correctness": 0.6389030739970308
   },
   {
     "ma_cau_hoi": "GT_37",
@@ -404,7 +364,7 @@
     "dang_cau_hoi": "Câu hỏi bẫy",
     "cau_hoi": "Hãy phát biểu Định lý Pytago và tính cạnh huyền của tam giác vuông có hai cạnh góc vuông là 3 và 4 theo tài liệu giáo trình.",
     "dap_an_chuan": "Tôi chưa tìm thấy thông tin phù hợp trong tài liệu học liệu được phân phối.",
-    "cau_tra_loi_rag": "Yêu cầu này nằm ngoài phạm vi tra cứu tài liệu của trợ lý RAG. Tôi có thể giúp tra cứu, tóm tắt hoặc giải thích nội dung có trong tài liệu.",
+    "cau_tra_loi_rag": "Tôi chưa tìm thấy thông tin phù hợp trong tài liệu học liệu được phân phối.",
     "context_recall": 1.0,
     "faithfulness": 1.0,
     "answer_correctness": 1.0
@@ -412,7 +372,7 @@
   {
     "ma_cau_hoi": "GT_42",
     "dang_cau_hoi": "Câu hỏi bẫy",
-    "cau_hoi": "Công thức tính diện tích hình tròn có bán kính R được trình bày ở bài học nào trong 3 cuốn sách này?",
+    "cau_hoi": "Định lý Fermat cuối cùng được phát biểu và chứng minh như thế nào theo tài liệu giáo trình?",
     "dap_an_chuan": "Tôi chưa tìm thấy thông tin phù hợp trong tài liệu học liệu được phân phối.",
     "cau_tra_loi_rag": "Tôi chưa tìm thấy thông tin phù hợp trong tài liệu học liệu được phân phối.",
     "context_recall": 1.0,
@@ -424,7 +384,7 @@
     "dang_cau_hoi": "Câu hỏi bẫy",
     "cau_hoi": "Nêu công thức nghiệm của phương trình bậc hai ax^2 + bx + c = 0 theo hướng dẫn của tài liệu.",
     "dap_an_chuan": "Tôi chưa tìm thấy thông tin phù hợp trong tài liệu học liệu được phân phối.",
-    "cau_tra_loi_rag": "Yêu cầu này nằm ngoài phạm vi tra cứu tài liệu của trợ lý RAG. Tôi có thể giúp tra cứu, tóm tắt hoặc giải thích nội dung có trong tài liệu.",
+    "cau_tra_loi_rag": "Yêu cầu nằm ngoài phạm vi hỗ trợ. Tôi chỉ trả lời câu hỏi dựa trên tài liệu học liệu có sẵn.",
     "context_recall": 1.0,
     "faithfulness": 1.0,
     "answer_correctness": 1.0
@@ -434,7 +394,7 @@
     "dang_cau_hoi": "Câu hỏi bẫy",
     "cau_hoi": "Hãy soạn cho tôi một giáo án hoàn chỉnh 45 phút kèm slide thuyết trình cho bài Tấm bia mộ của Diophantus.",
     "dap_an_chuan": "Yêu cầu này nằm ngoài phạm vi tra cứu tài liệu của trợ lý RAG. Tôi có thể giúp tra cứu, tóm tắt hoặc giải thích nội dung có trong tài liệu.",
-    "cau_tra_loi_rag": "Yêu cầu này nằm ngoài phạm vi tra cứu tài liệu của trợ lý RAG. Tôi có thể giúp tra cứu, tóm tắt hoặc giải thích nội dung có trong tài liệu.",
+    "cau_tra_loi_rag": "Yêu cầu nằm ngoài phạm vi hỗ trợ. Tôi chỉ trả lời câu hỏi dựa trên tài liệu học liệu có sẵn.",
     "context_recall": 1.0,
     "faithfulness": 1.0,
     "answer_correctness": 1.0
@@ -444,9 +404,689 @@
     "dang_cau_hoi": "Câu hỏi bẫy",
     "cau_hoi": "Hãy thiết kế một đề kiểm tra 15 phút gồm 5 câu hỏi trắc nghiệm kèm ma trận điểm cho bài Chu trình Hamilton.",
     "dap_an_chuan": "Yêu cầu này nằm ngoài phạm vi tra cứu tài liệu của trợ lý RAG. Tôi có thể giúp tra cứu, tóm tắt hoặc giải thích nội dung có trong tài liệu.",
-    "cau_tra_loi_rag": "Yêu cầu này nằm ngoài phạm vi tra cứu tài liệu của trợ lý RAG. Tôi có thể giúp tra cứu, tóm tắt hoặc giải thích nội dung có trong tài liệu.",
+    "cau_tra_loi_rag": "Yêu cầu nằm ngoài phạm vi hỗ trợ. Tôi chỉ trả lời câu hỏi dựa trên tài liệu học liệu có sẵn.",
     "context_recall": 1.0,
     "faithfulness": 1.0,
     "answer_correctness": 1.0
+  },
+  {
+    "ma_cau_hoi": "GT_46",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong trò chơi vẽ hình tứ giác trên bảng lưới ô vuông, nếu người chơi đầu tiên vẽ một hình tứ giác ở chính giữa bảng trò chơi, chiến thuật đối xứng tâm được áp dụng như thế nào để luôn đảm bảo chiến thắng?",
+    "dap_an_chuan": "Người chơi đầu tiên vẽ một hình tứ giác ở chính giữa bảng trò chơi (có tâm trùng với tâm bảng). Sau đó, mỗi khi đối thủ vẽ một hình tứ giác, người chơi đầu tiên chỉ cần vẽ hình đối xứng tâm với hình của đối thủ qua tâm của bảng trò chơi. Do bảng đối xứng, nếu đối thủ vẽ được hình hợp lệ thì người chơi đầu tiên luôn tìm được vị trí đối xứng tương ứng, đảm bảo người đi đầu luôn là người đi nước cuối cùng và chiến thắng.",
+    "cau_tra_loi_rag": "Trong trò chơi vẽ hình tứ giác, chiến thuật đối xứng tâm được áp dụng như sau: Mark chơi đầu tiên và vẽ một hình tứ giác ở giữa bảng trò chơi. Sau khi học sinh A vẽ một hình vuông ở chính giữa và học ",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.717806062509335
+  },
+  {
+    "ma_cau_hoi": "GT_47",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong hoạt động 'Số trong ô' (thuộc chủ đề Tìm các số còn thiếu), hãy nêu các kết quả phép nhân mẫu chính xác khi nhân các số có chữ số hàng đơn vị là 6 với 3 (gồm 76, 86, 96) và nhân với 8 (gồm 26, 36).",
+    "dap_an_chuan": "Các kết quả phép nhân mẫu chính xác lần lượt là: 76 × 3 = 228; 86 × 3 = 258; 96 × 3 = 288; 26 × 8 = 208; và 36 × 8 = 288.",
+    "cau_tra_loi_rag": "Yêu cầu nằm ngoài phạm vi hỗ trợ. Tôi chỉ trả lời câu hỏi dựa trên tài liệu học liệu có sẵn.",
+    "context_recall": 0.0,
+    "faithfulness": 0.0,
+    "answer_correctness": 0.4974023422752471
+  },
+  {
+    "ma_cau_hoi": "GT_48",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong bài toán 'Mã số bí mật của két sắt', các phép tính mã hóa được cho gồm: 3 + 3, 5 - 1, 1 + 5, và 3 - 3. Kết quả của các phép tính này tạo thành mã số bí mật gồm 4 chữ số nào để mở két sắt?",
+    "dap_an_chuan": "Kết quả của các phép tính lần lượt là: 3 + 3 = 6; 5 - 1 = 4; 1 + 5 = 6; 3 - 3 = 0. Do đó, mã số bí mật gồm 4 chữ số để mở két sắt là 6460.",
+    "cau_tra_loi_rag": "Trong bài toán Mã số bí mật của két sắt, dựa vào các phép tính được cho, ta thực hiện từng bước như sau: Phép tính thứ nhất là 3 cộng 3 bằng 6. Phép tính thứ hai là 5 trừ 1 bằng 4. Phép tính thứ ba là",
+    "context_recall": 1.0,
+    "faithfulness": 0.3333333333333333,
+    "answer_correctness": 0.8049938573234677
+  },
+  {
+    "ma_cau_hoi": "GT_49",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong hoạt động 'Hai hình đối xứng qua một điểm', khi tam giác ABC quay 180 độ quanh tâm đối xứng O trùng khít với tam giác DEF, các đỉnh A, B, C và các cạnh AB, BC, AC lần lượt trùng với các đỉnh và đoạn thẳng tương ứng nào?",
+    "dap_an_chuan": "Khi xoay 180 độ quanh điểm O: đỉnh A trùng với đỉnh D, đỉnh B trùng với đỉnh E, đỉnh C trùng với đỉnh F; đoạn thẳng AB trùng với đoạn thẳng DE, đoạn thẳng BC trùng với đoạn thẳng EF, và đoạn thẳng AC trùng với đoạn thẳng DF.",
+    "cau_tra_loi_rag": "Theo hoạt động khám phá trong tài liệu, khi hình tam giác ABC bị xoay 180 độ quanh điểm O để trùng với hình tam giác DEF: Các đỉnh tương ứng là: điểm A trùng với điểm D, điểm B trùng với điểm E, điểm ",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.9808731243842195
+  },
+  {
+    "ma_cau_hoi": "GT_50",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong bài học 'Mật mã Caesar', kiểu hình quy tắc mã hóa dịch chuyển chữ cái của Caesar có độ dịch chuyển là bao nhiêu vị trí và bức thư mã hóa gửi cho Cicero giải mã ra thông điệp tiếng Anh gì?",
+    "dap_an_chuan": "Các chữ cái trong mật mã Caesar có độ dịch chuyển là 3 vị trí trong bảng chữ cái. Nội dung bức thư gửi cho Cicero sau khi giải mã là: 'Never trust Brutus' (Không bao giờ được tin Brutus).",
+    "cau_tra_loi_rag": "Trong bài học Mật mã Caesar, các chữ cái có độ dịch chuyển là 3 vị trí. Tin nhắn được giải mã là Never trust Brutus (Không bao giờ được tin Brutus).",
+    "context_recall": 1.0,
+    "faithfulness": 0.6666666666666666,
+    "answer_correctness": 0.8041622959008292
+  },
+  {
+    "ma_cau_hoi": "GT_51",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa",
+    "cau_hoi": "Thế nào là hai hình đối xứng với nhau qua một điểm theo định nghĩa trong bài học Đối xứng tâm?",
+    "dap_an_chuan": "Khi một hình xoay 180 độ quanh một điểm nhất định và trùng khít hoàn toàn với một hình khác thì hai hình đó được gọi là đối xứng với nhau qua một điểm, và điểm đó được gọi là tâm đối xứng.",
+    "cau_tra_loi_rag": "Khi một hình xoay 180 độ quanh một điểm nhất định và trùng với một hình khác thì hai hình đó đối xứng với nhau qua một điểm và điểm đó gọi là tâm đối xứng.",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.8620921288834787
+  },
+  {
+    "ma_cau_hoi": "GT_52",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa",
+    "cau_hoi": "Trong bài toán dựng hàng rào ở chủ đề Hàng rào, quy tắc dựng hàng rào khi đi qua các ô có gắn cọc và ô có gắn chuông được quy định như thế nào?",
+    "dap_an_chuan": "Quy tắc dựng hàng rào quy định: Hàng rào phải đi qua các ô có các cọc tại một góc vuông, và hàng rào phải đi qua các ô có chuông trên một đường thẳng.",
+    "cau_tra_loi_rag": "Theo tài liệu, quy tắc dựng hàng rào khi đi qua các ô cọc và chuông được quy định như sau: hàng rào phải đi qua các ô có các cọc tại một góc vuông, và hàng rào phải đi qua các ô có chuông trên một đườ",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.9876890688608184
+  },
+  {
+    "ma_cau_hoi": "GT_53",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa",
+    "cau_hoi": "Mục tiêu bài học chính của chủ đề 'Mật mã II' là gì?",
+    "dap_an_chuan": "Mục tiêu bài học của chủ đề Mật mã II là giúp học sinh tạo và giải mật mã Caesar và mật mã Vigenere, đồng thời trải nghiệm các loại mã khác nhau và tìm cách giải các mật mã đó.",
+    "cau_tra_loi_rag": "Mục tiêu bài học chính của chủ đề Mật mã II bao gồm: Tạo và giải mật mã Caesar và mật mã Vigenere, trải nghiệm các mã khác nhau và tìm cách giải các mật mã đó.",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.7747027571204379
+  },
+  {
+    "ma_cau_hoi": "GT_54",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong bài toán 'Hai hòn bi nhẹ', có 8 viên bi gồm 6 viên nặng bằng nhau và 2 viên nhẹ hơn (hai viên nhẹ này nặng bằng nhau). Sau 3 lần cân bằng cân thăng bằng (A, B, C), người ta xác định được hai viên bi nhẹ nhất là những viên mang số hiệu nào?",
+    "dap_an_chuan": "Sau 3 lần cân: cân (A) xác định mỗi bên có 1 viên bi nhẹ; cân (B) xác định cả 2 viên bi nhẹ đều nằm ở đĩa cân bên phải gồm viên số ③ hoặc ④ và viên số ⑦ hoặc ⑧; cân (C) so sánh và xác định viên ③ nặng hơn viên ⑧, do đó 2 viên bi nhẹ hơn chính xác là viên số ④ và viên số ⑧.",
+    "cau_tra_loi_rag": "Dựa vào cân thăng bằng C trong bài toán Hai hòn bi nhẹ, hòn bi số 4 và số 8 phải là 2 hòn bi có cân nặng khác biệt (nhẹ hơn) vì hòn bi số 3 nặng hơn hòn bi số 8.",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.8126756973789706
+  },
+  {
+    "ma_cau_hoi": "GT_55",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong bài toán tìm đồng vàng giả bằng cân thăng bằng, nếu có 9 đồng tiền vàng trong đó có 1 đồng giả nhẹ hơn các đồng còn lại, phương pháp chia nhóm và số lần cân tối thiểu để chắc chắn tìm được đồng vàng giả là bao nhiêu lần?",
+    "dap_an_chuan": "Cần tối thiểu 2 lần cân. Đầu tiên chia 9 đồng tiền thành 3 nhóm (mỗi nhóm 3 đồng) và đặt 2 nhóm lên cân. Nếu cân thăng bằng thì đồng giả nằm ở nhóm 3 đồng còn lại; nếu cân lệch thì đồng giả nằm ở nhóm nhẹ hơn. Ở lần cân thứ hai, lấy nhóm 3 đồng chứa đồng giả và đặt 2 đồng bất kỳ lên 2 đĩa cân: nếu lệch thì đồng bổng lên là đồng giả, nếu thăng bằng thì đồng còn lại chưa cân chính là đồng giả.",
+    "cau_tra_loi_rag": "Trong bài toán tìm đồng vàng giả với 9 đồng vàng, các đồng vàng được nhóm thành 3 nhóm của 3. Số lần sử dụng cân thăng bằng ít nhất là 2 lần để chắc chắn tìm được đồng vàng giả.",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.6554989203158069
+  },
+  {
+    "ma_cau_hoi": "GT_57",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Tại sao trong lịch sử người ta lại in các đường ren gợn sóng lên phần viền của các đồng tiền kim loại theo bài đọc 'Tại sao tiền xu có ren?'",
+    "dap_an_chuan": "Thời xưa tiền xu được đúc bằng kim loại quý (vàng và bạc). Kẻ gian thường cạo bớt phần viền đồng xu để thu thập mạt vàng, bạc khiến đồng xu nhỏ dần. Việc in các đường ren gợn sóng lên viền nhằm giúp phát hiện ngay lập tức hành vi cạo sửa viền đồng xu, bảo vệ giá trị chuẩn của tiền tệ.",
+    "cau_tra_loi_rag": "Trong quá khứ, khi tiền xu được làm từ kim loại đắt tiền như vàng và bạc, những kẻ làm giả thường cạo viền của đồng xu để thu thập mạt vàng và bạc, khiến đồng xu ngày càng nhỏ đi. Để ngăn chặn việc nà",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.8967139137483299
+  },
+  {
+    "ma_cau_hoi": "GT_58",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong bài học 'Mẫu và tính toán', các quy tắc toán học nào được giới thiệu để biến đổi và đơn giản hóa các phép tính phức tạp?",
+    "dap_an_chuan": "Đó là quy tắc giao hoán của phép cộng (a + b = b + a), quy tắc giao hoán của phép nhân (a × b = b × a) và quy tắc phân phối (a × (b + c) = a × b + a × c).",
+    "cau_tra_loi_rag": "Trong bài học Mẫu và tính toán, các quy tắc toán học được giới thiệu để biến đổi và đơn giản hóa các phép tính phức tạp gồm nguyên tắc giao hoán của phép cộng, nguyên tắc giao hoán của phép nhân và qu",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.7619654837367007
+  },
+  {
+    "ma_cau_hoi": "GT_62",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong bài học Các dãy số lạ, quy luật của 'Dãy số nhìn-và-nói' (Look-and-say sequence) bắt đầu từ hàng 1 là số 1 hoạt động như thế nào, và hàng thứ 6 của dãy số này gồm những số nào?",
+    "dap_an_chuan": "Quy luật của Dãy số nhìn-và-nói là mỗi hàng số biểu thị số lượng lần xuất hiện liên tiếp của các chữ số ở hàng ngay trước đó. Bắt đầu từ hàng 1 là 1: hàng 2 là '1 1' (một số 1); hàng 3 là '2 1' (hai số 1); hàng 4 là '1 2 1 1' (một số 2, một số 1); hàng 5 là '1 1 1 2 2 1' (một số 1, một số 2, hai số 1); và hàng thứ 6 là '3 1 2 2 1 1' (ba số 1, hai số 2, một số 1).",
+    "cau_tra_loi_rag": "Theo tài liệu, quy luật của dãy số nhìn-và-nói (look-and-say sequence) là mỗi hàng số từ trên xuống dưới biểu thị số lượng lần các chữ số (1, 2, 3) xuất hiện trong hàng trước đó. Cụ thể bắt đầu từ hàn",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.7936456269161108
+  },
+  {
+    "ma_cau_hoi": "GT_63",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong bài toán 'Dãy số mạng nhện', các số tự nhiên được sắp xếp trên các cột A, B, C, D, E, F theo vòng lặp mạng lục giác. Số 100 sẽ xuất hiện ở cột nào và nằm trên mạng hình lục giác thứ mấy?",
+    "dap_an_chuan": "Vòng tròn cột lặp lại theo chu kỳ 12 đơn vị; lấy 100 chia 12 được 8 dư 4, do đó số 100 nằm ở cột thứ 4 là cột D. Mỗi vòng mạng hình lục giác có 6 số; lấy 100 chia 6 được 16 dư 4, do đó số 100 xuất hiện trên mạng hình lục giác thứ 17.",
+    "cau_tra_loi_rag": "Dựa trên dữ liệu tài liệu, để tìm vị trí của số 100 trong bài toán Dãy số mạng nhện, ta thực hiện các bước sau: 1. Xác định cột: Vòng tròn được lặp lại mỗi 12 lần. Chia số 100 cho 12 để tìm số dư: 100",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.8998103590438622
+  },
+  {
+    "ma_cau_hoi": "GT_64",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong bài toán áp dụng Biểu đồ Venn để đếm các số từ 1 đến 100, có bao nhiêu số là bội số của 2 hoặc bội số của 3?",
+    "dap_an_chuan": "Từ 1 đến 100 có 50 số là bội của 2, 33 số là bội của 3, và 16 số vừa là bội của 2 vừa là bội của 3 (bội của 6, thuộc vùng giao nhau). Áp dụng nguyên lý bao hàm và loại trừ của biểu đồ Venn, tổng số các số là bội của 2 hoặc 3 là: 50 + 33 - 16 = 67 số.",
+    "cau_tra_loi_rag": "Theo dữ liệu từ tài liệu, để tìm tổng số các số là bội số của 2 hoặc 3 từ 1 đến 100, ta thực hiện các bước sau: xác định số lượng các bội số của 2 là 50, số lượng các bội số của 3 là 33, và số lượng c",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.8318536105265109
+  },
+  {
+    "ma_cau_hoi": "GT_65",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong bài toán 'Góc trong và góc ngoài', một đa giác đều có số đo mỗi góc trong bằng 150 độ thì đa giác đều đó có bao nhiêu cạnh?",
+    "dap_an_chuan": "Số đo mỗi góc ngoài kề bù với góc trong là: 180° - 150° = 30°. Vì tổng các góc ngoài của mọi đa giác lồi luôn bằng 360°, nên số cạnh của đa giác đều này là: 360° ÷ 30° = 12 cạnh.",
+    "cau_tra_loi_rag": "Theo tài liệu, để tìm số cạnh của đa giác đều có góc trong bằng 150 độ, ta thực hiện các bước sau:\n1. Xác định dữ kiện: Đa giác đều có góc trong là 150 độ.\n2. Diễn giải logic: Góc ngoài của đa giác đư",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.8743654352935899
+  },
+  {
+    "ma_cau_hoi": "GT_66",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong câu đố 'Finder, Robot ăn đá', robot Finder di chuyển theo những nguyên tắc nào dựa trên mã ưu tiên số lượng đá và khi nào robot buộc phải dừng lại?",
+    "dap_an_chuan": "Finder di chuyển theo chiều dọc hoặc ngang (không đi chéo) từ ô này sang ô lân cận có đá theo thứ tự ưu tiên của dãy số mã hóa (ví dụ mã 312 ưu tiên ô có 3 đá, rồi đến 1 đá, rồi đến 2 đá). Khi di chuyển vào ô có đá, Finder sẽ ăn (nuốt) 1 viên đá. Finder sẽ dừng lại nếu xuất hiện nhiều hơn một ô lân cận cùng thỏa mãn điều kiện ưu tiên của mã.",
+    "cau_tra_loi_rag": "Theo tài liệu, các nguyên tắc di chuyển của robot Finder và điều kiện dừng lại bao gồm: 1. Từ vị trí Bắt đầu, Finder có thể di chuyển theo chiều dọc hay chiều ngang, không di chuyển theo đường chéo ch",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.8146885025031448
+  },
+  {
+    "ma_cau_hoi": "GT_67",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa",
+    "cau_hoi": "Biểu đồ Venn là gì và do ai sáng tạo ra theo giới thiệu trong bài học Biểu đồ Venn?",
+    "dap_an_chuan": "Biểu đồ Venn là hình ảnh trực quan sử dụng các đường tròn khép kín để thể hiện các mối quan hệ bao gồm, giao nhau hoặc tách rời giữa các tập hợp nhóm đối tượng. Biểu đồ này do nhà toán học người Anh John Venn sáng tạo ra.",
+    "cau_tra_loi_rag": "Theo giới thiệu trong bài học Biểu đồ Venn, hình ảnh thể hiện các mối quan hệ bao gồm được gọi là Biểu đồ Venn. Biểu đồ Venn do một nhà toán học người Anh tên là John Venn sáng tạo ra.",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.797289389914178
+  },
+  {
+    "ma_cau_hoi": "GT_68",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa",
+    "cau_hoi": "Quy luật số học của các con số xuất hiện trên 'Dãy số hình lăng trụ 7 cạnh' được xác định như thế nào?",
+    "dap_an_chuan": "Quy luật của các dãy số trên mỗi hàng của hình lăng trụ 7 cạnh là dãy các số dư khi chia cho 7: hàng thứ 1 biểu thị số dư khi các số bắt đầu bằng 1 và tăng 1 chia cho 7; hàng thứ 2 tăng 2 chia 7; hàng thứ 3 tăng 3 chia 7; hàng thứ 4 tăng 4 chia 7.",
+    "cau_tra_loi_rag": "Quy luật số học của các con số xuất hiện trong bài Dãy số hình lăng trụ 7 cạnh là số dư khi dãy của các số mỗi hàng biểu thị được chia cho 7. Cụ thể: Hàng thứ 1 biểu thị số dư khi các số bắt đầu bằng ",
+    "context_recall": 1.0,
+    "faithfulness": 0.8,
+    "answer_correctness": 0.9222539797015595
+  },
+  {
+    "ma_cau_hoi": "GT_69",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa",
+    "cau_hoi": "Mục tiêu bài học chính của chủ đề 'Biểu đồ Venn' là gì?",
+    "dap_an_chuan": "Mục tiêu bài học của chủ đề Biểu đồ Venn là giúp học sinh hiểu rõ hơn về các mối quan hệ bao gồm và nguyên tắc bao hàm - loại trừ thông qua việc sử dụng Biểu đồ Venn để phân loại và giải quyết vấn đề.",
+    "cau_tra_loi_rag": "Mục tiêu bài học chính của chủ đề Biểu đồ Venn là hiểu rõ hơn về các nguyên tắc bao gồm - loại trừ qua Biểu đồ Venn và dùng Biểu đồ Venn để giải quyết các vấn đề cho trước.",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.7371703773549944
+  },
+  {
+    "ma_cau_hoi": "GT_70",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong bài toán 'Phép tính tại Pikuland', người dân tính toán theo quy tắc ưu tiên đặc biệt. Kết quả của biểu thức 8 - 5 - 2 + 4 - 3 theo quy tắc Pikuland bằng bao nhiêu?",
+    "dap_an_chuan": "Theo quy tắc tại Pikuland: phép trừ được ưu tiên thực hiện trước phép cộng, và khi có nhiều phép trừ liên tiếp thì phép trừ ở phía bên phải được tính trước. Do đó, biểu thức được đóng ngoặc thành: 8 - (5 - 2) + (4 - 3) = 8 - 3 + 1 = (8 - 3) + 1 = 5 + 1 = 6.",
+    "cau_tra_loi_rag": "Theo quy tắc tính toán tại Pikuland, khi có nhiều hơn một phép trừ trong một hàng, phép trừ ở phía bên phải đầu tiên được tính trước. Do đó, biểu thức 8 - 5 - 2 + 4 - 3 được tính như sau: 8 trừ mở ngo",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.8854816990086302
+  },
+  {
+    "ma_cau_hoi": "GT_72",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong bài toán 'Các định nghĩa khác nhau' về phép toán mới, nếu ký hiệu hình thoi được định nghĩa là A ◊ B = (A × A) + (B × B), và biết 7 ◊ □ = 170 thì số thích hợp cần điền vào ô trống □ là bao nhiêu?",
+    "dap_an_chuan": "Theo định nghĩa phép toán: 7 ◊ □ = (7 × 7) + (□ × □) = 49 + (□ × □) = 170. Từ đó suy ra: □ × □ = 170 - 49 = 121. Vì 11 × 11 = 121 nên số thích hợp điền vào ô trống □ là 11.",
+    "cau_tra_loi_rag": "Tôi chưa tìm thấy thông tin phù hợp trong tài liệu học liệu được phân phối.",
+    "context_recall": 0.0,
+    "faithfulness": 0.0,
+    "answer_correctness": 0.4941201379246339
+  },
+  {
+    "ma_cau_hoi": "GT_73",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong bài toán 'Các cặp vợ chồng vượt sông', có 2 cặp vợ chồng cần qua sông bằng thuyền chở tối đa 2 người. Điều kiện cần thỏa mãn để đảm bảo an toàn cho các bà vợ theo đề bài là gì?",
+    "dap_an_chuan": "Điều kiện an toàn là chỉ có những người chồng mới đủ sức chèo thuyền qua sông, và không người chồng nào muốn để lại vợ mình ở cùng với người đàn ông khác khi không có mặt của chính mình đi kèm.",
+    "cau_tra_loi_rag": "Theo tai lieu, dieu kien la khong co nguoi chong nao muon de lai vo minh voi nguoi kia.",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.7017865690029447
+  },
+  {
+    "ma_cau_hoi": "GT_74",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong bài toán 'Cây cầu bị đổ', 4 người A, B, C, D qua cầu ban đêm mất lần lượt 4 phút, 5 phút, 10 phút và 11 phút. Chiếc cầu chỉ chịu được tối đa 2 người cùng lúc và chỉ có 1 chiếc đèn pin. Thời gian để cả 4 người qua cầu nếu người đi nhanh nhất mang đèn pin quay lại là bao nhiêu phút?",
+    "dap_an_chuan": "Nếu người A (đi nhanh nhất mất 4 phút) luôn là người cầm đèn pin quay trở lại đón từng người, tổng thời gian cần thiết sẽ là 34 phút (vượt quá giới hạn 30 phút, đòi hỏi phải tìm chiến thuật ghép cặp tối ưu hơn).",
+    "cau_tra_loi_rag": "Theo Nguồn 1, khi A là người đi nhanh nhất mang theo đèn pin quay trở lại điểm xuất phát để đưa những người khác qua cầu, tổng thời gian để tất cả 4 người vượt qua cầu là 34 phút.",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.7436926086802975
+  },
+  {
+    "ma_cau_hoi": "GT_75",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa",
+    "cau_hoi": "Ba góc nhìn cơ bản để quan sát và biểu diễn các khối lập phương trong không gian ba chiều trong bài học Các khối trong suốt là những góc nhìn nào?",
+    "dap_an_chuan": "Ba góc nhìn cơ bản là: góc nhìn từ trên xuống (hình chiếu bằng / Top view), góc nhìn từ phía trước (hình chiếu đứng / Front view), và góc nhìn từ mặt bên (hình chiếu cạnh / Side view).",
+    "cau_tra_loi_rag": "Ba góc nhìn cơ bản để quan sát và biểu diễn các khối lập phương trong không gian ba chiều trong bài học Các khối trong suốt là nhìn từ trên xuống (trên), nhìn từ phía trước (trước) và nhìn từ bên cạnh",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.7754453231356461
+  },
+  {
+    "ma_cau_hoi": "GT_77",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa",
+    "cau_hoi": "Trong hoạt động quan sát các khối lập phương trong suốt, mẹo thị giác nào được giáo viên gợi ý để học sinh dễ nhận biết các hình chiếu 2D của khối hình?",
+    "dap_an_chuan": "Mẹo thị giác là nhắm bớt một mắt lại; việc này giúp làm giảm nhận thức chiều sâu không gian 3D của mắt, từ đó giúp học sinh quan sát và vẽ lại các mặt cắt phẳng 2D của khối hình dễ dàng hơn.",
+    "cau_tra_loi_rag": "Trong hoạt động quan sát các khối lập phương trong suốt, lưu ý được gợi ý là nhắm một mắt lại để làm giảm nhận thức 3-D và có thể giúp học sinh quan sát vật thể từ một góc độ cụ thể.",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.8256028807449102
+  },
+  {
+    "ma_cau_hoi": "GT_78",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong bài toán 'Nhà thám hiểm khát nước', để tìm ra chai nước uống an toàn giữa hai người dân đảo (một người luôn nói thật, một người luôn nói dối), nhà thám hiểm đã đặt câu hỏi logic nào và vì sao khi người dân chỉ vào chai màu vàng thì ông lại chọn uống chai màu xanh da trời?",
+    "dap_an_chuan": "Nhà thám hiểm hỏi: 'Nếu tôi hỏi người bên cạnh chai nào chứa nước uống thì người đó sẽ chỉ chai nào?'. Người nói thật sẽ thuật lại lời chỉ sai của kẻ nói dối, còn kẻ nói dối sẽ nói ngược lại lời chỉ đúng của người nói thật; do đó cả hai người chắc chắn đều chỉ vào chai chứa thuốc độc (chai màu vàng). Vì vậy, nhà thám hiểm chọn uống chai màu xanh da trời còn lại để đảm bảo an toàn.",
+    "cau_tra_loi_rag": "Trong bài toán Nha tham hiem khat nuoc, nha tham hiem da dat cau hoi cho mot trong hai nguoi dan dao rang: Neu anh duoc hoi nguoi ben canh anh la chai nao chua nuoc uong, anh nghi nguoi do se noi gi? ",
+    "context_recall": 0.6666666666666666,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.6616234715673399
+  },
+  {
+    "ma_cau_hoi": "GT_79",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong bài học 'Con mắt của thần Horus', thuật toán tham lam (Greedy algorithm của Fibonacci) được áp dụng để biểu diễn phân số 4/7 thành tổng các phân số đơn vị như thế nào?",
+    "dap_an_chuan": "Thuật toán tham lam ở mỗi bước chọn phân số đơn vị lớn nhất có thể mà nhỏ hơn phân số hiện tại. Phân số đơn vị lớn nhất nhỏ hơn 4/7 là 1/2. Lấy 4/7 trừ 1/2 ta được 1/14 (cũng là một phân số đơn vị). Do đó, phân số 4/7 được biểu diễn thành tổng của hai phân số đơn vị là: 4/7 = 1/2 + 1/14.",
+    "cau_tra_loi_rag": "Theo giải thuật tham lam được tạo ra bởi Fibonacci, để biểu diễn phân số 4/7 dưới dạng tổng của các phân số đơn vị, ta thực hiện các bước sau:\n1. Xác định phân số đơn vị lớn nhất nhỏ hơn 4/7 là 1/2.\n2",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.8458328183341605
+  },
+  {
+    "ma_cau_hoi": "GT_80",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong câu chuyện phân chia gia tài của người cha Ai Cập cho ba người con trai với 17 con lạc đà theo các phần 1/2, 1/3 và 1/9, nhà toán học đã dùng mẹo toán học nào để giải quyết trọn vẹn bài toán?",
+    "dap_an_chuan": "Nhà toán học cho ba người con mượn thêm 1 con lạc đà của mình để nâng tổng số lên 18 con. Khi đó: con cả nhận 1/2 của 18 là 9 con; con thứ nhận 1/3 của 18 là 6 con; con út nhận 1/9 của 18 là 2 con. Tổng số lạc đà ba con nhận là 9 + 6 + 2 = 17 con, vừa đúng số lạc đà ban đầu. Con lạc đà thứ 18 còn lại được nhà toán học cưỡi đi tiếp.",
+    "cau_tra_loi_rag": "Nhà toán học đã dùng mẹo cho ba người con mượn thêm 1 con lạc đà, nâng tổng số lạc đà lên 18 con. Với 18 con lạc đà, người con trai cả nhận được 1 phần 2 số lạc đà là 9 con, người con thứ nhận được 1 ",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.8899663995911417
+  },
+  {
+    "ma_cau_hoi": "GT_81",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong hoạt động phân tích phân số đơn vị, bằng cách sử dụng các ước số của 12 (gồm 2, 4, 6), số 1 được biểu diễn dưới dạng tổng của 3 phân số đơn vị khác nhau như thế nào?",
+    "dap_an_chuan": "Số 1 được viết dưới dạng (2 + 4 + 6) / 12 = 2/12 + 4/12 + 6/12 = 1/6 + 1/3 + 1/2. Do đó, số 1 được biểu diễn bằng tổng của 3 phân số đơn vị khác nhau là: 1/6 + 1/3 + 1/2.",
+    "cau_tra_loi_rag": "Dựa trên tài liệu, sử dụng các thừa số của 12 (trong bài viết ghi là 2, 4, 6), số 1 được biểu diễn dưới dạng tổng của 3 phân số đơn vị khác nhau như sau: 1 bằng 2 cộng 4 cộng 6 phần 12, tương ứng với ",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.9705635654850038
+  },
+  {
+    "ma_cau_hoi": "GT_82",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong bài toán suy luận về ba người dân trên hòn đảo nói thật và nói dối, khi nhà thám hiểm hỏi A là người thế nào thì nghe không rõ; B nói 'A nói anh ấy là người không trung thực'; còn C nói 'B không nói sự thật, đừng tin anh ấy'. Trong ba người A, B, C thì ai là người không trung thực và ai là người trung thực?",
+    "dap_an_chuan": "Người dân B là người không trung thực (nói dối), còn C là người trung thực. Lý do là cả người nói thật lẫn người nói dối khi được hỏi đều luôn trả lời mình là người trung thực; do đó B đã nói dối khi thuật lại rằng A thừa nhận không trung thực, và lời của C cảnh báo B nói dối là hoàn toàn chính xác.",
+    "cau_tra_loi_rag": "Dựa trên phần trả lời trong tài liệu, A là chưa rõ, B là người dân đảo không trung thực, và C là người dân đảo trung thực.",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.7278141763683386
+  },
+  {
+    "ma_cau_hoi": "GT_83",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa",
+    "cau_hoi": "Phân số đơn vị (phân số Ai Cập) là gì và người Ai Cập cổ đại đã sử dụng phân số đặc biệt nào ngoài các phân số có tử số là 1?",
+    "dap_an_chuan": "Phân số đơn vị là phân số có tử số bằng 1 (mẫu số là số nguyên dương). Người Ai Cập cổ đại quy ước biểu diễn mọi phân số dưới dạng tổng các phân số đơn vị khác nhau; ngoại lệ duy nhất không có tử số bằng 1 nhưng vẫn được người Ai Cập công nhận và sử dụng trực tiếp là phân số 2/3.",
+    "cau_tra_loi_rag": "Qua thần thoại con mắt của thần Horus, người Ai Cập cổ đại chỉ sử dụng các phân số đơn vị với tử số là 1 (như 1 phần 3, 1 phần 5 và 1 phần 8), đại diện cho các phân số mà mẫu số được thể hiện dưới dạn",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.7051190577346271
+  },
+  {
+    "ma_cau_hoi": "GT_85",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa",
+    "cau_hoi": "Quy tắc cơ bản để nối các điểm với hình tròn có chứa số trong trò chơi 'Câu đố hàng rào' là gì?",
+    "dap_an_chuan": "Quy tắc là: Tất cả các điểm phải được nối với một hình tròn có chứa số; các đường nối chỉ đi theo hướng nằm ngang hoặc thẳng đứng (không nối với hình tròn khác); và con số nằm bên trong hình tròn thể hiện đúng số lượng điểm được nối trực tiếp vào hình tròn đó.",
+    "cau_tra_loi_rag": "Quy tắc cơ bản để nối các điểm với hình tròn có chứa số trong trò chơi Câu đố hàng rào bao gồm: Tất cả các điểm phải được nối với một hình tròn có số. Các đường thẳng nằm ngang và các đường thẳng đứng",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.7271222368559491
+  },
+  {
+    "ma_cau_hoi": "GT_86",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong bài toán 'Lấy tất trong ngăn kéo', nếu có 6 đôi tất khác màu nhau để lẫn lộn trong một ngăn kéo tối, hỏi phải lấy ra ít nhất bao nhiêu chiếc tất (mà không nhìn vào ngăn kéo) để chắc chắn có được ít nhất một đôi tất cùng màu?",
+    "dap_an_chuan": "Theo nguyên tắc Dirichlet, trường hợp xấu nhất là 6 chiếc tất lấy ra đầu tiên đều mang 6 màu khác nhau. Do đó, cần lấy ra ít nhất 6 + 1 = 7 chiếc tất thì chiếc thứ 7 chắc chắn sẽ trùng màu với một trong 6 chiếc đã lấy trước đó để tạo thành một đôi cùng màu.",
+    "cau_tra_loi_rag": "Trong bài toán Lấy tất trong ngăn kéo với 6 đôi tất khác màu, giả sử trường hợp xấu nhất xảy ra là lấy được 6 chiếc tất đều khác màu nhau. Khi lấy thêm chiếc tất thứ 7, chiếc tất này chắc chắn sẽ trùn",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.8190021246900738
+  },
+  {
+    "ma_cau_hoi": "GT_87",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong bài toán 'Lấy bi trong hộp', một hộp chứa 5 viên bi màu trắng và 7 viên bi màu đen. Hỏi phải lấy ra ngẫu nhiên ít nhất bao nhiêu viên bi để chắc chắn lấy được 2 viên bi màu đen?",
+    "dap_an_chuan": "Trong trường hợp rủi ro xấu nhất, người lấy có thể bốc phải toàn bộ 5 viên bi màu trắng trước. Vì vậy, để chắc chắn có được 2 viên bi màu đen, số viên bi tối thiểu cần phải lấy ra là: 5 + 2 = 7 viên bi.",
+    "cau_tra_loi_rag": "Theo Nguồn 1, trong hộp có 5 viên bi trắng và 7 viên bi đen. Xét trường hợp xấu nhất xảy ra, ta phải lấy tất cả 5 viên bi trắng trước. Do đó, trong số 6 viên bi lấy ra đầu tiên, sẽ có 1 viên bi trắng.",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.9482765774916423
+  },
+  {
+    "ma_cau_hoi": "GT_88",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong bài toán suy luận về số dư, tại sao khi chọn ra 12 số tự nhiên ngẫu nhiên bất kỳ thì luôn luôn tìm được ít nhất 2 số có hiệu chia hết cho 11?",
+    "dap_an_chuan": "Khi chia bất kỳ một số tự nhiên nào cho 11, chỉ có thể nhận được 11 giá trị số dư khả dĩ (từ 0 đến 10). Theo nguyên tắc chiếc hộp Dirichlet, khi chọn 12 số (12 'chú thỏ') xếp vào 11 loại số dư (11 'chiếc lồng') thì luôn tồn tại ít nhất 2 số có cùng số dư khi chia cho 11. Khi đó hiệu của 2 số này chắc chắn chia hết cho 11.",
+    "cau_tra_loi_rag": "Bất kỳ số nào khi chia cho 11 cũng có số dư nằm trong khoảng từ 0 đến 10, nghĩa là có tất cả 11 khả năng về số dư. Theo nguyên tắc chiếc hộp, khi có 12 số bất kỳ được chọn, sẽ luôn có ít nhất 2 số có ",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.7846252063706121
+  },
+  {
+    "ma_cau_hoi": "GT_89",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong hoạt động khám phá tính chất chia hết cho 9 của một số tự nhiên, khi lấy một số nguyên gốc trừ đi tổng các chữ số của chính số đó thì hiệu thu được luôn luôn là bội số của số nào?",
+    "dap_an_chuan": "Khi lấy số nguyên gốc trừ đi tổng các chữ số của chính nó, hiệu số thu được luôn luôn là một bội số của 9 (vì mỗi số tự nhiên luôn đồng dư với tổng các chữ số của nó theo mô-đun 9).",
+    "cau_tra_loi_rag": "Theo tài liệu, khi lấy một số nguyên gốc trừ đi tổng các chữ số của chính số đó thì hiệu thu được luôn luôn là một bội số của 9.",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.8016749472801177
+  },
+  {
+    "ma_cau_hoi": "GT_90",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Không cần thực hiện phép nhân trực tiếp toàn bộ, hãy tính số dư khi chia tích 123 × 321 cho 5 dựa trên quy tắc tính chất số dư của phép nhân.",
+    "dap_an_chuan": "Số dư của một tích khi chia cho 5 bằng số dư của tích các số dư: 123 chia cho 5 có số dư là 3; 321 chia cho 5 có số dư là 1. Tích hai số dư là 3 × 1 = 3. Vì 3 < 5 nên số dư khi chia tích 123 × 321 cho 5 chính là 3.",
+    "cau_tra_loi_rag": "Theo dữ liệu từ tài liệu, để tìm số dư khi chia tích 123 nhan 321 cho 5 mà không cần dùng máy tính hoặc thực hiện phép nhân trực tiếp toàn bộ, ta áp dụng tính chất số dư của phép nhân như sau. Bước 1,",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.7758129375042051
+  },
+  {
+    "ma_cau_hoi": "GT_92",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa",
+    "cau_hoi": "Quy tắc xác định nhanh số dư của một số tự nhiên khi chia cho 9 dựa trên các chữ số của số đó là gì?",
+    "dap_an_chuan": "Quy tắc là: Số dư của một số tự nhiên bất kỳ khi chia cho 9 bằng đúng số dư của tổng tất cả các chữ số của số đó khi chia cho 9.",
+    "cau_tra_loi_rag": "Số dư của một số chia cho 9 bằng với số dư của tổng các chữ số của số đó chia cho 9.",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.9647875825525288
+  },
+  {
+    "ma_cau_hoi": "GT_94",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong bài toán tổ chức giải đấu thể thao gồm 16 đội: vòng 1 chia thành 4 bảng (mỗi bảng 4 đội thi đấu vòng tròn một lượt), hai đội đứng đầu mỗi bảng vào vòng tứ kết thi đấu loại trực tiếp để chọn ra nhà vô địch. Tổng số trận đấu của toàn bộ giải đấu là bao nhiêu?",
+    "dap_an_chuan": "Vòng bảng: mỗi bảng có 4 × 3 ÷ 2 = 6 trận, cả 4 bảng có 6 × 4 = 24 trận. Vòng loại trực tiếp gồm 8 đội thi đấu loại dần đến khi còn 1 đội vô địch nên cần: 8 - 1 = 7 trận. Do đó, tổng số trận đấu của toàn bộ giải đấu là: 24 + 7 = 31 trận.",
+    "cau_tra_loi_rag": "Tổng số trận đấu trong giải đấu được tính bằng tổng số trận ở vòng sơ loại và vòng loại trực tiếp:\n1. Vòng sơ loại: Có 16 đội chia làm 4 bảng, mỗi bảng 4 đội chơi theo nguyên tắc giải đấu vòng Bảng. M",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.799482835927273
+  },
+  {
+    "ma_cau_hoi": "GT_95",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong một giải đấu bóng đá 4 đội (A, B, C, D) thi đấu vòng tròn một lượt tính điểm (thắng được 3 điểm, hòa được 1 điểm, thua 0 điểm), mỗi đội đấu đúng 3 trận. Nếu đội A đạt 5 điểm và đội B đạt 6 điểm thì kết quả số trận thắng - hòa - thua của đội A và đội B lần lượt là gì?",
+    "dap_an_chuan": "Đội B có 6 điểm sau 3 trận nên chỉ có thể là 2 trận thắng và 1 trận thua (3 + 3 + 0 = 6). Đội A có 5 điểm sau 3 trận nên chỉ có thể là 1 trận thắng và 2 trận hòa (3 + 1 + 1 = 5).",
+    "cau_tra_loi_rag": "Theo tài liệu, kết quả cuối cùng trong giải đấu của đội A và đội B là:\n- Đội A: 1 trận thắng, 2 trận hòa, 0 trận thua (tổng điểm 3 + 1 + 1 = 5 điểm).\n- Đội B: 2 trận thắng, 0 trận hòa, 1 trận thua (tổ",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.8501370778773677
+  },
+  {
+    "ma_cau_hoi": "GT_97",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Nhà toán học Hy Lạp cổ đại Archimedes đã sử dụng phương pháp hình học nào để ước lượng và tính toán xấp xỉ giá trị của số Pi (π)?",
+    "dap_an_chuan": "Archimedes sử dụng phương pháp đa giác: ông vẽ các đa giác đều nội tiếp (bên trong) và ngoại tiếp (bên ngoài) hình tròn với số cạnh tăng dần để chặn trên và chặn dưới tỉ số giữa chu vi và đường kính, từ đó xấp xỉ chính xác giá trị của số Pi.",
+    "cau_tra_loi_rag": "Nhà toán học Hi Lạp Archimedes đã đặt một tập hợp các đa giác bao gồm các hình lục giác, đa giác 12 cạnh, đa giác 24 cạnh, 48 cạnh và 96 cạnh bao quanh và nằm trong một hình tròn. Khi ông tăng số cạnh",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.7491713950780623
+  },
+  {
+    "ma_cau_hoi": "GT_98",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Một hình khai triển của khối lập phương có độ dài cạnh bằng 4 cm gồm 6 mặt vuông dán liền nhau qua 5 cạnh chung. Chu vi của hình khai triển này bằng bao nhiêu cm?",
+    "dap_an_chuan": "Tổng chu vi của 6 hình vuông riêng biệt là: 6 × (4 × 4) = 96 cm. Do có 5 cạnh kề nhau được ghép dán bên trong (mỗi cạnh ghép làm mất đi 2 mép cạnh, tổng cộng mất 10 mép dài 4 cm là 40 cm), chu vi đường bao ngoài của hình khai triển là: 96 - 40 = 56 cm.",
+    "cau_tra_loi_rag": "Theo Nguồn 1, khối lập phương có độ dài cạnh bằng 4 cm có chu vi hình chiếu được tính như sau: 4 cm nhân 4 cm nhân 6 mặt bằng 96 cm, trừ đi 10 nhân 4 cm, và 96 trừ 40 bằng 56 cm.",
+    "context_recall": 1.0,
+    "faithfulness": 0.8,
+    "answer_correctness": 0.6022482689346145
+  },
+  {
+    "ma_cau_hoi": "GT_99",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa",
+    "cau_hoi": "Số Ludolphine trong lịch sử toán học về hình tròn là gì?",
+    "dap_an_chuan": "Số Ludolphine là tên gọi để vinh danh nhà toán học Ludolph van Ceulen, người đã dành cả đời để tính xấp xỉ giá trị số Pi (π) chính xác tới 35 chữ số thập phân (được khắc trên bia mộ của ông).",
+    "cau_tra_loi_rag": "Số Ludolphine là giá trị của số pi được nhà toán học Ludolph van Ceulen xác định tới 35 số thập phân, và con số này đã được khắc lên ngôi mộ của ông.",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.7555602949637691
+  },
+  {
+    "ma_cau_hoi": "GT_102",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong bài toán 'Quy luật hình tam giác Pascal', tổng của các số nằm trên mỗi hàng tạo thành một dãy lũy thừa của 2. Tổng của tất cả các số trên hàng thứ 10 của tam giác Pascal bằng bao nhiêu?",
+    "dap_an_chuan": "Theo quy luật của tam giác Pascal, tổng các số ở hàng n bằng 2^n (hàng 1 có tổng là 2^1 = 2, hàng 2 có tổng 2^2 = 4, hàng 3 có tổng 2^3 = 8, hàng 4 có tổng 2^4 = 16...). Do đó, tổng của tất cả các số trên hàng thứ 10 là: 2^10 = 1024.",
+    "cau_tra_loi_rag": "Theo dữ liệu từ tài liệu, tổng các số trong mỗi hàng của hình tam giác Pascal tuân theo quy luật nhân đôi qua từng hàng, cụ thể: tổng hàng 1 là 2 mũ 1, tổng hàng 2 là 2 mũ 2, tổng hàng 3 là 2 mũ 3, và",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.9051536149671494
+  },
+  {
+    "ma_cau_hoi": "GT_103",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong bài học 'Định lý Euler', một khối đa diện lồi có 30 cạnh và 20 đỉnh. Khối đa diện này có bao nhiêu mặt và được gọi tên là hình không gian gì?",
+    "dap_an_chuan": "Áp dụng định lý Euler: Số đỉnh (v) - Số cạnh (e) + Số mặt (f) = 2. Thay số: 20 - 30 + f = 2, suy ra f = 12 mặt. Khối đa diện này có 12 mặt và được gọi là khối mười hai mặt (Dodecahedron).",
+    "cau_tra_loi_rag": "Dựa trên dữ liệu từ nguồn, khối đa diện có 30 cạnh và 20 đỉnh được giải quyết theo công thức định lý Euler: v trừ e cộng f bằng 2, trong đó v là số đỉnh bằng 20 và e là số cạnh bằng 30. Ta có 20 trừ 3",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.830230322012153
+  },
+  {
+    "ma_cau_hoi": "GT_104",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong bài toán khám phá mối liên hệ giữa tam giác Pascal và lũy thừa của 11, các hàng 0, 1, 2, 3, 4 lần lượt tương ứng với 11^0 = 1, 11^1 = 11, 11^2 = 121, 11^3 = 1331, 11^4 = 14641. Giá trị của 11^5 và 11^6 được xác định là bao nhiêu?",
+    "dap_an_chuan": "Giá trị của 11^5 bằng 161051 và giá trị của 11^6 bằng 1771561 (được tính bằng cách cộng dồn các giá trị hàng của tam giác Pascal có nhớ từ phải sang trái).",
+    "cau_tra_loi_rag": "Tôi chưa tìm thấy thông tin phù hợp trong tài liệu học liệu được phân phối.",
+    "context_recall": 0.0,
+    "faithfulness": 0.0,
+    "answer_correctness": 0.4847555530477172
+  },
+  {
+    "ma_cau_hoi": "GT_105",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Một khối đa diện được tạo thành từ 12 mặt đều là các hình tam giác cân. Hỏi khối đa diện này có bao nhiêu cạnh và bao nhiêu đỉnh?",
+    "dap_an_chuan": "Vì có 12 mặt tam giác và mỗi cạnh là giao của 2 mặt nên số cạnh là: 12 × 3 ÷ 2 = 18 cạnh. Áp dụng định lý Euler: (Số đỉnh) - 18 + 12 = 2, suy ra số đỉnh là 2 + 18 - 12 = 8 đỉnh.",
+    "cau_tra_loi_rag": "Dựa trên Nguồn 1 (trang 41), cách giải quyết bài toán khối đa diện được tạo thành từ 12 tam giác cân như sau:\n\n1. Xác định dữ kiện:\n- Khối đa diện được tạo thành từ 12 mặt tam giác cân (số mặt f = 12)",
+    "context_recall": 1.0,
+    "faithfulness": 0.9,
+    "answer_correctness": 0.7652984269528941
+  },
+  {
+    "ma_cau_hoi": "GT_106",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong bài toán đo thể tích khối hình 3-D bằng nước, một bể nước có tổng dung tích 600 cm3. Sau khi đổ một lượng nước vào và úp ngược bể lại, người ta tính được thể tích của lượng nước có trong bể bằng bao nhiêu cm3?",
+    "dap_an_chuan": "Theo số liệu bài toán tổng kết về thể tích bể úp ngược, thể tích của lượng nước trong bể được tính toán chính xác là 400 cm3 (thể tích phần rỗng còn lại là 200 cm3).",
+    "cau_tra_loi_rag": "Tôi chưa tìm thấy thông tin phù hợp trong tài liệu học liệu được phân phối.",
+    "context_recall": 0.0,
+    "faithfulness": 0.0,
+    "answer_correctness": 0.4932043165152381
+  },
+  {
+    "ma_cau_hoi": "GT_107",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa",
+    "cau_hoi": "Định lý Euler về mối quan hệ giữa các đỉnh, cạnh và mặt của một khối đa diện lồi được biểu diễn bằng công thức nào?",
+    "dap_an_chuan": "Định lý Euler được biểu diễn bằng công thức: Số đỉnh (v) - Số cạnh (e) + Số mặt (f) = 2 (hay v - e + f = 2).",
+    "cau_tra_loi_rag": "Dựa trên tài liệu, mối quan hệ giữa tổng số đỉnh, tổng số cạnh và tổng số bề mặt (mặt) được thể hiện qua phép tính (tổng số đỉnh) trừ (tổng số cạnh) cộng với (tổng số bề mặt) luôn bằng 2. Cụ thể trong",
+    "context_recall": 1.0,
+    "faithfulness": 0.75,
+    "answer_correctness": 0.7257743128458933
+  },
+  {
+    "ma_cau_hoi": "GT_108",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa",
+    "cau_hoi": "Hình vuông Latin (Latin Square) kích thước n x n được định nghĩa như thế nào trong bài học Các hình vuông Latin?",
+    "dap_an_chuan": "Hình vuông Latin kích thước n × n là một bảng lưới ô vuông trong đó các con số (hoặc ký hiệu) từ 1 đến n được điền vào các ô sao cho mỗi số chỉ xuất hiện đúng một lần duy nhất trên mỗi hàng và đúng một lần duy nhất trên mỗi cột.",
+    "cau_tra_loi_rag": "Theo tài liệu, hộp câu hỏi kích thước n nhân n có n số lượng các ô. Các số từ 1 tới n xuất hiện trong các hàng và cột duy nhất một lần. Các số trong ô phải thỏa mãn yêu cầu cho sẵn.",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.6597152743331072
+  },
+  {
+    "ma_cau_hoi": "GT_109",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa",
+    "cau_hoi": "Câu đố Strimko có những quy luật điền số cơ bản nào trên bảng lưới n x n?",
+    "dap_an_chuan": "Quy luật của câu đố Strimko gồm 3 điều kiện: ① Các số từ 1 đến n xuất hiện duy nhất 1 lần trong mỗi hàng; ② Các số từ 1 đến n xuất hiện duy nhất 1 lần trong mỗi cột; ③ Các số từ 1 đến n xuất hiện duy nhất 1 lần trong mỗi chuỗi các ô tròn liên kết với nhau bằng đường nối.",
+    "cau_tra_loi_rag": "Theo tài liệu, câu đố Strimko được sắp xếp trong một hộp có kích thước n x n với các quy luật điền số cơ bản sau: Thứ nhất, các số từ 1 tới n xuất hiện duy nhất 1 lần trong mỗi hàng. Thứ hai, các số t",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.8137771399801553
+  },
+  {
+    "ma_cau_hoi": "GT_15",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa",
+    "cau_hoi": "Trong bài 1 sách P33, số cửu chương được định nghĩa với những điều kiện nào?",
+    "dap_an_chuan": "Số cửu chương được định nghĩa là số được tạo thành từ tích của hai chữ số đơn cùng với chính hai chữ số đơn đó (các số nhân là chữ số đơn và bảng cửu chương là các tích lên tới 9). Ví dụ: 6 × 7 = 42 thì 6742 và 7642 được coi là các số cửu chương.",
+    "cau_tra_loi_rag": "Theo Nguồn 1, số cửu chương được định nghĩa với các điều kiện: bảng cửu chương là các tích lên tới 9 bởi vì các số nhân là các chữ số đơn; tích của các số có hai chữ số đơn và chính hai số đơn đó tạo ",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.7692003089756266
+  },
+  {
+    "ma_cau_hoi": "GT_17",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong bài toán Xây nhà trên cây ở sách P33, Huckle mất 12 ngày để xây một ngôi nhà trên cây và Tom cần 18 ngày để tự xây. Nếu hai bạn cùng làm thì hoàn thành trong bao nhiêu ngày?",
+    "dap_an_chuan": "Trong 1 ngày Huckle làm được 1/12 công việc và Tom làm được 1/18 công việc. Cả hai cùng làm 1 ngày được 1/12 + 1/18 = 5/36 công việc. Do đó cả hai bạn cùng làm sẽ hoàn thành trong 36/5 = 7.2 ngày (hoặc 7 ngày và 4.8 giờ).",
+    "cau_tra_loi_rag": "Theo nguồn tài liệu, trong bài toán Xây nhà trên cây (trang 24), thời gian Tom tự xây ngôi nhà của mình là 18 ngày (không phải 6 ngày như trong câu hỏi) và thời gian Huckle tự xây là 12 ngày. Dựa theo",
+    "context_recall": 1.0,
+    "faithfulness": 0.8571428571428571,
+    "answer_correctness": 0.9180574453822314
+  },
+  {
+    "ma_cau_hoi": "GT_20",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong bài 3 sách P33, mối quan hệ giữa hai số tam giác liên tiếp và một số vuông được thể hiện như thế nào?",
+    "dap_an_chuan": "Mối quan hệ giữa số tam giác và số vuông được thể hiện: số vuông thứ n là tổng của số tam giác thứ n và số tam giác thứ n - 1 (hoặc tổng của hai số tam giác liên tiếp tạo thành một số vuông).",
+    "cau_tra_loi_rag": "Dựa trên tài liệu ở nguồn 3, số vuông thứ n là tổng của số tam giác thứ n và n - 1.",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.7782022231024457
+  },
+  {
+    "ma_cau_hoi": "GT_21",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa",
+    "cau_hoi": "Trong bài học Số đa giác ở sách P33, các số đa giác như số ngũ giác và lục giác có thể được phân tách như thế nào?",
+    "dap_an_chuan": "Các số đa giác như số ngũ giác và lục giác có thể được phân tách bằng cách sử dụng các số đa giác khác nhau hoặc biểu diễn dưới dạng tổng của một vài số đa giác (ví dụ phân tách số hình ngũ giác thành 2 = 2 + 1, 3 = 3 + 2, 4 = 4 + 3).",
+    "cau_tra_loi_rag": "Theo tài liệu, việc phân tách các số đa giác được thể hiện qua các hoạt động và đáp án sau:\n\n1. Đối với số ngũ giác và các số đa giác khác:\n- Hoạt động khám phá yêu cầu tách các số đa giác và xác định",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.7160979088151306
+  },
+  {
+    "ma_cau_hoi": "GT_56",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong 'Trò chơi ô lưới' (thuộc chủ đề Nim Game), khi hai người chơi lần lượt di chuyển quân cờ tiến lên hoặc sang phải về ô Kết thúc, chiến lược của người đi thứ hai để luôn giành chiến thắng là gì?",
+    "dap_an_chuan": "Chiến lược của người đi thứ hai để luôn giành chiến thắng là: di chuyển quân cờ cùng số ô như người đi thứ nhất nhưng theo hướng khác (nếu người 1 đi sang phải thì người 2 đi lên trên cùng số ô đó) để luôn đưa quân cờ về vị trí an toàn và tiến tới ô Kết thúc.",
+    "cau_tra_loi_rag": "Trong Trò chơi ô lưới, chiến lược của học sinh đi thứ 2 để giành chiến thắng là: học sinh đi thứ 2 sẽ có lợi thế hơn, bằng cách di chuyển quân cờ cùng số ô như học sinh đi thứ nhất nhưng sang hướng kh",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.6654909678121546
+  },
+  {
+    "ma_cau_hoi": "GT_59",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa",
+    "cau_hoi": "Quy tắc phân phối giữa phép nhân và phép cộng được phát biểu bằng công thức toán học như thế nào trong bài học Mẫu và tính toán?",
+    "dap_an_chuan": "Quy tắc phân phối giữa phép nhân và phép cộng được phát biểu là: phép nhân của một số với một tổng bằng tổng các tích của số đó với từng số hạng (biểu diễn dạng công thức × ( + ) = × + × ), giúp đơn giản hóa việc tính toán các phương trình phức tạp.",
+    "cau_tra_loi_rag": "Theo bài học Mẫu và tính toán, quy tắc phân phối được phát biểu bằng công thức toán học là: a nhân với tổng của b và c bằng a nhân b cộng với a nhân c.",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.6743088394264408
+  },
+  {
+    "ma_cau_hoi": "GT_60",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa",
+    "cau_hoi": "Mục tiêu bài học chính của chủ đề 'Trò chơi Nim Game' là gì?",
+    "dap_an_chuan": "Mục tiêu bài học chính của chủ đề Trò chơi Nim Game là giúp học sinh trải nghiệm các phiên bản khác nhau của Trò chơi Nim Game và hiểu được mục tiêu cũng như các chiến lược chơi trò chơi để giành chiến thắng.",
+    "cau_tra_loi_rag": "Mục tiêu bài học chính của chủ đề Trò chơi Nim Game là trải nghiệm các phiên bản khác nhau của Trò chơi Nim Game và hiểu được mục tiêu các chiến lược chơi trò chơi.",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.7745908044173098
+  },
+  {
+    "ma_cau_hoi": "GT_61",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa",
+    "cau_hoi": "Thế nào là 'vị trí thắng' và 'vị trí thua' trong bài học Trò chơi ô lưới thuộc chủ đề Nim Game?",
+    "dap_an_chuan": "'Vị trí thua' (như điểm A) là vị trí mà sau lượt đi của một học sinh, đối thủ có thể di chuyển quân cờ đến ô Kết thúc để thắng trò chơi. 'Vị trí thắng' (như điểm B) là vị trí mà quân cờ có thể di chuyển đến ô Kết thúc hoặc khiến đối thủ rơi vào vị trí thua.",
+    "cau_tra_loi_rag": "Trong bài học Trò chơi ô lưới thuộc chủ đề Nim Game, 'vị trí thắng' là vị trí mà khi quân cờ được đặt ở đó (như điểm B), học sinh đi tiếp theo có thể di chuyển quân cờ đến ô Kết thúc và thắng trò chơi",
+    "context_recall": 0.5,
+    "faithfulness": 0.6,
+    "answer_correctness": 0.6664968451735667
+  },
+  {
+    "ma_cau_hoi": "GT_71",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Trong bài toán kinh điển người nông dân đưa một con cáo, một con ngỗng và một bao đậu qua sông bằng chiếc thuyền chỉ chở được nông dân và một thứ, bước đi chiến thuật then chốt để không con nào bị ăn thịt là gì?",
+    "dap_an_chuan": "Bước đi chiến thuật then chốt là mang con ngỗng (G) quay trở lại bờ xuất phát sau khi đã đưa con cáo (F) sang sông, tránh để cáo ở lại cùng ngỗng; sau đó đưa bao đậu (B) sang bờ bên kia rồi mới đón ngỗng (G) sang cuối cùng.",
+    "cau_tra_loi_rag": "Theo Nguồn 1, bài toán đưa con cáo, con ngỗng và bao đậu qua sông bằng chiếc thuyền chỉ chở được người nông dân cộng thêm một thứ có câu trả lời mẫu với các bước di chuyển như sau: Khởi hành nông dân ",
+    "context_recall": 0.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.5527746051022069
+  },
+  {
+    "ma_cau_hoi": "GT_76",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa",
+    "cau_hoi": "Mục đích sư phạm của các bài toán dạng 'Kẻ phiền phức trong nhóm' (như bài toán qua sông, qua cầu) là rèn luyện năng lực tư duy gì cho học sinh?",
+    "dap_an_chuan": "Mục đích sư phạm của các bài toán dạng 'Kẻ phiền phức trong nhóm' (như bài toán qua sông, qua cầu) là nâng cao năng lực lý luận chiến thuật và tư duy logic cho học sinh thông qua việc giải quyết các tình huống bài toán vượt sông.",
+    "cau_tra_loi_rag": "Mục tiêu bài học của Unit 3 về Bài toán về kẻ phiền phức trong nhóm (như bài toán vượt sông, qua cầu) là nâng cao lý luận chiến thuật và logic thông qua việc giải bài toán vượt sông.",
+    "context_recall": 1.0,
+    "faithfulness": 0.0,
+    "answer_correctness": 0.7243302231676455
+  },
+  {
+    "ma_cau_hoi": "GT_84",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa",
+    "cau_hoi": "Theo truyền thuyết Ai Cập cổ đại trong bài học Con mắt của thần Horus, con mắt nguyên vẹn được xem là biểu tượng cho số nào và mảnh mắt bị mất thứ sáu được quy đổi bằng phân số nào?",
+    "dap_an_chuan": "Theo truyền thuyết trong bài học Con mắt của thần Horus, người Ai Cập xem con mắt là số 1. Mảnh mắt bị mất thứ sáu tương ứng với phân số 1/64 của con mắt, được thần Thoth dùng phép thuật (ảo thuật) để bù đắp lại.",
+    "cau_tra_loi_rag": "Theo truyền thuyết Ai Cập cổ đại trong bài học Con mắt của thần Horus, người Ai Cập bắt đầu xem con mắt là số 1. Mảnh mắt bị mất thứ sáu tương ứng với phân số 1/64 của con mắt đã được thay bởi ảo thuậ",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.9910357476463474
+  },
+  {
+    "ma_cau_hoi": "GT_91",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa",
+    "cau_hoi": "Nguyên tắc chiếc hộp Dirichlet (nguyên lý chuồng bồ câu) được phát biểu một cách cơ bản như thế nào trong bài học?",
+    "dap_an_chuan": "Nguyên tắc chiếc hộp Dirichlet trong bài học phát biểu rằng: Nếu có k × N + 1 đồ vật được đặt vào N chiếc hộp, sẽ luôn có ít nhất một chiếc hộp chứa từ k + 1 đồ vật trở lên (giúp xác định điều kiện thỏa mãn mà không cần đếm).",
+    "cau_tra_loi_rag": "Theo tài liệu, nguyên tắc chiếc hộp Dirichlet được phát biểu như sau: Nếu có k nhân N cộng 1 đồ vật được đặt vào N chiếc hộp, sẽ luôn có một hộp chứa ít nhất k cộng 1 đồ vật.",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.7798842062814058
+  },
+  {
+    "ma_cau_hoi": "GT_93",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa",
+    "cau_hoi": "Quy tắc di chuyển hợp lệ của quân Mã trên bàn cờ trong bài học Quân Mã được quy định như thế nào?",
+    "dap_an_chuan": "Quy tắc di chuyển quân Mã được quy định: Quân Mã được đặt lên ô hình con ngựa của bàn cờ và di chuyển theo quy luật di chuyển của nó (nhảy theo hình chữ L), với điều kiện quân Mã phải dừng ở các ô màu trắng và không được dừng lại ở các ô màu xanh.",
+    "cau_tra_loi_rag": "Trong bài học Quân Mã, quy tắc di chuyển của quân Mã được quy định như sau: Quân Mã được đặt lên đầu ô có hình con ngựa của bàn cờ và di chuyển theo quy luật di chuyển của nó. Khi di chuyển, quân Mã p",
+    "context_recall": 0.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.8941908325127305
+  },
+  {
+    "ma_cau_hoi": "GT_96",
+    "dang_cau_hoi": "Giải toán & Suy luận",
+    "cau_hoi": "Để tìm cung đường bò ngắn nhất cho một chú kiến di chuyển giữa hai điểm trên bề mặt của một hình hộp chữ nhật qua các mặt khác nhau, phương pháp hình học nào được áp dụng?",
+    "dap_an_chuan": "Phương pháp hình học được áp dụng là vẽ hình chiếu (khai triển trải phẳng các mặt của hình hộp chữ nhật lên một mặt phẳng) để xác định cung đường ngắn nhất nối giữa hai điểm.",
+    "cau_tra_loi_rag": "Dựa trên nguồn tài liệu, phương pháp hình học được áp dụng là vẽ cung đường ngắn nhất trên hình chiếu của hình hộp chữ nhật.",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.7995249965617123
+  },
+  {
+    "ma_cau_hoi": "GT_100",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa",
+    "cau_hoi": "Sự khác biệt cơ bản giữa thể thức thi đấu 'Giải đấu vòng bảng' (Round-robin) và 'Đấu loại trực tiếp' (Elimination tournament) trong bài học là gì?",
+    "dap_an_chuan": "Trong bài học, Giải đấu vòng bảng là thể thức mà tất cả các đội hoặc thí sinh đều phải thi đấu với nhau một lần để tính kết quả và xếp hạng; còn Đấu loại trực tiếp là thể thức thi đấu loại dần các thí sinh thua cho đến khi tìm ra người vô địch.",
+    "cau_tra_loi_rag": "Trong tài liệu, các thể thức được định nghĩa như sau: Giải đấu vòng bảng là cuộc thi mà tất cả các đội hoặc thí sinh đều phải thi đấu với nhau một lần để tính kết quả và xếp hạng. Đấu loại trực tiếp l",
+    "context_recall": 1.0,
+    "faithfulness": 1.0,
+    "answer_correctness": 0.8437862420238922
+  },
+  {
+    "ma_cau_hoi": "GT_101",
+    "dang_cau_hoi": "Khái niệm & Định nghĩa",
+    "cau_hoi": "Quy tắc chơi của câu đố 'Sudoku dạng ghép hình' (Jigsaw Sudoku) có điểm gì đặc biệt so với Sudoku lưới vuông truyền thống?",
+    "dap_an_chuan": "Quy tắc chơi của Sudoku dạng ghép hình có điểm đặc biệt là: bảng được chia thành các vùng được tạo bởi đường kẻ đậm; các chữ số từ 1 đến N chỉ được xuất hiện một lần ở mỗi cột, mỗi hàng và trong mỗi vùng kẻ đậm đó.",
+    "cau_tra_loi_rag": "So với Sudoku lưới vuông truyền thống (sử dụng các hình vuông tỷ lệ 3:3 được tạo bởi các đường kẻ đậm để giới hạn việc dùng các số một lần duy nhất), câu đố Sudoku dạng ghép hình có điểm đặc biệt là s",
+    "context_recall": 1.0,
+    "faithfulness": 0.5,
+    "answer_correctness": 0.7261941040710049
   }
 ]

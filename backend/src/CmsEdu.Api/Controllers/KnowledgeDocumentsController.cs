@@ -27,7 +27,7 @@ public class KnowledgeDocumentsController(IKnowledgeDocumentService documentServ
 
     [HttpPost]
     [HasPermission(Permissions.Curriculum.Manage)]
-    [RequestSizeLimit(30 * 1024 * 1024)]
+    [RequestSizeLimit(60 * 1024 * 1024)]
     public async Task<ActionResult<KnowledgeDocumentDto>> UploadDocument(
         [FromForm] IFormFile file,
         [FromForm] string? title,

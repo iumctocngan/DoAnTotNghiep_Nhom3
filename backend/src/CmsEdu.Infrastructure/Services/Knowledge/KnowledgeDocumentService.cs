@@ -96,8 +96,8 @@ public class KnowledgeDocumentService(
         if (ext is not ("pdf" or "docx"))
             throw new ValidationException("Hệ thống chỉ hỗ trợ định dạng PDF hoặc DOCX.");
 
-        if (fileSize > 25 * 1024 * 1024)
-            throw new ValidationException("Kích thước file không được vượt quá 25MB.");
+        if (fileSize > 50 * 1024 * 1024)
+            throw new ValidationException("Kích thước file không được vượt quá 50MB.");
 
         if (scope == KnowledgeScope.Course && !courseId.HasValue)
             throw new ValidationException("Vui lòng chọn Khóa học áp dụng cho tài liệu.");

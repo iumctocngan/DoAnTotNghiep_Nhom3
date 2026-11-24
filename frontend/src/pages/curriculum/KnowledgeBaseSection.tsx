@@ -116,7 +116,7 @@ export const KnowledgeBaseSection: React.FC = () => {
         invalidExtCount++;
         continue;
       }
-      if (f.size > 25 * 1024 * 1024) {
+      if (f.size > 50 * 1024 * 1024) {
         oversizeCount++;
         continue;
       }
@@ -140,7 +140,7 @@ export const KnowledgeBaseSection: React.FC = () => {
       if (invalidExtCount > 0 || oversizeCount > 0) {
         const reasons = [];
         if (invalidExtCount > 0) reasons.push(`${invalidExtCount} tệp không phải PDF/DOCX`);
-        if (oversizeCount > 0) reasons.push(`${oversizeCount} tệp vượt quá 25MB`);
+        if (oversizeCount > 0) reasons.push(`${oversizeCount} tệp vượt quá 50MB`);
         msg += ` (Bỏ qua: ${reasons.join(', ')})`;
       }
       showToast(msg, 'success');
@@ -148,7 +148,7 @@ export const KnowledgeBaseSection: React.FC = () => {
       if (invalidExtCount > 0 || oversizeCount > 0) {
         const reasons = [];
         if (invalidExtCount > 0) reasons.push(`${invalidExtCount} tệp không phải PDF/DOCX`);
-        if (oversizeCount > 0) reasons.push(`${oversizeCount} tệp vượt quá 25MB`);
+        if (oversizeCount > 0) reasons.push(`${oversizeCount} tệp vượt quá 50MB`);
         showToast(`Không có tệp hợp lệ nào. (${reasons.join(', ')})`, 'error');
       }
     }
@@ -573,7 +573,7 @@ export const KnowledgeBaseSection: React.FC = () => {
             {/* File Dropzone & Selection */}
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Tài liệu học liệu <span className="text-rose-500">* (Định dạng PDF hoặc DOCX, tối đa 25MB/tệp)</span>
+                Tài liệu học liệu <span className="text-rose-500">* (Định dạng PDF hoặc DOCX, tối đa 50MB/tệp)</span>
               </label>
 
               <div

@@ -5,7 +5,7 @@ from fastapi import HTTPException, UploadFile, status
 
 from core import Settings
 
-MAX_DOCUMENT_BYTES = 25 * 1024 * 1024
+MAX_DOCUMENT_BYTES = 50 * 1024 * 1024
 GLOBAL_FOLDER = "global"
 
 
@@ -49,7 +49,7 @@ async def save_uploaded_document(
                 destination.unlink(missing_ok=True)
                 raise HTTPException(
                     status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-                    detail="Dung lượng tài liệu không được vượt quá 25MB.",
+                    detail="Dung lượng tài liệu không được vượt quá 50MB.",
                 )
             output.write(chunk)
 
